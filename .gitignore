@@ -1,0 +1,19 @@
+# outputs / checkpoints / logs / caches
+output/
+output_*/
+checkpoints/
+logs/
+*.out
+*.err
+cache/
+wandb/
+# data + model artifacts (stage on LUMI, not in git)
+*.bin
+*.idx
+*.safetensors
+*.distcp
+# python
+__pycache__/
+*.pyc
+.venv/
+.env
