@@ -8,14 +8,30 @@ a few gaps directly from `allenai/*`. All data is **staged to LUMI scratch first
 
 Priority key: **P1** = backbone, add first · **P2** = needed for GRPO/tools · **P3** = breadth/optional.
 
-## Stage 1 — SFT
+## Stage 0b — Reasoning SFT  *(before general SFT, following OLMo3 Think-SFT pattern)*
+
+A dedicated reasoning SFT pass on long-CoT traces **before** general instruction SFT. This
+is how OLMo3 and Nemotron 3 achieve strong reasoning: think-style SFT first, then general
+SFT on top. Skipping this means the general SFT data will dilute reasoning capability.
+
+| Pri | Dataset | Why |
+|-----|---------|-----|
+| P1 | `openeurollm/dolci-think-sft-tokenized` (`Dolci-Think-SFT-32B-decontaminated`) | OLMo3-validated long-CoT distilled from 32B; multilingual |
+| P1 | `open-thoughts/OpenThoughts-114k` | canonical open reasoning SFT (math+code+science+puzzles); high quality |
+| P2 | `allenai/Dolci-Think-SFT-Python` | code reasoning traces |
+| P2 | `openeurollm/Nemotron-Post-Training-Dataset-v2-decontaminated` | Nemotron reasoning distillation (6 EU langs) |
+| P2 | *LightOn multilingual reasoning SFT* (Kai Hakala) | EU-language reasoning traces — coordinate with LightOn; not yet public |
+| P3 | `nvidia/OpenMathInstruct-2` | 14M math reasoning traces; strong signal for verifiable math |
+| P3 | `open-thoughts/OpenThoughts2-1M` | larger follow-up to OT-114k if quality holds |
+
+**Recommended mix for reasoning SFT stage:** ~50% Dolci-Think, ~30% OpenThoughts-114k, ~20% code/math reasoning.  
+**Max seq length:** 16K+ (reasoning traces are long — packing essential).
+
+## Stage 1 — SFT  *(general instruction, after reasoning SFT)*
 | Pri | Dataset | Why |
 |-----|---------|-----|
 | P1 | `openeurollm/dolci-instruct-sft-tokenized` (`Dolci-Instruct-SFT-decontaminated`, 70 langs) | core instruction, multilingual, training-ready |
-| P1 | `openeurollm/dolci-think-sft-tokenized` (`Dolci-Think-SFT-32B-decontaminated`) | reasoning/CoT (32B-distilled) |
 | P2 | `allenai/Dolci-Instruct-SFT-Tool-Use` | tool / function-calling (not mirrored by OELLM) |
-| P2 | `allenai/Dolci-Think-SFT-Python` | code reasoning |
-| P3 | `openeurollm/Nemotron-Post-Training-Dataset-v2-decontaminated` | extra reasoning/instruct (6 langs) |
 | P3 | `openeurollm/smoltalk2-decontaminated`, `open-perfectblend-decontaminated`, `orca-agentinstruct-1M-v1-decontaminated` | chat breadth + agent/tool |
 
 ## Stage 2 — DPO / preference
