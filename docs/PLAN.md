@@ -20,7 +20,8 @@ General pre-training → [T4.6] Context Extension (128K) → SFT → DPO → RLV
 | LightOn (Yakine/Kai) | Function calling, multilingual reasoning + RL |
 | ELLIST (Arjun/Hannan) | SFT+DPO post-training framework, ablations, eval |
 
-**Approach:** Closely follows OLMo3 / Dolci, reusing most of the Dolci suite amended with translated multilingual data. Initial focus: context extension → SFT → DPO. RL is secondary.
+**Reference pipeline: Nemotron 3** (stronger published results, equally open recipe).  
+Dolci suite retained as the data backbone (already translated, validated by ELLIST). Nemotron 3 drives pipeline *structure*: reasoning SFT first, then general SFT, DPO, RLVR with verifiable rewards.
 
 ## Goal
 Run the full T4.6 post-training pipeline on LUMI using Qwen3.5 as a strong 2026 base,
@@ -32,37 +33,38 @@ producing an open artifact with multilingual capability and long context preserv
   must not erode it (include long-context data in SFT/RL).
 - 9B-Base = best usefulness/compute tradeoff on LUMI; 2B-Base = cheap stack validation.
 
-## Pipeline (ordered)
+## Pipeline (ordered) — following Nemotron 3 structure
 
-### Stage 0 — Pipeline smoke (2B)
-Run SFT→DPO→(tiny)GRPO on `Qwen3.5-2B-Base` with a few steps each to prove the LUMI/ROCm
-stack works end-to-end (container, TRL, vLLM rollouts, checkpoint I/O, eval). Cheap.
+### Stage 0 — Smoke (2B, dev-g)
+20-step SFT → 20-step DPO → 10-step GRPO on `Qwen3.5-2B-Base`. Proves the LUMI/ROCm
+stack end-to-end before spending real compute.
 
-### Stage 1 — SFT (TRL `SFTTrainer`)
-- Data: general instruction + multi-turn chat + **CoT/reasoning traces** + **tool-use traces**
-  + **long-context instruction data** (so 262K survives). Candidate open mixes: Tülu 3 SFT mix,
-  OpenHermes, plus reasoning distillations.
-- Keep a held-out eval set; checkpoint + eval.
+### Stage 1 — Reasoning SFT  *(Nemotron 3: thinking SFT before general SFT)*
+- **Data:** Dolci-Think-SFT-32B + OpenThoughts-114k + LightOn multilingual reasoning traces.
+  Mix: ~50% Dolci-Think, ~30% OpenThoughts, ~20% code/math (Dolci-Think-Python, OpenMathInstruct).
+- **Max seq:** 16K+ (reasoning traces are long). Packing on.
+- **Why first:** Nemotron 3 shows reasoning capability is better established before general
+  instruction tuning dilutes it. OLMo3 does the same think-SFT pass first.
 
-### Stage 2 — DPO (TRL `DPOTrainer`)
-- Preference pairs (e.g. UltraFeedback-style + on-policy pairs). Offline, no reward
-  model/rollouts → cheapest strong alignment. Variants to consider: SimPO/KTO.
+### Stage 2 — General SFT  (TRL `SFTTrainer`)
+- **Data:** Dolci-Instruct-SFT (70 langs) + long-ctx SFT (ChatQA2 + synthesized from project corpus).
+- Keep a held-out eval set; checkpoint + eval after.
 
-### Stage 3 — RLVR / GRPO (veRL, fallback TRL+vLLM)
-- Verifiable rewards: math (GSM8K/MATH/Numina + verifier), code (tests), logic.
-- GRPO (group-normalized, no value net). Needs **vLLM rollouts** on ROCm — the main
-  MI250X validation risk. Interleave with rejection-sampling SFT if useful.
+### Stage 3 — DPO  (TRL `DPOTrainer`)
+- **Data:** Dolci-Instruct-DPO-translated (11 langs) + Dolci-Think-DPO for reasoning preference.
+- Offline, no rollouts → cheapest strong alignment. Evaluate SimPO/KTO as variants.
 
-### Stage 4 — Tool-use / agentic (optional)
-- SFT on tool/agent trajectories + RL with environment feedback (function calling).
+### Stage 4 — RLVR / GRPO  (veRL; fallback TRL+vLLM)
+- **Verifiable rewards:** math (GSM8K/MATH + verifier), code (unit tests), IF constraints.
+- **Data:** RLVR-GSM-MATH-IF-Mixed-Constraints + Dolci-RL-Zero-Mix.
+- Needs vLLM rollouts on ROCm — the main MI250X risk. Front-load container validation.
 
-### Stage 5 — Safety (woven through 1–3)
-- Refusals, harmlessness preference/SFT data; red-team eval.
+### Stage 5 — Tool-use / agentic  (optional, LightOn lead)
+- SFT on tool trajectories + RL with environment feedback.
 
 ### Stage 6 — Eval + merge
-- **Eval after every stage:** MMLU, GSM8K/MATH, HumanEval, IFEval, **RULER (long-ctx)**,
-  + multilingual (OneRuler) if the multilingual focus is on.
-- Optional **model merge** of specialized checkpoints (TIES/SLERP).
+- **After every stage:** MMLU, GSM8K/MATH, HumanEval, IFEval, **RULER** (long-ctx must not regress), OneRuler (multilingual).
+- Optional checkpoint merge (TIES/SLERP) of specialised checkpoints.
 
 ## Frameworks (LUMI/ROCm)
 | Need | Choice | Risk |
