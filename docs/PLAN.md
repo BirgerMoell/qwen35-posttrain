@@ -1,98 +1,141 @@
-# Post-Training Plan — Qwen3.5 base on LUMI
+# Post-Training Plan — European Model Improvement (T4.6)
 
-**Created:** 2026-06-18  
-**Owner:** Birger / AI Sweden (T4.6 — long context extension, task management, delta-learning)  
-**Base:** `Qwen3.5-9B-Base` (validate on `Qwen3.5-2B-Base` first)
+**Created:** 2026-06-18 · **Revised:** 2026-06-18  
+**Owner:** Birger / AI Sweden (T4.6 — long context, task management, delta-learning)
 
-## T4.6 Organisational context
-
-T4.6 takes over from the pre-training part of OELLM after general pre-training. The pipeline:
-
-```
-General pre-training → [T4.6] Context Extension (128K) → SFT → DPO → RLVR
-```
-
-**Partner responsibilities (as of 2026-06):**
-| Partner | Focus |
-|---|---|
-| AI Sweden (Birger) | **Long context extension**, task management, delta-learning / translationese |
-| Silo AI (Jouni) | Long context extension (Megatron), post-training data translation |
-| LightOn (Yakine/Kai) | Function calling, multilingual reasoning + RL |
-| ELLIST (Arjun/Hannan) | SFT+DPO post-training framework, ablations, eval |
-
-**Reference pipeline: Nemotron 3** (stronger published results, equally open recipe).  
-Dolci suite retained as the data backbone (already translated, validated by ELLIST). Nemotron 3 drives pipeline *structure*: reasoning SFT first, then general SFT, DPO, RLVR with verifiable rewards.
+---
 
 ## Goal
-Run the full T4.6 post-training pipeline on LUMI using Qwen3.5 as a strong 2026 base,
-producing an open artifact with multilingual capability and long context preserved.
 
-## Why Qwen3.5 base
-- Released Feb–Mar 2026; dense sizes 0.8B/2B/4B/9B + MoE 27B/35B-A3B/122B-A10B + 397B.
-- **Native 262K context** (extensible ~1M) → long context already present; post-training
-  must not erode it (include long-context data in SFT/RL).
-- 9B-Base = best usefulness/compute tradeoff on LUMI; 2B-Base = cheap stack validation.
+Take a strong existing instruct model and make it **the best European model** by improving it
+on European languages, long-context EU documents, and EU-relevant tasks — without regressing
+its existing English/reasoning capabilities.
 
-## Pipeline (ordered) — following Nemotron 3 structure
+This is **not** a full post-training from scratch. We apply a targeted EU delta on top of a
+model that already knows how to reason, follow instructions, and use tools.
 
-### Stage 0 — Smoke (2B, dev-g)
-20-step SFT → 20-step DPO → 10-step GRPO on `Qwen3.5-2B-Base`. Proves the LUMI/ROCm
-stack end-to-end before spending real compute.
+---
 
-### Stage 1 — Reasoning SFT  *(Nemotron 3: thinking SFT before general SFT)*
-- **Data:** Dolci-Think-SFT-32B + OpenThoughts-114k + LightOn multilingual reasoning traces.
-  Mix: ~50% Dolci-Think, ~30% OpenThoughts, ~20% code/math (Dolci-Think-Python, OpenMathInstruct).
-- **Max seq:** 16K+ (reasoning traces are long). Packing on.
-- **Why first:** Nemotron 3 shows reasoning capability is better established before general
-  instruction tuning dilutes it. OLMo3 does the same think-SFT pass first.
+## What we can realistically improve
 
-### Stage 2 — General SFT  (TRL `SFTTrainer`)
-- **Data:** Dolci-Instruct-SFT (70 langs) + long-ctx SFT (ChatQA2 + synthesized from project corpus).
-- Keep a held-out eval set; checkpoint + eval after.
+| Gap | Expected delta | Approach |
+|---|---|---|
+| EU language quality (sv, fi, fr, de, …) | **Large** — SOTA models are English-heavy | SFT on translated Dolci + DPO on EU preference pairs |
+| Long context *in EU languages* | **Medium** — English long-ctx works, EU langs degrade | Long-ctx SFT from project corpus (multilingual, natively long PDFs) |
+| EU-domain tasks (legal, government, science) | **Medium** — base models see little EU official text | SFT on domain data mined from the longctx corpus |
+| Multilingual reasoning | **Medium** — reasoning traces are mostly English/Chinese | LightOn multilingual reasoning SFT (Kai Hakala) |
+| General English / math / code | **Near zero** — we would degrade, not improve | **Do not touch** — preserve via delta-learning / anti-forgetting |
 
-### Stage 3 — DPO  (TRL `DPOTrainer`)
-- **Data:** Dolci-Instruct-DPO-translated (11 langs) + Dolci-Think-DPO for reasoning preference.
-- Offline, no rollouts → cheapest strong alignment. Evaluate SimPO/KTO as variants.
+---
 
-### Stage 4 — RLVR / GRPO  (veRL; fallback TRL+vLLM)
-- **Verifiable rewards:** math (GSM8K/MATH + verifier), code (unit tests), IF constraints.
-- **Data:** RLVR-GSM-MATH-IF-Mixed-Constraints + Dolci-RL-Zero-Mix.
-- Needs vLLM rollouts on ROCm — the main MI250X risk. Front-load container validation.
+## Model scaling strategy
 
-### Stage 5 — Tool-use / agentic  (optional, LightOn lead)
-- SFT on tool trajectories + RL with environment feedback.
+Start small, prove the EU delta, then scale within the same family.
 
-### Stage 6 — Eval + merge
-- **After every stage:** MMLU, GSM8K/MATH, HumanEval, IFEval, **RULER** (long-ctx must not regress), OneRuler (multilingual).
-- Optional checkpoint merge (TIES/SLERP) of specialised checkpoints.
+```
+Qwen3-8B-Instruct     ← start here: fast iteration, ELLIST has tuned DPO HPs already
+        ↓
+Qwen3.5-9B-Instruct   ← stronger base, same pipeline, minimal re-tuning
+        ↓
+Qwen3.5-32B-Instruct  ← production artifact if results hold
+```
 
-## Frameworks (LUMI/ROCm)
-| Need | Choice | Risk |
-|------|--------|------|
-| SFT, DPO | **TRL** | low (ROCm-proven) |
-| GRPO/RLVR | **veRL** (official ROCm build); fallback TRL+vLLM | medium — AMD RL guides target MI300X+ROCm7.0, LUMI is MI250X+ROCm6.4 |
-| Rollouts/eval gen | **vLLM (ROCm)** | medium on MI250X |
-| Container | extend LUMI laif-rocm container, or build a TRL/veRL/vLLM ROCm image | — |
+**Why Qwen3-8B-Instruct first:**
+- ELLIST (Hannan) has already run BO hyperparameter sweeps for DPO on this model with
+  Dolci data — reuse those rather than tuning blind.
+- Strong multilingual capability out of the box; EU delta is measurable.
+- Fast to iterate on LUMI (fits on 4–8 GPUs for SFT/DPO).
 
-## Open decisions
-- **Artifact focus** (multi): general+reasoning (default) / multilingual-European (OELLM) /
-  tool-use. Drives data mix + which RL stages are prioritized.
-- Final size: 9B confirmed; consider 27B if compute allows after the stack is proven.
-- Data licensing for an open artifact (use permissively-licensed SFT/preference sets).
+**Alternative base if Qwen3 results disappoint:** Nemotron-3-8B-Instruct (strong reasoning
+baseline, open recipe we understand well).
 
-## Compute budget & timeline
-- **~300,000 GPU-hours** available; **hard deadline 2026-08-02** (~6.5 weeks from 2026-06-18).
-- Rough costs (MI250X GCD ≈ "1 GPU", ~120 TFLOP/s realistic): SFT 9B @ ~5B tokens ≈ **~600 GPU-h**;
-  DPO cheaper; **GRPO/RLVR is the cost driver** (rollouts) — budget a few thousand GPU-h.
-- **Full pipeline at 9B ≈ low-thousands GPU-h; even 27B fits comfortably** in 300k.
-- **Conclusion:** compute is *not* the binding constraint — **time and a working ROCm
-  RL/vLLM stack are.** Front-load container + vLLM-on-MI250X validation; reserve the bulk of
-  the clock for SFT/DPO (low-risk) and de-risk GRPO early so it's not a last-week scramble.
+---
 
-## Milestones (target before 2026-08-02)
-1. LUMI ROCm post-training container with TRL+vLLM(+veRL) working (`docs/lumi_rocm_runbook.md`).
-2. Stage-0 smoke on 2B passes end-to-end (SFT→DPO→tiny GRPO + eval).
-3. SFT 9B + eval.
-4. DPO 9B + eval.
-5. GRPO/RLVR 9B + eval (gated on vLLM-ROCm working at scale).
-6. Release artifact + model card; preserve long-context (RULER) throughout.
+## Pipeline
+
+Follows **Nemotron 3 structure** (stronger published results than OLMo3, equally open).
+Data backbone is the **Dolci suite** (already translated, multilingual, ELLIST-validated).
+
+```
+[instruct base]
+      │
+      ▼
+Stage 1 — EU Multilingual SFT
+  • Dolci-Instruct-SFT (70 langs, openeurollm/)
+  • Dolci-Think-SFT (reasoning traces, multilingual)
+  • LightOn multilingual reasoning SFT
+  • Long-ctx SFT: project corpus (birgermoell/oellm-longctx-tokenized-streamed-all-v2)
+      │
+      ▼
+Stage 2 — EU DPO
+  • Dolci-Instruct-DPO-translated (11 langs)
+  • Dolci-Think-DPO for reasoning preference
+  • AI Sweden delta-learning: DPO to prefer original EU text over roundtrip translations
+      │
+      ▼
+Stage 3 — Light RLVR  (secondary — only if time + ROCm stack stable)
+  • Verifiable math/IF rewards on EU-language prompts
+  • RLVR-GSM-MATH-IF-Mixed-Constraints + Dolci-RL-Zero-Mix
+      │
+      ▼
+Stage 4 — Eval + release
+  • RULER (long-ctx must not regress), MMLU, GSM8K, IFEval
+  • OneRuler / ArenaHard-EU (multilingual)
+  • Release on HF with model card
+```
+
+---
+
+## Key design decisions
+
+**Start from instruct, not base.** Avoids redoing reasoning SFT, tool-use SFT, safety —
+work that took the base model teams months. We apply the EU delta on top.
+
+**Anti-catastrophic forgetting is critical.** We're improving a good model; degrading English
+is a failure mode. Mitigations:
+- Include a small English replay mix in SFT (~10–15%)
+- AI Sweden's translationese DPO experiments (prefer original EU text over roundtrip)
+- Eval English benchmarks after every stage; gate on regression
+
+**Coordinate with ELLIST on DPO HPs.** They've already swept LR × beta on Qwen3-8B.
+Reusing their optimal HPs saves ~1 week of compute.
+
+**Long-context data is a differentiator.** No other European post-training effort has the
+project's own multilingual long-context PDF corpus. Use it.
+
+---
+
+## T4.6 partner responsibilities
+
+| Partner | Contribution to this pipeline |
+|---|---|
+| AI Sweden (Birger) | Pipeline orchestration, long-ctx SFT data, delta-learning/translationese DPO |
+| ELLIST (Arjun/Hannan) | Post-training framework, DPO HP tuning, ablations, eval |
+| Silo AI (Jouni/Elaine) | Translated datasets (Dolci-Instruct-SFT/DPO), long-ctx extension |
+| LightOn (Yakine/Kai) | Function calling SFT, multilingual reasoning SFT/RL |
+
+---
+
+## Compute & timeline
+
+**Budget:** ~300,000 GPU-hours · **Deadline:** 2026-08-02
+
+| Stage | Estimated GPU-h (8B) | Notes |
+|---|---|---|
+| SFT 8B, ~1B tokens | ~100 GPU-h | Cheap |
+| DPO 8B | ~50 GPU-h | Cheap |
+| RLVR 8B | ~500–1000 GPU-h | Rollouts are expensive |
+| Scale to 32B | ~5× above | If 8B results are good |
+| **Total realistic** | **~2,000–5,000 GPU-h** | Well within 300k budget |
+
+Compute is **not** the constraint — a working ROCm RLVR stack and good EU data are.
+
+---
+
+## Immediate next actions
+
+1. **Get ELLIST's DPO HPs for Qwen3-8B** — ping Hannan (github issue or Slack)
+2. **Stage Qwen3-8B-Instruct on LUMI** (login node, no internet on compute)
+3. **Run SFT smoke on 2B** — validates the LUMI/TRL/ROCm stack (in progress)
+4. **Run SFT + DPO on 8B** with Dolci data + eval on ArenaHard-EU / RULER
+5. **Scale to 9B/32B** once delta is proven on 8B
