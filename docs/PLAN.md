@@ -1,12 +1,30 @@
 # Post-Training Plan — Qwen3.5 base on LUMI
 
-**Created:** 2026-06-18
-**Owner:** Birger (assigned the post-training-after-long-context run)
+**Created:** 2026-06-18  
+**Owner:** Birger / AI Sweden (T4.6 — long context extension, task management, delta-learning)  
 **Base:** `Qwen3.5-9B-Base` (validate on `Qwen3.5-2B-Base` first)
 
+## T4.6 Organisational context
+
+T4.6 takes over from the pre-training part of OELLM after general pre-training. The pipeline:
+
+```
+General pre-training → [T4.6] Context Extension (128K) → SFT → DPO → RLVR
+```
+
+**Partner responsibilities (as of 2026-06):**
+| Partner | Focus |
+|---|---|
+| AI Sweden (Birger) | **Long context extension**, task management, delta-learning / translationese |
+| Silo AI (Jouni) | Long context extension (Megatron), post-training data translation |
+| LightOn (Yakine/Kai) | Function calling, multilingual reasoning + RL |
+| ELLIST (Arjun/Hannan) | SFT+DPO post-training framework, ablations, eval |
+
+**Approach:** Closely follows OLMo3 / Dolci, reusing most of the Dolci suite amended with translated multilingual data. Initial focus: context extension → SFT → DPO. RL is secondary.
+
 ## Goal
-Take a strong 2026 long-context base and run the **full modern post-training pipeline** on
-LUMI, producing a genuinely useful open artifact with long context preserved.
+Run the full T4.6 post-training pipeline on LUMI using Qwen3.5 as a strong 2026 base,
+producing an open artifact with multilingual capability and long context preserved.
 
 ## Why Qwen3.5 base
 - Released Feb–Mar 2026; dense sizes 0.8B/2B/4B/9B + MoE 27B/35B-A3B/122B-A10B + 397B.
