@@ -6,7 +6,7 @@ Reads this stage's metrics.json and (optionally) the baseline tag's metrics, and
   - core score (MMLU/IFEval avg) must not drop more than CORE_TOL points
 Tune thresholds per project policy. SKELETON — wire to real metric keys from run_eval.py.
 """
-import argparse, json, sys, pathlib
+import argparse, json, sys, pathlib, os
 
 RULER_TOL = 2.0   # pts
 CORE_TOL = 1.0    # pts
@@ -19,7 +19,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--metrics", required=True)
     ap.add_argument("--baseline-tag", default=None)
+    ap.add_argument("--smoke", action="store_true", help="pass unconditionally (smoke/stack-validation runs)")
     a = ap.parse_args()
+    if a.smoke or os.environ.get("SMOKE") == "1":
+        print("[gate] SMOKE mode — passing unconditionally"); sys.exit(0)
     cur = load(a.metrics)
     if not cur:
         print(f"[gate] no metrics at {a.metrics} — failing closed"); sys.exit(1)

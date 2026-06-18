@@ -14,14 +14,14 @@
 set -euo pipefail
 
 SIZE="${1:-2b}"
-# TODO: stage the base model to LUMI scratch first (no internet on compute nodes).
+SMOKE="${SMOKE:-0}"   # SMOKE=1 bypasses eval gates — use for stack validation
 BASE="${BASE_MODEL:-/scratch/project_465002530/users/bmoell/models/Qwen3.5-${SIZE}-Base}"
 OUT="$PWD/output/$SIZE"
 mkdir -p "$OUT" logs
 
 sub () {  # sub <dep-jobid|-> <sbatch> KEY=VAL ...   -> echoes new jobid
   local dep="$1"; shift; local script="$1"; shift
-  local exp="ALL"; for kv in "$@"; do exp="$exp,$kv"; done
+  local exp="ALL,SMOKE=$SMOKE"; for kv in "$@"; do exp="$exp,$kv"; done
   if [ "$dep" = "-" ]; then sbatch --parsable --export="$exp" "$script"
   else sbatch --parsable --dependency=afterok:"$dep" --export="$exp" "$script"; fi
 }

@@ -1,14 +1,14 @@
 # Stage 0/1 SFT smoke on Qwen3.5-2B-Base (TRL SFTTrainer). Validate the stack, then scale to 9B.
 # TODO: fill model path (staged on LUMI), data mix, and container before running.
 model:
-  name_or_path: Qwen/Qwen3.5-2B-Base        # stage to LUMI scratch first (no internet on compute nodes)
+  name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-2B-Base
   attn_implementation: flash_attention_2
   torch_dtype: bfloat16
 trainer: sft                                 # trl SFTTrainer
 data:
   # placeholder open SFT mix; swap for the chosen artifact-focus mix (general/reasoning/multilingual/tool)
   datasets:
-    - { path: allenai/tulu-3-sft-mixture, split: "train[:2000]" }   # smoke slice
+    - { path: /scratch/project_465002530/users/bmoell/posttrain-data/allenai__tulu-3-sft-mixture, split: "train[:2000]" }   # smoke slice
   max_seq_length: 8192                        # raise toward 32k+ for long-ctx-preserving SFT at 9B
   packing: true
 sft:
