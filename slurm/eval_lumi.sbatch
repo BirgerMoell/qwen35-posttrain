@@ -18,7 +18,7 @@ if [ -z ${SLURM_JOB_ID+x} ]; then mkdir -p logs; sbatch "$0" "$@"; exit; fi
 set -euo pipefail; module purge
 : "${CKPT:?}"; : "${TAG:=ckpt}"; : "${BASELINE:=}"; : "${SMOKE:=0}"
 CONTAINER=/scratch/project_462000963/containers/laif-rocm-6.4.4-pytorch-2.9.1-te-2.4.0-fa-2.8.0-triton-3.2.0.sif
-BIND=/scratch,/flash,/project,/projappl,/appl,/opt/cray,/var/spool/slurmd
+BIND=/pfs,/scratch,/flash,/project,/projappl,/appl,/opt/cray,/var/spool/slurmd
 RESULTS="$SLURM_SUBMIT_DIR/eval/results/$TAG"
 mkdir -p "$RESULTS"
 echo "EVAL $TAG  ckpt=$CKPT  baseline=${BASELINE:-none}  smoke=$SMOKE"
