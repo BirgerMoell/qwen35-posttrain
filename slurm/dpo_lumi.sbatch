@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pt-sft
+#SBATCH --job-name=pt-dpo
 #SBATCH --account=project_465002530
 #SBATCH --partition=dev-g
 #SBATCH --nodes=1
@@ -15,15 +15,15 @@
 if [ -z ${SLURM_JOB_ID+x} ]; then mkdir -p logs; sbatch "$0" "$@"; exit; fi
 set -euo pipefail; module purge
 ln -sf "${SLURM_JOB_NAME}-${SLURM_JOBID}.out" logs/latest.out 2>/dev/null || true
-: "${STAGE_LOAD:?set by orchestrator}"; : "${STAGE_SAVE:?}"; : "${CFG:=configs/sft_2b_smoke.yaml}"
+: "${STAGE_LOAD:?set by orchestrator}"; : "${STAGE_SAVE:?}"; : "${CFG:=configs/dpo_2b_smoke.yaml}"
 CONTAINER=/scratch/project_462000963/containers/laif-rocm-6.4.4-pytorch-2.9.1-te-2.4.0-fa-2.8.0-triton-3.2.0.sif
 BIND=/scratch,/flash,/project,/projappl,/appl,/opt/cray,/var/spool/slurmd
-export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST"|head -n1) MASTER_PORT=29501
+export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST"|head -n1) MASTER_PORT=29502
 export NCCL_SOCKET_IFNAME=hsn0,hsn1,hsn2,hsn3 NCCL_NET_GDR_LEVEL=PHB OMP_NUM_THREADS=2
-echo "SFT  load=$STAGE_LOAD  save=$STAGE_SAVE  cfg=$CFG"
+echo "DPO  load=$STAGE_LOAD  save=$STAGE_SAVE  cfg=$CFG"
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   cd $SLURM_SUBMIT_DIR &&
-  accelerate launch --config_file configs/accelerate_fsdp.yaml -m trl.scripts.sft \
+  accelerate launch --config_file configs/accelerate_fsdp.yaml -m trl.scripts.dpo \
     --config $CFG --model_name_or_path '$STAGE_LOAD' --output_dir '$STAGE_SAVE' --save_only_model true
 "   # TODO: confirm trl entrypoint/flags against the project's BirgerMoell/trl fork
-echo "SFT DONE $(date)"
+echo "DPO DONE $(date)"

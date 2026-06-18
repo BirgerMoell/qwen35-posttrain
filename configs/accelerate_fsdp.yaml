@@ -1,0 +1,12 @@
+# Accelerate FSDP config for LUMI (8 GCDs/node). Skeleton — tune for the chosen size.
+compute_environment: LOCAL_MACHINE
+distributed_type: FSDP
+mixed_precision: bf16
+num_processes: 8                 # per node; multiply by nodes
+fsdp_config:
+  fsdp_sharding_strategy: FULL_SHARD
+  fsdp_auto_wrap_policy: TRANSFORMER_BASED_WRAP
+  fsdp_state_dict_type: SHARDED_STATE_DICT
+  fsdp_use_orig_params: true
+  fsdp_offload_params: false
+# For 9B+ consider ZeRO-3 (DeepSpeed) instead; for GRPO, veRL manages its own engine.
