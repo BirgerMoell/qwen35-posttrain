@@ -17,6 +17,22 @@ hurt).
 
 ---
 
+## Multi-family strategy
+
+Rather than betting on one model family, run the EU delta pipeline across three families
+in parallel. Compare results at 4B–9B scale; the winning family gets scaled to 27B+.
+
+| Family | Key strength | Sizes | License | Plan |
+|---|---|---|---|---|
+| **Gemma 4** | Best EU multilingual pretraining, full size ladder | 2B/4B/9B/27B | Apache 2.0 | [PLAN_GEMMA4.md](PLAN_GEMMA4.md) |
+| **Qwen 3.5** | Strongest reasoning, 201 languages | 2B/4B/9B/27B | Apache 2.0 | PLAN_QWEN35.md (TODO) |
+| **Phi-4** | Best reasoning-per-parameter, smallest footprint | 3.8B/14B | MIT | PLAN_PHI4.md (TODO) |
+
+Gemma 4 is the primary candidate. Qwen 3.5 is the reasoning fallback. Phi-4 is the
+efficiency candidate (useful if we want to scale to many languages cheaply).
+
+---
+
 ## Step 0 — Base model selection (do this first, before any training)
 
 **Do not guess the best base model. Measure it.**
