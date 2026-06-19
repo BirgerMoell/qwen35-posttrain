@@ -1,0 +1,26 @@
+# SFT smoke — Gemma-4-E2B-it on Dolci multilingual SFT data
+# 20 steps to validate the TRL + Gemma 4 + LUMI stack
+model:
+  name_or_path: /scratch/project_465002530/users/bmoell/models/gemma-4-E2B-it
+  torch_dtype: bfloat16
+trainer: sft
+data:
+  datasets:
+    - path: /scratch/project_462000963/datasets/posttraining_data/SFTTrainer_format/multiling/europa_oasst2
+      split: "train[:500]"   # smoke slice
+  max_seq_length: 4096
+  packing: false             # off for stability in smoke
+sft:
+  num_train_epochs: 1
+  max_steps: 20
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 2.0e-5
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  bf16: true
+  gradient_checkpointing: true
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/gemma4-2b-smoke
+save:
+  save_steps: 20
+  save_only_model: true
