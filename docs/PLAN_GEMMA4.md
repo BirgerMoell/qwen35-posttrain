@@ -50,17 +50,24 @@ Gemma-4-Instruct has `<|think|>` reasoning built in. Starting from the instruct 
 means the reasoning SFT stage can be skipped or significantly reduced — we only need to
 add EU-language reasoning traces, not establish reasoning from scratch.
 
-### QLoRA, not full fine-tuning
-Full fine-tuning at 9B requires 40+ GB VRAM. QLoRA (4-bit base + LoRA adapters) achieves
-comparable performance at ~20 GB. Use QLoRA for all stages.
+### Full fine-tuning on LUMI (not QLoRA)
+LUMI nodes have 8 MI250X GCDs × 64 GB HBM2e = **512 GB per node**. Full fine-tuning
+with FSDP ZeRO-3 is completely feasible and preferred over QLoRA:
 
-```yaml
-# LoRA config for Gemma 4
-lora_r: 16
-lora_alpha: 16
-lora_dropout: 0.0
-target_modules: all-linear
-```
+| Model | Full FT memory | GCDs needed | Nodes |
+|---|---|---|---|
+| 4B | ~32 GB total | 1 GCD (comfortable) | 1 |
+| 9B | ~108 GB (weights + optimizer + grads) | 2 GCDs | 1 |
+| 27B | ~324 GB | 6 GCDs | 1 |
+| 72B+ | ~800 GB+ | 13+ GCDs | 2+ |
+
+Full fine-tuning advantages over QLoRA:
+- No quantization error in the base model
+- Can update all parameters including embeddings (important for EU language tokens)
+- Better performance, especially for multilingual coverage
+- No adapter merging step before inference
+
+Use **LoRA only** when doing very rapid hyperparameter sweeps on dev-g (30-min limit).
 
 ---
 
@@ -97,19 +104,21 @@ Eval + release
 
 ---
 
-## Recommended hyperparameters
+## Recommended hyperparameters (full fine-tuning, FSDP ZeRO-3)
 
 | Param | SFT | SimPO |
 |---|---|---|
 | Learning rate | 2e-5 | 5e-7 |
 | LR scheduler | cosine | cosine |
 | Warmup ratio | 0.03 | 0.03 |
-| Batch size (per device) | 2 | 2 |
-| Gradient accumulation | 4 | 4 |
+| Global batch size | 128 | 64 |
+| Per-device batch size | 2–4 | 2 |
+| Gradient accumulation | varies | varies |
 | Precision | bfloat16 | bfloat16 |
 | Gradient checkpointing | true | true |
 | Max seq length | 8192 | 4096 |
 | Weight decay | 0.001 | 0.01 |
+| FSDP sharding | FULL_SHARD (ZeRO-3) | FULL_SHARD |
 | SimPO gamma | — | 0.5 |
 | SimPO beta | — | 2.0 |
 
