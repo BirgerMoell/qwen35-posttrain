@@ -28,14 +28,16 @@ winner. This saves weeks of training on the wrong base.
 
 | Model | EU coverage | Reasoning | Agentic | Why consider |
 |---|---|---|---|---|
-| Qwen3-8B-Instruct | Weak (EN/ZH-heavy) | ★★★★★ | ★★★★ | Strongest ceiling |
-| Gemma-3-9B-Instruct | Strong (Google multilingual) | ★★★★ | ★★★★ | Best EU+reasoning combo |
-| Llama-3.1-8B-Instruct | Medium | ★★★ | ★★★ | Well-understood, safe |
+| **Gemma-4-9B-Instruct** | ★★★★★ (Google multilingual, best-in-class) | ★★★★★ | ★★★★★ | **Top pick** — strongest EU coverage + top-tier reasoning/agentic |
+| Qwen3-8B-Instruct | Weak (EN/ZH-heavy) | ★★★★★ | ★★★★ | Strongest reasoning ceiling |
+| Gemma-3-9B-Instruct | Strong (Google multilingual) | ★★★★ | ★★★★ | Previous gen; Gemma 4 strictly better |
+| Llama-3.1-8B-Instruct | Medium | ★★★ | ★★★ | Well-understood baseline |
 | EuroLLM-9B-Instruct | ★★★★★ (EU-native) | ★★★ | ★★ | Project's own; already EU-optimized |
-| Aya-Expanse-8B | ★★★★★ (multilingual native) | ★★ | ★★ | Great EU, low capability ceiling |
 
-**Hypothesis:** Gemma-3-9B-Instruct or Qwen3-8B-Instruct will win — strong reasoning +
-acceptable EU coverage that our SFT can close the gap on.
+**Hypothesis:** Gemma-4-9B-Instruct is the strongest starting point — Google's multilingual
+pretraining is the best at this scale, and Gemma 4 adds strong reasoning and agentic
+capability on top. Qwen3-8B as fallback if Gemma 4 has licensing restrictions for derivative
+models (check: Gemma license allows fine-tuning but verify redistribution terms).
 
 **Eval to run (per-model, ~30 min each on 8 GPUs):**
 - ArenaHard-EU (EU multilingual preference)
@@ -126,13 +128,22 @@ Stage 5 — Eval + release
 
 ## Scaling strategy
 
+Gemma 4 covers the full range in one family — iterate cheap, scale to production without
+switching architectures or retuning from scratch.
+
 ```
-8B (Gemma-3 or Qwen3)  →  validate EU delta, tune pipeline
+Gemma-4-1B-Instruct   →  ultra-fast iteration, pipeline debugging (minutes per run)
         ↓
-Qwen3.5-9B-Instruct    →  stronger reasoning base, same pipeline
+Gemma-4-4B-Instruct   →  EU delta validation, cheap ablations
         ↓
-Qwen3.5-32B-Instruct   →  production artifact
+Gemma-4-9B-Instruct   →  main experiment model, production-quality results
+        ↓
+Gemma-4-27B-Instruct  →  production artifact if 9B results hold
 ```
+
+Hyperparameters, data mix ratios, and eval results transfer cleanly across sizes within
+the same family. Fallback: Qwen3 family if Gemma 4 license restricts redistribution of
+fine-tuned derivatives.
 
 ---
 
