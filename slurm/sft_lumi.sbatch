@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=pt-sft
 #SBATCH --account=project_465002530
-#SBATCH --partition=dev-g
+#SBATCH --partition=small-g
 #SBATCH --nodes=1
 #SBATCH --gpus-per-node=8
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=7
 #SBATCH --mem=480G
-#SBATCH --time=0-00:30:00
+#SBATCH --time=0-01:00:00
 #SBATCH --output logs/%j.out
 #SBATCH --error  logs/%j.err
 # SFT stage (TRL). Reads STAGE_LOAD / STAGE_SAVE / CFG from the orchestrator's --export.
