@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=pt-sft
 #SBATCH --account=project_465002530
-#SBATCH --partition=small-g
+#SBATCH --partition=standard-g
 #SBATCH --nodes=1
 #SBATCH --gpus-per-node=8
-#SBATCH --ntasks-per-node=8
-#SBATCH --cpus-per-task=7
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=56
 #SBATCH --mem=480G
 #SBATCH --time=0-01:00:00
 #SBATCH --output logs/%j.out
@@ -20,14 +20,17 @@ CONTAINER=/scratch/project_462000963/containers/laif-rocm-6.4.4-pytorch-2.9.1-te
 BIND=/pfs,/scratch,/flash,/project,/projappl,/appl,/opt/cray,/var/spool/slurmd
 export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST"|head -n1)
 export MASTER_PORT=$(python3 -c "import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()")
-export NCCL_SOCKET_IFNAME=hsn0,hsn1,hsn2,hsn3 NCCL_NET_GDR_LEVEL=PHB OMP_NUM_THREADS=2
+export NCCL_SOCKET_IFNAME=hsn0,hsn1,hsn2,hsn3 NCCL_NET_GDR_LEVEL=PHB OMP_NUM_THREADS=7
 echo "SFT  load=$STAGE_LOAD  save=$STAGE_SAVE  cfg=$CFG  port=$MASTER_PORT"
+# ntasks-per-node=1: accelerate launch is run ONCE per node and spawns 8 GPU workers internally
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   cd $SLURM_SUBMIT_DIR &&
   accelerate launch \
     --config_file configs/accelerate_fsdp.yaml \
     --main_process_ip '$MASTER_ADDR' \
     --main_process_port '$MASTER_PORT' \
+    --num_processes 8 \
+    --num_machines 1 \
     -m trl.scripts.sft \
     --config $CFG --model_name_or_path '$STAGE_LOAD' --output_dir '$STAGE_SAVE' --save_only_model true
 "
