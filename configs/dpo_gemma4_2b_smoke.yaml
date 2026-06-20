@@ -4,7 +4,9 @@
 # Flat TRL schema: ModelConfig + DatasetMixtureConfig + DPOConfig at top level
 
 # ── ModelConfig ──
-model_name_or_path: /scratch/project_465002530/users/bmoell/models/gemma-4-E2B-it
+# text-only view of Gemma-4-E2B-it (config patched to Gemma4ForCausalLM) so the
+# DPO collator does not expect an `images` field from the multimodal path
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/gemma-4-E2B-it-textonly
 torch_dtype: bfloat16
 
 # ── DatasetMixtureConfig ──
