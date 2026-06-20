@@ -23,7 +23,10 @@ export MASTER_PORT=$(python3 -c "import socket; s=socket.socket(); s.bind(('',0)
 export NCCL_SOCKET_IFNAME=hsn0,hsn1,hsn2,hsn3 NCCL_NET_GDR_LEVEL=PHB OMP_NUM_THREADS=7
 echo "SFT  load=$STAGE_LOAD  save=$STAGE_SAVE  cfg=$CFG  port=$MASTER_PORT"
 # ntasks-per-node=1: accelerate launch is run ONCE per node and spawns 8 GPU workers internally
+# PYTHONPATH overlay: transformers 5.x for Gemma 4 / Qwen 3.5 (container ships 4.57.3)
+PYLIBS_OVERLAY=/scratch/project_465002530/users/bmoell/pylibs-overlay
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
+  export PYTHONPATH=$PYLIBS_OVERLAY:\${PYTHONPATH:-} &&
   cd $SLURM_SUBMIT_DIR &&
   accelerate launch \
     --config_file configs/accelerate_fsdp.yaml \
