@@ -34,7 +34,7 @@ srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
     --main_process_port '$MASTER_PORT' \
     --num_processes 8 \
     --num_machines 1 \
-    -m trl.scripts.dpo \
+    scripts/dpo_train.py \
     --config $CFG --model_name_or_path '$STAGE_LOAD' --output_dir '$STAGE_SAVE' --save_only_model true
 "
 echo "DPO DONE $(date)"
