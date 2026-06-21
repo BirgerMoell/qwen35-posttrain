@@ -54,6 +54,19 @@ def main(script_args, training_args, model_args, dataset_args):
             **model_kwargs,
         )
 
+    # 2026 multimodal-origin models (Gemma 4, Qwen 3.5) declare vision/audio block classes
+    # in `_no_split_modules`. When loaded text-only via AutoModelForCausalLM those classes
+    # don't exist, so FSDP TRANSFORMER_BASED_WRAP fails ("Could not find the transformer
+    # layer class ...VisionBlock"). Filter to classes actually present in the model.
+    def _prune_no_split_modules(m):
+        names = getattr(m, "_no_split_modules", None)
+        if names:
+            present = {type(sub).__name__ for sub in m.modules()}
+            m._no_split_modules = [c for c in names if c in present]
+    _prune_no_split_modules(model)
+    if ref_model is not None:
+        _prune_no_split_modules(ref_model)
+
     # Explicit text tokenizer — the whole point of this wrapper.
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
