@@ -31,11 +31,9 @@ from trl import (
 
 
 def main(script_args, training_args, model_args, dataset_args):
-    dtype = (
-        model_args.torch_dtype
-        if model_args.torch_dtype in (None, "auto")
-        else getattr(torch, model_args.torch_dtype)
-    )
+    # TRL renamed ModelConfig.torch_dtype -> dtype; support both.
+    dtype_str = getattr(model_args, "dtype", None) or getattr(model_args, "torch_dtype", None)
+    dtype = dtype_str if dtype_str in (None, "auto") else getattr(torch, dtype_str)
     model_kwargs = dict(
         revision=model_args.model_revision,
         attn_implementation=model_args.attn_implementation,
