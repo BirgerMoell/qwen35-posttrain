@@ -5,11 +5,12 @@ mixed_precision: bf16
 num_processes: 8                 # per node; multiply by nodes
 fsdp_config:
   fsdp_sharding_strategy: FULL_SHARD
-  # SIZE_BASED_WRAP is architecture-agnostic — avoids the per-model transformer layer
-  # class lookup that breaks on text-only checkpoints extracted from multimodal models
-  # (e.g. Gemma4ForCausalLM still lists Gemma4VisionEncoderLayer in _no_split_modules).
-  fsdp_auto_wrap_policy: SIZE_BASED_WRAP
-  fsdp_min_num_params: 100000000
+  # TRANSFORMER_BASED_WRAP: wraps decoder layers, leaves embeddings/lm_head at the root
+  # so tied-embedding matmuls stay intact. (SIZE_BASED_WRAP wraps embeddings as standalone
+  # FSDP units and breaks the matmul: "size mismatch ... vec (...)".)
+  # Works for standard causal LMs (Qwen3.5, Gemma SFT). The Gemma-4 E-series text-only
+  # DPO path is a separate, deprioritized case (elastic/MatFormer architecture).
+  fsdp_auto_wrap_policy: TRANSFORMER_BASED_WRAP
   fsdp_state_dict_type: FULL_STATE_DICT   # consolidated ckpt; compatible with save_only_model
   fsdp_use_orig_params: true
   fsdp_offload_params: false
