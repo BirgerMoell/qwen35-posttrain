@@ -9,7 +9,7 @@ from pathlib import Path
 from huggingface_hub import HfApi
 
 DEFAULT_DATASET_DIR = Path("data/eval_holdouts/oellm-eu-eval-holdouts-v1")
-DEFAULT_REPO_ID = "BirgerMoell/oellm-eu-eval-holdouts-v1"
+DEFAULT_REPO_ID = "birgermoell/oellm-eu-eval-holdouts-v1"
 
 
 def main() -> None:

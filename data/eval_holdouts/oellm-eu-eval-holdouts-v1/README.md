@@ -43,7 +43,6 @@ task_categories:
 - text-generation
 - question-answering
 - summarization
-- text2text-generation
 pretty_name: OpenEuroLLM EU Eval Holdouts v1
 tags:
 - openeurollm
