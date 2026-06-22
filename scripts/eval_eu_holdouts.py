@@ -145,9 +145,16 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--max-new-tokens", type=int, default=512)
     ap.add_argument("--limit-per-bucket", type=int, default=None)
+    ap.add_argument("--exclude-buckets", default="long_context_retrieval",
+                    help="comma-separated buckets to skip (default: long_context_retrieval — "
+                         "irrelevant + slow for fine-tuning eval)")
+    ap.add_argument("--buckets", default=None, help="if set, ONLY these buckets (comma-separated)")
     a = ap.parse_args()
 
+    excl = {b.strip() for b in (a.exclude_buckets or "").split(",") if b.strip()}
+    incl = {b.strip() for b in a.buckets.split(",")} if a.buckets else None
     rows = [json.loads(l) for l in open(a.data) if l.strip()]
+    rows = [r for r in rows if r["bucket"] not in excl and (incl is None or r["bucket"] in incl)]
     if a.limit_per_bucket:
         seen, kept = {}, []
         for r in rows:
