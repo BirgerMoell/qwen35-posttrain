@@ -1,0 +1,34 @@
+# Run #2 — Multilingual DPO for Qwen3.5-9B (fixes run #1's English-only DPO)
+# Data: per-language EU preference pairs (fin/swe/dan/nor/isl + multilingual), concatenated
+# by scripts/build_run2_data.py. Loads an SFT checkpoint as policy + reference.
+
+# ── ModelConfig ── (STAGE_LOAD overrides to the SFT/reasoning checkpoint)
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-sft
+torch_dtype: bfloat16
+
+# ── DatasetMixtureConfig (parquet, memory-mapped) ──
+datasets:
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-multiling-dpo-parquet/train.parquet
+    split: train
+
+# ── DPOConfig ──
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-multiling-dpo
+max_length: 4096
+max_prompt_length: 2048
+beta: 0.1
+max_steps: 500
+dataset_num_proc: 8
+ddp_timeout: 10800
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 5.0e-7
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 10
+save_steps: 100
+save_total_limit: 3
+report_to: none
