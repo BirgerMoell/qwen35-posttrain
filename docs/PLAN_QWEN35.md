@@ -7,6 +7,25 @@
 
 ---
 
+## Two-track approach (run both)
+
+| Track | Start from | Goal | Cost | Status |
+|---|---|---|---|---|
+| **1 — Instruct delta** | `Qwen3.5-9B` (instruct) | EU delta: improve EU langs, preserve EN/reasoning | Low (short SFT+DPO) | **Running** (SFT job, euroblocks 85-15) |
+| **2 — Base full** | `Qwen3.5-9B-Base` | Full post-training from base; bigger gains possible, must rebuild instruction/format | Higher | Base model staged; planned next |
+
+**Why start with instruct:** less to train, lower risk, fastest path to a measurable EU
+improvement. The instruct model already has reasoning/format/safety; we only add the EU delta.
+
+**Why also do base:** removes any ceiling imposed by Qwen's existing post-training; lets us
+control the full recipe (reasoning SFT → instruct SFT → DPO). Compare the two artifacts —
+if base-full meaningfully beats instruct-delta on the EU evals, it becomes the main line.
+
+Configs: instruct track uses `sft_qwen35_9b.yaml` / `dpo_qwen35_9b.yaml`. Base track will
+add a reasoning-SFT stage first (Dolci-Think + OpenThoughts) before the same instruct SFT.
+
+---
+
 ## Why Qwen 3.5
 
 - **Strongest reasoning** of any open model at 9B scale (2026)

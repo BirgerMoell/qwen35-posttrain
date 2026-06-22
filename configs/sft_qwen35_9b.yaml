@@ -8,14 +8,13 @@ model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-9B
 torch_dtype: bfloat16
 
 # ── DatasetMixtureConfig ──
+# Parquet (not JSON): memory-mapped, so the 8 FSDP ranks share OS page cache instead of
+# each parsing the full 1.08M-example JSONL into Arrow (~8x RAM -> node OOM).
+# Pre-converted once from euroblocks.jsonl + tulu3-commercial.jsonl.
 datasets:
-  - path: json
+  - path: parquet
     data_files:
-      train: /scratch/project_462000963/datasets/posttraining_data/SFTTrainer_format/multiling/openeurollm-sft-mix/tulu3-euroblocks-85-15/euroblocks.jsonl
-    split: train
-  - path: json
-    data_files:
-      train: /scratch/project_462000963/datasets/posttraining_data/SFTTrainer_format/multiling/openeurollm-sft-mix/tulu3-euroblocks-85-15/tulu3-commercial.jsonl
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet
     split: train
 
 # ── SFTConfig ──
