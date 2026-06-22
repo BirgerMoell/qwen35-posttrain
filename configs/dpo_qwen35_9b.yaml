@@ -1,0 +1,33 @@
+# Real DPO — Qwen3.5-9B on Dolci-Instruct-DPO (260k preference pairs)
+# Loads the SFT checkpoint as both policy and reference model.
+# Uses scripts/dpo_train.py (text-only entrypoint, prunes phantom vision classes).
+
+# ── ModelConfig ──
+# STAGE_LOAD is overridden by the orchestrator to point at the SFT output.
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-sft
+torch_dtype: bfloat16
+
+# ── DatasetMixtureConfig ──
+datasets:
+  - path: json
+    data_files:
+      train: /scratch/project_462000963/datasets/posttraining_data/DPOTrainer_format/eng/Dolci-Instruct-DPO/train.jsonl
+    split: train
+
+# ── DPOConfig ──
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-dpo
+max_length: 4096
+max_prompt_length: 2048
+beta: 0.1
+num_train_epochs: 1
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8      # global batch = 1 x 8 GCDs x 8 = 64
+learning_rate: 5.0e-7
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 10
+save_steps: 500
+save_total_limit: 3
+report_to: none

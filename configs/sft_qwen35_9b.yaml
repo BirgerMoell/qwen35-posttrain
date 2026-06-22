@@ -1,0 +1,37 @@
+# Real SFT — Qwen3.5-9B on the OELLM EU multilingual mix (tulu3-euroblocks-85-15)
+# Data: 161k EuroBlocks (EU multilingual) + 920k tulu3-commercial (English replay)
+# = ~1.08M examples, 85/15 EU/English. English replay guards against forgetting.
+# Full fine-tuning, FSDP ZeRO-3 (TRANSFORMER_BASED_WRAP), bf16.
+
+# ── ModelConfig ──
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-9B
+torch_dtype: bfloat16
+
+# ── DatasetMixtureConfig ──
+datasets:
+  - path: json
+    data_files:
+      train: /scratch/project_462000963/datasets/posttraining_data/SFTTrainer_format/multiling/openeurollm-sft-mix/tulu3-euroblocks-85-15/euroblocks.jsonl
+    split: train
+  - path: json
+    data_files:
+      train: /scratch/project_462000963/datasets/posttraining_data/SFTTrainer_format/multiling/openeurollm-sft-mix/tulu3-euroblocks-85-15/tulu3-commercial.jsonl
+    split: train
+
+# ── SFTConfig ──
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-sft
+max_length: 8192
+packing: true
+num_train_epochs: 1
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16     # global batch = 1 x 8 GCDs x 16 = 128
+learning_rate: 1.0e-5               # Qwen is LR-sensitive; 1e-5 for full FT
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 10
+save_steps: 500
+save_total_limit: 3
+report_to: none
