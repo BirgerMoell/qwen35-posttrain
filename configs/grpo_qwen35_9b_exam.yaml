@@ -1,0 +1,31 @@
+# GRPO / RLVR — Qwen3.5-9B on EU exam MCQs (verifiable letter-match reward, 13 EU languages)
+# Reward defined in scripts/grpo_train.py (mcq_letter_exact). No preference data, no reward model.
+
+# ── ModelConfig ── (STAGE_LOAD overrides to the SFT/SimPO checkpoint)
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-sft
+torch_dtype: bfloat16
+
+# ── ScriptArguments ── (dataset_name = the GRPO jsonl with prompt + gold answer)
+dataset_name: /scratch/project_465002530/users/bmoell/qwen35-posttrain/data/exam_mcq/oellm-eu-exam-mcq-v1/grpo/train.jsonl
+
+# ── GRPOConfig ──
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-grpo-exam
+num_generations: 8            # group size G — rollouts per prompt for group-relative advantage
+max_prompt_length: 1024
+max_completion_length: 64     # MCQ answer is short (a letter + brief justification)
+temperature: 0.9
+beta: 0.04                    # KL coefficient
+use_vllm: false              # start with HF generation; flip true once vLLM-ROCm serves qwen3_5
+max_steps: 500
+ddp_timeout: 10800
+per_device_train_batch_size: 8   # must be divisible by num_generations across the batch
+gradient_accumulation_steps: 4
+learning_rate: 1.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 5
+save_steps: 100
+save_total_limit: 3
+report_to: none
