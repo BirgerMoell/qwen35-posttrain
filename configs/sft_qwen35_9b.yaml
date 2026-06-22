@@ -21,6 +21,8 @@ datasets:
 output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-sft
 max_length: 8192
 packing: true
+dataset_num_proc: 32          # parallelize tokenize+pack of 1.08M examples across CPU cores
+ddp_timeout: 10800            # 3h — preprocessing must finish before the NCCL setup barrier
 num_train_epochs: 1
 per_device_train_batch_size: 1
 gradient_accumulation_steps: 16     # global batch = 1 x 8 GCDs x 16 = 128
