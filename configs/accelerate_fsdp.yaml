@@ -14,4 +14,8 @@ fsdp_config:
   fsdp_state_dict_type: FULL_STATE_DICT   # consolidated ckpt; compatible with save_only_model
   fsdp_use_orig_params: true
   fsdp_offload_params: false
+  # Large-model loading: only rank 0 loads weights to CPU, then broadcasts to other ranks.
+  # Without this each of the 8 ranks loads a full 9B copy to CPU (~144 GB) and OOMs the node.
+  fsdp_cpu_ram_efficient_loading: true
+  fsdp_sync_module_states: true
 # For 9B+ consider ZeRO-3 (DeepSpeed) instead; for GRPO, veRL manages its own engine.
