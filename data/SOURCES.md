@@ -6,6 +6,10 @@ parts (multilingual, EU-focused), so we prefer the `openeurollm/*` versions and 
 a few gaps directly from `allenai/*`. All data is **staged to LUMI scratch first**
 (compute nodes have no internet) — see `scripts/stage_data_lumi.sh`.
 
+For the higher-level plan to move beyond a Dolci/EuroBlocks bootstrap into a
+world-class European-language recipe, see
+[`docs/EU_DATA_STRATEGY.md`](../docs/EU_DATA_STRATEGY.md).
+
 Priority key: **P1** = backbone, add first · **P2** = needed for GRPO/tools · **P3** = breadth/optional.
 
 ## Stage 0b — Reasoning SFT  *(before general SFT, following OLMo3 Think-SFT pattern)*

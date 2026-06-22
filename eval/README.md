@@ -48,3 +48,10 @@ vs base so the EU gains and any regressions are visible at a glance.
 ## Next (EU delta judge)
 ArenaHard-EU (`openeurollm/ArenaHard-EU-v0`, eng/fin subsets staged on LUMI) needs an
 LLM-judge head-to-head vs base. Add as a second eval once the standard suite is green.
+
+## EU holdouts
+
+The synthetic public EU holdout pack lives under
+`data/eval_holdouts/oellm-eu-eval-holdouts-v1/`; see
+[`docs/EVAL_HOLDOUTS.md`](../docs/EVAL_HOLDOUTS.md). It covers 38 languages and
+10 buckets, with denylist metadata for contamination control.
