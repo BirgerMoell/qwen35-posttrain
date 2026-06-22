@@ -1,0 +1,118 @@
+{
+  "dataset_id": "oellm-eu-exam-mcq-v1",
+  "created": "2026-06-22",
+  "purpose": "Real-source European exam multiple-choice data for GRPO/RLVR and DPO pair construction.",
+  "policy": {
+    "redistribute_rows_only_when": "source license explicitly allows redistribution of question text",
+    "link_only_when": "official site publishes PDFs/questions but reuse terms are unclear or restrictive",
+    "never_include": "private, leaked, paywalled, or non-official exam dumps"
+  },
+  "verified_sources": [
+    {
+      "id": "exams_qa",
+      "name": "EXAMS: Multi-subject High School Examinations Dataset",
+      "languages": ["sq", "bg", "hr", "fr", "de", "hu", "it", "lt", "mk", "pl", "pt", "sr", "es", "tr"],
+      "domains": ["school_exam", "science", "social_science", "humanities"],
+      "source_url": "https://github.com/mhardalov/exams-qa",
+      "paper_url": "https://arxiv.org/abs/2011.03080",
+      "license": "CC-BY-SA-4.0 for dataset; Apache-2.0 for code",
+      "redistribution_status": "redistributable_sharealike",
+      "notes": "README says the dataset contains more than 24,000 high-school exam questions and is licensed CC-BY-SA-4.0."
+    },
+    {
+      "id": "studera_hogskoleprovet_archive",
+      "name": "Högskoleprovet previous exams",
+      "languages": ["sv"],
+      "domains": ["university_admission_exam", "verbal_reasoning", "quantitative_reasoning"],
+      "source_url": "https://www.studera.nu/hogskoleprov/om/forbereda/tidigare/",
+      "license": "official public download; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "Studera/UHR says previous exam booklets and answer keys are free to download. Latest page notes UHR only has permission to show ELF English texts for one week after an exam, so do not redistribute raw text until reuse is cleared."
+    },
+    {
+      "id": "cke_matura_arkusze",
+      "name": "Polish CKE matura exam sheets",
+      "languages": ["pl"],
+      "domains": ["school_leaving_exam", "matura"],
+      "source_url": "https://cke.gov.pl/egzamin-maturalny/egzamin-maturalny-w-formule-2023/arkusze/",
+      "license": "official public archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "Official CKE page lists arkusze by year for the 2023 formula."
+    },
+    {
+      "id": "cermat_maturita_tests",
+      "name": "CERMAT Czech maturita tests and assignments",
+      "languages": ["cs", "en", "fr", "de", "ru", "es"],
+      "domains": ["school_leaving_exam", "maturita"],
+      "source_url": "https://maturita.cermat.cz/menu/testy-a-zadani-z-predchozich-obdobi",
+      "license": "official public archive with separate reuse rules",
+      "redistribution_status": "link_only_review_required",
+      "notes": "CERMAT page says use of exam documentation for other purposes is governed by its separate rules PDF."
+    }
+  ],
+  "high_value_discovery_targets": [
+    {
+      "id": "spain_mir_fse",
+      "languages": ["es"],
+      "domains": ["medical_licensing", "residency_exam"],
+      "search": "site:sanidad.gob.es FSE MIR cuaderno examen respuestas correctas PDF",
+      "redistribution_status": "needs_live_verification"
+    },
+    {
+      "id": "polish_medical_exams",
+      "languages": ["pl", "en"],
+      "domains": ["medical_licensing", "specialist_exam"],
+      "search": "Polish Medical Exams LEK LDEK PES dataset Medical Examination Center Chief Medical Chamber",
+      "redistribution_status": "needs_live_verification"
+    },
+    {
+      "id": "italy_mur_medicine_admission",
+      "languages": ["it"],
+      "domains": ["medical_admission"],
+      "search": "site:mur.gov.it prova ammissione medicina chirurgia quesiti soluzioni pdf",
+      "redistribution_status": "needs_live_verification"
+    },
+    {
+      "id": "france_baccalaureat_annales",
+      "languages": ["fr"],
+      "domains": ["school_leaving_exam", "baccalaureat"],
+      "search": "site:education.gouv.fr sujets baccalaureat annales corriges pdf",
+      "redistribution_status": "needs_live_verification"
+    },
+    {
+      "id": "hungary_erettsegi",
+      "languages": ["hu"],
+      "domains": ["school_leaving_exam"],
+      "search": "Oktatási Hivatal érettségi feladatsorok javítási útmutató",
+      "redistribution_status": "needs_live_verification"
+    },
+    {
+      "id": "romania_bacalaureat",
+      "languages": ["ro"],
+      "domains": ["school_leaving_exam"],
+      "search": "site:subiecte.edu.ro bacalaureat subiecte barem",
+      "redistribution_status": "needs_live_verification"
+    },
+    {
+      "id": "croatia_ncvvo_matura",
+      "languages": ["hr"],
+      "domains": ["school_leaving_exam"],
+      "search": "NCVVO državna matura ispiti rješenja",
+      "redistribution_status": "needs_live_verification"
+    },
+    {
+      "id": "finland_ylioppilaskoe",
+      "languages": ["fi", "sv"],
+      "domains": ["school_leaving_exam"],
+      "search": "Ylioppilastutkintolautakunta vanhat kokeet hyvän vastauksen piirteet",
+      "redistribution_status": "needs_live_verification"
+    },
+    {
+      "id": "netherlands_examenblad",
+      "languages": ["nl"],
+      "domains": ["school_leaving_exam"],
+      "search": "Examenblad examens correctievoorschrift pdf",
+      "redistribution_status": "needs_live_verification"
+    }
+  ]
+}
