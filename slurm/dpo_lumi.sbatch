@@ -30,6 +30,9 @@ HF_CACHE=/scratch/project_465002530/users/bmoell/hf_cache
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   export PYTHONPATH=$PYLIBS_OVERLAY:\${PYTHONPATH:-} &&
   export HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
+  # Force transformers' FSDP rank-0-only weight loading. DPO loads TWO 9B models
+  # (policy+ref); without this all 8 ranks load both (~300 GB) and OOM the node CPU.
+  export ACCELERATE_USE_FSDP=true FSDP_CPU_RAM_EFFICIENT_LOADING=1 &&
   cd $SLURM_SUBMIT_DIR &&
   accelerate launch \
     --config_file configs/accelerate_fsdp.yaml \
