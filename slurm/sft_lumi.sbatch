@@ -28,8 +28,12 @@ echo "SFT  load=$STAGE_LOAD  save=$STAGE_SAVE  cfg=$CFG  port=$MASTER_PORT"
 # ntasks-per-node=1: accelerate launch is run ONCE per node and spawns 8 GPU workers internally
 # PYTHONPATH overlay: transformers 5.x for Gemma 4 / Qwen 3.5 (container ships 4.57.3)
 PYLIBS_OVERLAY=/scratch/project_465002530/users/bmoell/pylibs-overlay
+# HF caches MUST live on scratch — the default ~/.cache fills the small LUMI home quota
+# ("OSError: Not enough disk space" during dataset tokenize/pack).
+HF_CACHE=/scratch/project_465002530/users/bmoell/hf_cache
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   export PYTHONPATH=$PYLIBS_OVERLAY:\${PYTHONPATH:-} &&
+  export HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
   cd $SLURM_SUBMIT_DIR &&
   accelerate launch \
     --config_file configs/accelerate_fsdp.yaml \
