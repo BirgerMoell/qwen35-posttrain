@@ -24,6 +24,7 @@ packing: true
 dataset_num_proc: 8           # modest parallelism — too many workers buffer too much and OOM
 ddp_timeout: 10800            # 3h — preprocessing must finish before the NCCL setup barrier
 num_train_epochs: 1
+max_steps: 200                # cap first real run (~epoch 0.47); SFT gains land early
 per_device_train_batch_size: 1
 gradient_accumulation_steps: 16     # global batch = 1 x 8 GCDs x 16 = 128
 learning_rate: 1.0e-5               # Qwen is LR-sensitive; 1e-5 for full FT
@@ -33,6 +34,6 @@ weight_decay: 0.0
 bf16: true
 gradient_checkpointing: true
 logging_steps: 10
-save_steps: 500
+save_steps: 100               # checkpoint at 100/200 — don't risk a slow run with only a final save
 save_total_limit: 3
 report_to: none
