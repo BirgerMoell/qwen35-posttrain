@@ -21,6 +21,9 @@ BIND=/pfs,/scratch,/flash,/project,/projappl,/appl,/opt/cray,/var/spool/slurmd
 export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST"|head -n1)
 export MASTER_PORT=$(python3 -c "import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()")
 export NCCL_SOCKET_IFNAME=hsn0,hsn1,hsn2,hsn3 NCCL_NET_GDR_LEVEL=PHB OMP_NUM_THREADS=7
+# Reduce GPU memory fragmentation (ROCm honours both names). Recovers reserved-but-unallocated VRAM.
+export PYTORCH_HIP_ALLOC_CONF=expandable_segments:True
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 echo "SFT  load=$STAGE_LOAD  save=$STAGE_SAVE  cfg=$CFG  port=$MASTER_PORT"
 # ntasks-per-node=1: accelerate launch is run ONCE per node and spawns 8 GPU workers internally
 # PYTHONPATH overlay: transformers 5.x for Gemma 4 / Qwen 3.5 (container ships 4.57.3)

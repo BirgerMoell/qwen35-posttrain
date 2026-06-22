@@ -19,7 +19,7 @@ datasets:
 
 # ── SFTConfig ──
 output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-sft
-max_length: 8192
+max_length: 4096              # 8192 OOM'd the GCD; 4096 fits and covers most instruction data
 packing: true
 dataset_num_proc: 8           # modest parallelism — too many workers buffer too much and OOM
 ddp_timeout: 10800            # 3h — preprocessing must finish before the NCCL setup barrier
