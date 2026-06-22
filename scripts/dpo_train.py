@@ -38,6 +38,10 @@ def main(script_args, training_args, model_args, dataset_args):
         revision=model_args.model_revision,
         attn_implementation=model_args.attn_implementation,
         dtype=dtype,
+        # DPO loads TWO 9B models (policy + reference). Without this, all 8 ranks load both
+        # full copies to CPU (8 x 38 GB -> node OOM). low_cpu_mem_usage engages FSDP
+        # rank-0-only loading.
+        low_cpu_mem_usage=True,
     )
 
     model = AutoModelForCausalLM.from_pretrained(
