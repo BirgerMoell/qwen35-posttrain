@@ -8,21 +8,19 @@ Hugging Face release:
 
 `https://huggingface.co/datasets/birgermoell/oellm-eu-exam-mcq-v1`
 
-This is the first real-source multiple-choice exam dataset for European-language
-GRPO/RLVR and DPO tuning.
+This is a real-source multiple-choice dataset for European-language GRPO/RLVR
+and DPO tuning. It now includes national exams, medical/licensing exams,
+academic-exam benchmarks, and reading/causal reasoning MCQ sources.
 
 ## Current Build
 
-The current redistributable build uses EXAMS QA only:
+Version: `v0.2.0`
 
-- 19,058 GRPO/RLVR rows
-- 56,298 DPO preference pairs
-- 13 European/OpenEuroLLM target languages
-- source license: CC-BY-SA-4.0
-
-Languages:
-
-`bg, de, es, fr, hr, hu, it, lt, pl, pt, sq, sr, tr`
+- 381,597 GRPO/RLVR rows
+- 1,141,467 DPO preference pairs
+- 35 language codes
+- 9 sources
+- mixed licenses, filterable per row
 
 Files:
 
@@ -33,6 +31,55 @@ Files:
 - `dpo/validation.jsonl`
 - `dpo/test.jsonl`
 - `manifest.json`
+- `source_registry.json`
+
+## Real Exam Sources
+
+The real national/official exam layer currently includes:
+
+- `exams_qa`: 19,058 multilingual school-exam rows, `cc-by-sa-4.0`
+- `hogskoleprovet_ord`: 145 Swedish Högskoleprovet ORD rows parsed from official
+  Studera/UHR PDFs and answer keys, `unknown`
+- `llmzszl`: 14,269 Polish national/professional exam rows, `unknown`
+- `swedish_medical_exams_hf`: 1,006 Swedish medical licensing rows, `unknown`
+- `polish_matura_dokato`: 52 Polish matura rows, `cc-by-nc-sa-2.0`
+
+The broader MCQ layer adds Global-MMLU, MMMLU, Belebele, and XCOPA for
+exam-style academic knowledge, reading comprehension, and causal reasoning.
+
+## License Filtering
+
+Every GRPO and DPO row includes:
+
+- `source_id`
+- `source_url`
+- `source_license`
+- `license_id`
+- `license_category`
+- `license_filter_tags`
+- `redistribution_status`
+
+Current license counts:
+
+- `apache-2.0`: 243,558 rows
+- `mit`: 70,209 rows
+- `cc-by-sa-4.0`: 50,558 rows
+- `cc-by-4.0`: 1,800 rows
+- `cc-by-nc-sa-2.0`: 52 rows
+- `unknown`: 15,420 rows
+
+Examples:
+
+```bash
+python3 scripts/build_exam_mcq_dataset.py \
+  --sources exams_qa,global_mmlu,mmmlu \
+  --license-allowlist apache-2.0,mit,cc-by-sa-4.0
+```
+
+```bash
+python3 scripts/build_exam_mcq_dataset.py \
+  --redistribution-status-allowlist redistributable_declared_license,redistributable_sharealike
+```
 
 ## Row Design
 
@@ -41,9 +88,6 @@ GRPO rows use deterministic reward:
 ```text
 reward_type = mcq_letter_exact
 ```
-
-The model is prompted to return one answer letter. The verifier should reward
-only the correct first letter.
 
 DPO rows are generated from the same questions:
 
@@ -63,10 +107,13 @@ Clone EXAMS first:
 git clone https://github.com/mhardalov/exams-qa /private/tmp/exams-qa
 ```
 
-Then build:
+Then build all default sources:
 
 ```bash
+HF_HOME=/private/tmp/hf-cache \
+HF_DATASETS_CACHE=/private/tmp/hf-cache/datasets \
 python3 scripts/build_exam_mcq_dataset.py --exams-repo /private/tmp/exams-qa
+
 python3 scripts/validate_exam_mcq_dataset.py
 ```
 
@@ -78,27 +125,7 @@ python3 scripts/build_exam_mcq_dataset.py \
   --include-swedish-medical
 ```
 
-Rows from Swedish Medical Benchmark are marked `local_review_required` and should
-not be uploaded as a release dataset before source-term review.
-
-## Source Registry
-
-The source registry is:
-
-`data/exam_mcq/source_registry.json`
-
-It separates:
-
-- `redistributable_sharealike`: can be included in the public dataset
-- `link_only_review_required`: official public exam archives, but raw text is not
-  redistributed until reuse terms are cleared
-- `needs_live_verification`: high-value targets for crawler work
-
-Current verified/link-only official sources include:
-
-- Högskoleprovet archive from Studera/UHR
-- Polish CKE matura arkusze
-- Czech CERMAT maturita tests
+Rows from the local Swedish Medical Benchmark are marked `local_review_required`.
 
 ## Högskoleprovet
 
@@ -106,15 +133,14 @@ The Högskoleprovet manifest is:
 
 `data/exam_mcq/oellm-eu-exam-mcq-v1/source_manifests/hogskoleprovet_sources.json`
 
-It currently records:
+It records:
 
 - 28 official Studera/UHR exam pages
 - 233 official PDF links
 
-It intentionally does not download or redistribute raw exam text. Studera says
-previous exam booklets and answer keys are free to download, but the latest exam
-page also says UHR only has permission to show ELF English texts for one week
-after the exam. Keep Högskoleprovet as link-only until reuse is cleared.
+The builder currently parses only the high-confidence `ORD` vocabulary subtest
+from verbal PDFs with matching official answer keys. Other Högskoleprovet
+subtests remain in the manifest until parser quality and reuse terms are cleared.
 
 Refresh:
 
@@ -122,17 +148,23 @@ Refresh:
 python3 scripts/discover_hogskoleprovet_sources.py
 ```
 
-## Next Sources To Convert
+## Next Official Sources
 
-High-priority targets:
+High-priority parser targets:
 
-- Swedish Högskoleprovet PDF parser, if redistribution/use terms are cleared
-- Spanish MIR/FSE official medical residency exams
-- Polish medical LEK/LDEK/PES sources and published benchmark
+- Spanish MIR/FSE medical residency exams
+- Polish LEK/LDEK/PES and PES specialist medical exams
 - Italian MUR medicine admission tests
-- CKE/CERMAT official school-leaving exam archives
-- Finnish, Dutch, Hungarian, Romanian, Croatian, Slovenian, Lithuanian, Latvian,
-  Estonian, Greek, Bulgarian official exam archives
+- French baccalauréat annales
+- Czech CERMAT maturita
+- Dutch Examenblad
+- Finnish ylioppilaskoe
+- Hungarian érettségi
+- Romanian bacalaureat
+- Croatian državna matura
+- national bar/law/state-service exams where official MCQ PDFs and answer keys
+  are public
 
-For sources with unclear rights, publish only manifests and hashes. Build local
-training rows on LUMI scratch after approval.
+For sources with unclear rights, publish rows only with `license_id=unknown` and
+source-level provenance, or publish manifests/hashes until legal review clears
+redistribution.

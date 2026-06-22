@@ -48,6 +48,89 @@
       "license": "official public archive with separate reuse rules",
       "redistribution_status": "link_only_review_required",
       "notes": "CERMAT page says use of exam documentation for other purposes is governed by its separate rules PDF."
+    },
+    {
+      "id": "hogskoleprovet_ord",
+      "name": "Högskoleprovet ORD parsed rows",
+      "languages": ["sv"],
+      "domains": ["university_admission_exam", "vocabulary"],
+      "source_url": "https://www.studera.nu/hogskoleprov/om/forbereda/tidigare/",
+      "license": "unknown/missing; official PDFs state publication permission was obtained for protected material",
+      "redistribution_status": "official_public_unknown_redistribution",
+      "notes": "Builder parses only high-confidence ORD vocabulary questions with official answer keys. Filter with license_id=unknown or source_id=hogskoleprovet_ord."
+    },
+    {
+      "id": "llmzszl",
+      "name": "LLMzSzL Polish national exams",
+      "languages": ["pl"],
+      "domains": ["national_exam", "professional_exam", "school_exam"],
+      "source_url": "https://huggingface.co/datasets/amu-cai/llmzszl-dataset",
+      "paper_url": "https://arxiv.org/abs/2501.02266",
+      "license": "unknown/missing on Hugging Face dataset card",
+      "redistribution_status": "unknown_missing_license",
+      "notes": "Dataset card lists 18.8k Polish rows; the paper describes a collection of Polish national exams with closed-ended questions from CKE archives."
+    },
+    {
+      "id": "swedish_medical_exams_hf",
+      "name": "Swedish medical exam MCQs",
+      "languages": ["sv"],
+      "domains": ["medical_licensing_exam", "medicine"],
+      "source_url": "https://huggingface.co/datasets/sarafuyu/swedish-medical-exams-mcq-1006-json",
+      "upstream_official_url": "https://www.umu.se/utbildning/sok/kunskapsprov/kunskapsprov-for-lakare/teoretiskt-delprov/",
+      "license": "unknown",
+      "redistribution_status": "official_public_unknown_redistribution",
+      "notes": "Dataset card says rows come from Swedish medical exams published by Umeå University. Keep filterable until terms are reviewed."
+    },
+    {
+      "id": "polish_matura_dokato",
+      "name": "Polish matura MCQs",
+      "languages": ["pl"],
+      "domains": ["school_leaving_exam", "matura"],
+      "source_url": "https://huggingface.co/datasets/dokato/exam-polish-matura",
+      "upstream_official_url": "https://cke.gov.pl/",
+      "license": "CC-BY-NC-SA-2.0",
+      "redistribution_status": "redistributable_noncommercial_sharealike",
+      "notes": "Small structured set with official CKE PDF URLs in each row. Filter out with license_id=cc-by-nc-sa-2.0 for commercial/permissive-only runs."
+    },
+    {
+      "id": "global_mmlu",
+      "name": "Global-MMLU",
+      "languages": ["cs", "de", "el", "en", "es", "fr", "it", "lt", "nl", "pl", "pt", "ro", "ru", "sr", "sv", "tr", "uk"],
+      "domains": ["academic_exam", "mmlu"],
+      "source_url": "https://huggingface.co/datasets/CohereLabs/Global-MMLU",
+      "license": "Apache-2.0",
+      "redistribution_status": "redistributable_declared_license",
+      "notes": "Exam-style academic MCQ source, useful for broad multilingual knowledge tuning. It is not a national official exam archive."
+    },
+    {
+      "id": "mmmlu",
+      "name": "MMMLU",
+      "languages": ["de", "es", "fr", "it", "pt"],
+      "domains": ["academic_exam_translation", "mmlu"],
+      "source_url": "https://huggingface.co/datasets/openai/MMMLU",
+      "license": "MIT",
+      "redistribution_status": "redistributable_declared_license",
+      "notes": "Translated MMLU test set. Use source filters if you need to avoid MMLU-family contamination."
+    },
+    {
+      "id": "belebele",
+      "name": "Belebele",
+      "languages": ["sq", "bg", "ca", "cs", "da", "de", "el", "en", "et", "eu", "fi", "fr", "hr", "hu", "hy", "is", "it", "ka", "lt", "lv", "mk", "mt", "nb", "nl", "pl", "pt", "ro", "ru", "sk", "sl", "es", "sr", "sv", "tr", "uk"],
+      "domains": ["reading_comprehension"],
+      "source_url": "https://huggingface.co/datasets/facebook/belebele",
+      "license": "CC-BY-SA-4.0",
+      "redistribution_status": "redistributable_sharealike",
+      "notes": "Parallel multiple-choice reading comprehension, not an official exam archive."
+    },
+    {
+      "id": "xcopa",
+      "name": "XCOPA",
+      "languages": ["et", "it", "tr"],
+      "domains": ["commonsense_reasoning", "causal_reasoning"],
+      "source_url": "https://huggingface.co/datasets/cambridgeltl/xcopa",
+      "license": "CC-BY-4.0",
+      "redistribution_status": "redistributable_attribution",
+      "notes": "Multiple-choice causal reasoning, included for reasoning/RLVR diversity."
     }
   ],
   "high_value_discovery_targets": [
