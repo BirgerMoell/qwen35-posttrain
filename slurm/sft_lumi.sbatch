@@ -31,16 +31,24 @@ PYLIBS_OVERLAY=/scratch/project_465002530/users/bmoell/pylibs-overlay
 # HF caches MUST live on scratch — the default ~/.cache fills the small LUMI home quota
 # ("OSError: Not enough disk space" during dataset tokenize/pack).
 HF_CACHE=/scratch/project_465002530/users/bmoell/hf_cache
+# Multi-node aware: derive world size from the allocation. Same file works on 1 node (default)
+# or N nodes via `sbatch --nodes=N`. srun runs one task/node (ntasks-per-node=1) so each node's
+# task carries SLURM_PROCID = its machine_rank; accelerate spawns 8 GPU workers per node.
+GPUS_PER_NODE=8
+NUM_PROC=$(( GPUS_PER_NODE * SLURM_NNODES ))
+echo "Launching on $SLURM_NNODES node(s), $NUM_PROC GPU workers total"
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   export PYTHONPATH=$PYLIBS_OVERLAY:\${PYTHONPATH:-} &&
   export HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
+  export ACCELERATE_USE_FSDP=true FSDP_CPU_RAM_EFFICIENT_LOADING=1 &&
   cd $SLURM_SUBMIT_DIR &&
   accelerate launch \
     --config_file configs/accelerate_fsdp.yaml \
     --main_process_ip '$MASTER_ADDR' \
     --main_process_port '$MASTER_PORT' \
-    --num_processes 8 \
-    --num_machines 1 \
+    --num_machines $SLURM_NNODES \
+    --num_processes $NUM_PROC \
+    --machine_rank \$SLURM_PROCID \
     scripts/sft_train.py \
     --config $CFG --model_name_or_path '$STAGE_LOAD' --output_dir '$STAGE_SAVE' --save_only_model true
 "

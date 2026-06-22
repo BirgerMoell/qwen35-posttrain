@@ -27,19 +27,22 @@ echo "SimPO  load=$STAGE_LOAD  save=$STAGE_SAVE  cfg=$CFG  port=$MASTER_PORT"
 PYLIBS_OVERLAY=/scratch/project_465002530/users/bmoell/pylibs-overlay
 # HF caches MUST live on scratch — default ~/.cache fills the small LUMI home quota.
 HF_CACHE=/scratch/project_465002530/users/bmoell/hf_cache
+# Multi-node aware (see sft_lumi.sbatch): same file runs on 1 node or `sbatch --nodes=N`.
+GPUS_PER_NODE=8
+NUM_PROC=$(( GPUS_PER_NODE * SLURM_NNODES ))
+echo "Launching SimPO on $SLURM_NNODES node(s), $NUM_PROC GPU workers total"
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   export PYTHONPATH=$PYLIBS_OVERLAY:\${PYTHONPATH:-} &&
   export HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
-  # Force transformers' FSDP rank-0-only weight loading. DPO loads TWO 9B models
-  # (policy+ref); without this all 8 ranks load both (~300 GB) and OOM the node CPU.
   export ACCELERATE_USE_FSDP=true FSDP_CPU_RAM_EFFICIENT_LOADING=1 &&
   cd $SLURM_SUBMIT_DIR &&
   accelerate launch \
     --config_file configs/accelerate_fsdp.yaml \
     --main_process_ip '$MASTER_ADDR' \
     --main_process_port '$MASTER_PORT' \
-    --num_processes 8 \
-    --num_machines 1 \
+    --num_machines $SLURM_NNODES \
+    --num_processes $NUM_PROC \
+    --machine_rank \$SLURM_PROCID \
     scripts/simpo_train.py \
     --config $CFG --model_name_or_path '$STAGE_LOAD' --output_dir '$STAGE_SAVE' --save_only_model true
 "

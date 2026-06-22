@@ -38,8 +38,9 @@ srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
     --config_file configs/accelerate_fsdp.yaml \
     --main_process_ip '$MASTER_ADDR' \
     --main_process_port '$MASTER_PORT' \
-    --num_processes 8 \
-    --num_machines 1 \
+    --num_machines $SLURM_NNODES \
+    --num_processes $(( 8 * SLURM_NNODES )) \
+    --machine_rank \$SLURM_PROCID \
     scripts/dpo_train.py \
     --config $CFG --model_name_or_path '$STAGE_LOAD' --output_dir '$STAGE_SAVE' --save_only_model true
 "
