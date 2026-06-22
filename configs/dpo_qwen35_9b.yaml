@@ -8,10 +8,11 @@ model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/out
 torch_dtype: bfloat16
 
 # ── DatasetMixtureConfig ──
+# Parquet (memory-mapped) — JSONL parsing OOM'd the node (8 ranks x 260k pairs). Pre-converted.
 datasets:
-  - path: json
+  - path: parquet
     data_files:
-      train: /scratch/project_462000963/datasets/posttraining_data/DPOTrainer_format/eng/Dolci-Instruct-DPO/train.jsonl
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-dpo-parquet/train.parquet
     split: train
 
 # ── DPOConfig ──
@@ -19,7 +20,9 @@ output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen
 max_length: 4096
 max_prompt_length: 2048
 beta: 0.1
-num_train_epochs: 1
+max_steps: 500                # cap first DPO run; preference tuning converges fast
+dataset_num_proc: 8
+ddp_timeout: 10800
 per_device_train_batch_size: 1
 gradient_accumulation_steps: 8      # global batch = 1 x 8 GCDs x 8 = 64
 learning_rate: 5.0e-7
@@ -28,6 +31,6 @@ warmup_ratio: 0.03
 bf16: true
 gradient_checkpointing: true
 logging_steps: 10
-save_steps: 500
+save_steps: 100
 save_total_limit: 3
 report_to: none

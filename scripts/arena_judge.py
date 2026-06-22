@@ -56,13 +56,14 @@ def load(path):
 
 def verdict(judge_model, tok, prompt, a_ans, b_ans) -> str:
     text = JUDGE_TEMPLATE.format(prompt=prompt[:4000], a=a_ans[:4000], b=b_ans[:4000])
-    ids = tok.apply_chat_template(
-        [{"role": "user", "content": text}], add_generation_prompt=True, return_tensors="pt"
+    inputs = tok.apply_chat_template(
+        [{"role": "user", "content": text}], add_generation_prompt=True,
+        return_tensors="pt", return_dict=True,
     ).to(judge_model.device)
     with torch.no_grad():
-        out = judge_model.generate(ids, max_new_tokens=4, do_sample=False,
+        out = judge_model.generate(**inputs, max_new_tokens=4, do_sample=False,
                                    pad_token_id=tok.pad_token_id or tok.eos_token_id)
-    resp = tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True).strip().lower()
+    resp = tok.decode(out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True).strip().lower()
     if resp.startswith("a"):
         return "A"
     if resp.startswith("b"):

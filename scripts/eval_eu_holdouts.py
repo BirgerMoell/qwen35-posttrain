@@ -165,13 +165,14 @@ def main():
     by_bucket, by_lang = {}, {}
     for i, r in enumerate(rows):
         user = (r.get("context", "") + "\n\n" + r["prompt"]) if r.get("context") else r["prompt"]
-        ids = tok.apply_chat_template(
-            [{"role": "user", "content": user}], add_generation_prompt=True, return_tensors="pt"
+        inputs = tok.apply_chat_template(
+            [{"role": "user", "content": user}], add_generation_prompt=True,
+            return_tensors="pt", return_dict=True,
         ).to(model.device)
         with torch.no_grad():
-            out = model.generate(ids, max_new_tokens=a.max_new_tokens, do_sample=False,
+            out = model.generate(**inputs, max_new_tokens=a.max_new_tokens, do_sample=False,
                                  pad_token_id=tok.pad_token_id or tok.eos_token_id)
-        ans = tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True)
+        ans = tok.decode(out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
         ok = score_row(ans, r)
         b, lng = r["bucket"], r.get("language", "?")
         by_bucket.setdefault(b, []).append(ok)
