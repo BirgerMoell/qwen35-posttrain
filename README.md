@@ -4,6 +4,9 @@ End-to-end **post-training** of a useful 2026 base model on **LUMI** (AMD/ROCm),
 from a long-context base and running the full modern pipeline: **SFT → DPO → RLVR (GRPO) →
 tool-use/agentic → safety → eval/merge**.
 
+> **▶ Reproducing this? Start with [`docs/RUNBOOK.md`](docs/RUNBOOK.md)** — the single source
+> of truth for environment, exact commands, and every gotcha (written for humans and AI agents).
+
 - **Base model:** `Qwen3.5-9B-Base` (dense, native 262K context — long context is already in
   the base, so post-training must *preserve* it). Pipeline is validated on `Qwen3.5-2B-Base`
   first, then scaled to 9B.
