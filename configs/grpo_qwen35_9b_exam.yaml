@@ -14,7 +14,8 @@ num_generations: 8            # group size G — rollouts per prompt for group-r
 max_prompt_length: 1024
 max_completion_length: 64     # MCQ answer is short (a letter + brief justification)
 temperature: 0.9
-beta: 0.04                    # KL coefficient
+beta: 0.0                     # NO KL term -> no reference model loaded (one 9B, not two -> no
+                             # CPU OOM). Also a legitimate modern choice (Dr.GRPO drops the KL).
 use_vllm: false              # start with HF generation; flip true once vLLM-ROCm serves qwen3_5
 max_steps: 500
 ddp_timeout: 10800
