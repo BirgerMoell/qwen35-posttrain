@@ -27,23 +27,43 @@ KEEP_NAMES = {"tokenizer.json", "tokenizer_config.json", "special_tokens_map.jso
               "vocab.json", "merges.txt", "model.safetensors.index.json", "preprocessor_config.json"}
 
 
+def stage_bf16(ckpt, staging):
+    """Load the (fp32) checkpoint and re-save it in bf16 — ~half the size for a clean upload."""
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    print("[upload] recasting to bf16 (loading model on CPU)...", flush=True)
+    model = AutoModelForCausalLM.from_pretrained(str(ckpt), dtype=torch.bfloat16,
+                                                 low_cpu_mem_usage=True, trust_remote_code=True)
+    model.save_pretrained(str(staging), safe_serialization=True)
+    AutoTokenizer.from_pretrained(str(ckpt), trust_remote_code=True).save_pretrained(str(staging))
+    # carry the chat template if it's a separate file
+    ct = ckpt / "chat_template.jinja"
+    if ct.exists():
+        shutil.copy2(ct, staging / "chat_template.jinja")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True)
     ap.add_argument("--repo", required=True, help="e.g. birgermoell/Qwen3.5-9B-EU-SFT")
     ap.add_argument("--card", required=True, help="model card markdown -> uploaded as README.md")
     ap.add_argument("--private", action="store_true")
+    ap.add_argument("--recast-bf16", action="store_true",
+                    help="re-save the model in bf16 (~half size) instead of copying raw weights")
     a = ap.parse_args()
 
     ckpt = pathlib.Path(a.ckpt)
     with tempfile.TemporaryDirectory() as tmp:
         staging = pathlib.Path(tmp)
-        # stage model files (top-level only; skip checkpoint-*/ and trainer state)
-        for f in ckpt.iterdir():
-            if f.is_dir():
-                continue
-            if f.name in KEEP_NAMES or (f.suffix in KEEP_SUFFIXES and not f.name.endswith(".bin")):
-                shutil.copy2(f, staging / f.name)
+        if a.recast_bf16:
+            stage_bf16(ckpt, staging)
+        else:
+            # stage model files (top-level only; skip checkpoint-*/ and trainer state)
+            for f in ckpt.iterdir():
+                if f.is_dir():
+                    continue
+                if f.name in KEEP_NAMES or (f.suffix in KEEP_SUFFIXES and not f.name.endswith(".bin")):
+                    shutil.copy2(f, staging / f.name)
         # model card as README.md
         shutil.copy2(a.card, staging / "README.md")
 
