@@ -14,12 +14,12 @@ academic-exam benchmarks, and reading/causal reasoning MCQ sources.
 
 ## Current Build
 
-Version: `v0.3.0`
+Version: `v0.4.0`
 
-- 562,697 GRPO/RLVR rows
-- 1,862,991 DPO preference pairs
+- 577,674 GRPO/RLVR rows
+- 1,920,917 DPO preference pairs
 - 35 language codes
-- 14 sources
+- 20 sources
 - mixed licenses, filterable per row
 
 Files:
@@ -43,6 +43,12 @@ The real national/official exam layer currently includes:
 - `llmzszl`: 14,269 Polish national/professional exam rows, `unknown`
 - `polish_pes_medical`: 178,392 Polish specialist medical exam rows from
   PES 2007-2024, `unknown`
+- `polish_lek_medical_pl`: 4,217 Polish LEK medical licensing rows, `unknown`
+- `polish_ldek_medical_pl`: 4,238 Polish LDEK dental licensing rows, `unknown`
+- `polish_lek_medical_en`: 2,725 English LEK medical licensing rows, `unknown`
+- `polish_ldek_medical_en`: 2,726 English LDEK dental licensing rows, `unknown`
+- `danish_citizenship_test`: 605 Danish citizenship/permanent-residence test
+  rows, `unknown`
 - `swedish_medical_exams_hf`: 1,006 Swedish medical licensing rows, `unknown`
 - `polish_matura_dokato`: 52 Polish matura rows, `cc-by-nc-sa-2.0`
 - `slovak_mathbio_dokato`: 131 Slovak math/biology university-entry rows,
@@ -53,6 +59,8 @@ The real national/official exam layer currently includes:
   custom open license needing review
 - `catalan_public_exams`: 772 Catalan public-service legal exam rows,
   Open Information Use License - Catalonia, needing review
+- `spanish_public_exams`: 466 Spanish public-service legal exam rows,
+  AGPL/GPL metadata, needing review
 
 The broader MCQ layer adds Global-MMLU, MMMLU, Belebele, and XCOPA for
 exam-style academic knowledge, reading comprehension, and causal reasoning.
@@ -78,7 +86,8 @@ Current license counts:
 - `cc-by-nc-sa-2.0`: 183 rows
 - `open-license`: 719 rows
 - `open-information-use-license-catalonia`: 772 rows
-- `unknown`: 193,812 rows
+- `agpl-gpl`: 466 rows
+- `unknown`: 208,323 rows
 
 Examples:
 

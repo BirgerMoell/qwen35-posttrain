@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Iterable
 
 DATASET_ID = "oellm-eu-exam-mcq-v1"
-VERSION = "v0.3.0"
+VERSION = "v0.4.0"
 DEFAULT_OUT = Path("data/exam_mcq/oellm-eu-exam-mcq-v1")
 DEFAULT_SOURCE_REGISTRY = Path("data/exam_mcq/source_registry.json")
 DEFAULT_EXAMS_REPO = Path("/private/tmp/exams-qa")
@@ -40,12 +40,18 @@ DEFAULT_SOURCES = (
     "hogskoleprovet_ord",
     "llmzszl",
     "polish_pes_medical",
+    "polish_lek_medical_pl",
+    "polish_ldek_medical_pl",
+    "polish_lek_medical_en",
+    "polish_ldek_medical_en",
+    "danish_citizenship_test",
     "swedish_medical_exams_hf",
     "polish_matura_dokato",
     "slovak_mathbio_dokato",
     "slovak_financial_exam",
     "basque_public_exams",
     "catalan_public_exams",
+    "spanish_public_exams",
     "global_mmlu",
     "mmmlu",
     "belebele",
@@ -180,6 +186,51 @@ SOURCE_META = {
         "license_filter_tags": ["unknown_or_missing", "official_public_exam", "medical_exam", "specialist_exam"],
         "redistribution_status": "unknown_missing_license",
     },
+    "polish_lek_medical_pl": {
+        "name": "Polish LEK medical licensing exams",
+        "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-LEK-PL-2008-2024",
+        "source_license": "unknown/missing on Hugging Face dataset card",
+        "license_id": "unknown",
+        "license_category": "unknown_or_missing",
+        "license_filter_tags": ["unknown_or_missing", "official_public_exam", "medical_exam", "licensing_exam"],
+        "redistribution_status": "unknown_missing_license",
+    },
+    "polish_ldek_medical_pl": {
+        "name": "Polish LDEK dental medical licensing exams",
+        "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-LDEK-PL-2008-2024",
+        "source_license": "unknown/missing on Hugging Face dataset card",
+        "license_id": "unknown",
+        "license_category": "unknown_or_missing",
+        "license_filter_tags": ["unknown_or_missing", "official_public_exam", "medical_exam", "dental_exam", "licensing_exam"],
+        "redistribution_status": "unknown_missing_license",
+    },
+    "polish_lek_medical_en": {
+        "name": "Polish LEK medical licensing exams in English",
+        "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-LEK-EN-2013-2024",
+        "source_license": "unknown/missing on Hugging Face dataset card",
+        "license_id": "unknown",
+        "license_category": "unknown_or_missing",
+        "license_filter_tags": ["unknown_or_missing", "official_public_exam", "medical_exam", "licensing_exam"],
+        "redistribution_status": "unknown_missing_license",
+    },
+    "polish_ldek_medical_en": {
+        "name": "Polish LDEK dental medical licensing exams in English",
+        "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-LDEK-EN-2013-2024",
+        "source_license": "unknown/missing on Hugging Face dataset card",
+        "license_id": "unknown",
+        "license_category": "unknown_or_missing",
+        "license_filter_tags": ["unknown_or_missing", "official_public_exam", "medical_exam", "dental_exam", "licensing_exam"],
+        "redistribution_status": "unknown_missing_license",
+    },
+    "danish_citizenship_test": {
+        "name": "Danish citizenship test questions",
+        "source_url": "https://huggingface.co/datasets/sorenmulli/citizenship-test-da",
+        "source_license": "unknown/missing on Hugging Face dataset card",
+        "license_id": "unknown",
+        "license_category": "unknown_or_missing",
+        "license_filter_tags": ["unknown_or_missing", "official_public_exam", "citizenship_exam"],
+        "redistribution_status": "unknown_missing_license",
+    },
     "swedish_medical_exams_hf": {
         "name": "Swedish medical exam MCQs",
         "source_url": "https://huggingface.co/datasets/sarafuyu/swedish-medical-exams-mcq-1006-json",
@@ -233,6 +284,15 @@ SOURCE_META = {
         "license_category": "custom_open_needs_review",
         "license_filter_tags": ["custom_open_license", "needs_license_review", "public_service_exam"],
         "redistribution_status": "declared_open_license_needs_review",
+    },
+    "spanish_public_exams": {
+        "name": "Spanish public-service legal exams",
+        "source_url": "https://huggingface.co/datasets/amayuelas/aya-global-exams-spanish",
+        "source_license": "AGPL/GPL in dataset row metadata; exact version not normalized",
+        "license_id": "agpl-gpl",
+        "license_category": "strong_copyleft_needs_review",
+        "license_filter_tags": ["strong_copyleft", "needs_license_review", "public_service_exam"],
+        "redistribution_status": "declared_copyleft_license_needs_review",
     },
     "global_mmlu": {
         "name": "Global-MMLU",
@@ -291,6 +351,16 @@ SOURCE_ALIASES = {
     "pes": "polish_pes_medical",
     "polish-pes": "polish_pes_medical",
     "polish_pes_medical": "polish_pes_medical",
+    "lek-pl": "polish_lek_medical_pl",
+    "polish_lek_medical_pl": "polish_lek_medical_pl",
+    "ldek-pl": "polish_ldek_medical_pl",
+    "polish_ldek_medical_pl": "polish_ldek_medical_pl",
+    "lek-en": "polish_lek_medical_en",
+    "polish_lek_medical_en": "polish_lek_medical_en",
+    "ldek-en": "polish_ldek_medical_en",
+    "polish_ldek_medical_en": "polish_ldek_medical_en",
+    "danish-citizenship": "danish_citizenship_test",
+    "danish_citizenship_test": "danish_citizenship_test",
     "polish_matura": "polish_matura_dokato",
     "polish_matura_dokato": "polish_matura_dokato",
     "slovak_mathbio": "slovak_mathbio_dokato",
@@ -301,6 +371,8 @@ SOURCE_ALIASES = {
     "basque_public_exams": "basque_public_exams",
     "catalan-public": "catalan_public_exams",
     "catalan_public_exams": "catalan_public_exams",
+    "spanish-public": "spanish_public_exams",
+    "spanish_public_exams": "spanish_public_exams",
     "swedish-medical": "swedish_medical_exams_hf",
     "swedish_medical_exams_hf": "swedish_medical_exams_hf",
     "global-mmlu": "global_mmlu",
@@ -931,6 +1003,123 @@ def load_polish_pes_medical() -> list[McqRow]:
     return rows
 
 
+def load_medical_letter_exam_dataset(
+    dataset_name: str,
+    *,
+    source_id: str,
+    language: str,
+    language_name: str,
+    domain: str,
+    subject: str,
+    task_type: str,
+) -> list[McqRow]:
+    load_dataset = require_load_dataset()
+    rows = []
+    source_split = "train"
+    print(f"Loading {dataset_name}/{source_split}", flush=True)
+    dataset = load_dataset(dataset_name, split=source_split)
+    for index, raw_row in enumerate(dataset):
+        raw = dict(raw_row)
+        question, options = parse_labeled_question_options(raw.get("question_w_options"))
+        row = make_mcq_row(
+            source_id=source_id,
+            source_split=source_split,
+            source_record_id=(
+                f"{normalize_ws(raw.get('edition'))}/{normalize_ws(raw.get('year'))}/"
+                f"{normalize_ws(raw.get('season'))}/{normalize_ws(raw.get('question_id')) or index}"
+            ),
+            language=language,
+            language_name=language_name,
+            domain=domain,
+            subject=subject,
+            grade=normalize_ws(f"{normalize_ws(raw.get('year'))} {normalize_ws(raw.get('season'))}"),
+            task_type=task_type,
+            question=question,
+            options=options,
+            answer=normalize_ws(raw.get("answer")),
+            raw=raw,
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
+def load_polish_lek_medical_pl() -> list[McqRow]:
+    return load_medical_letter_exam_dataset(
+        "amu-cai/medical-exams-LEK-PL-2008-2024",
+        source_id="polish_lek_medical_pl",
+        language="pl",
+        language_name="Polish",
+        domain="medical_licensing_exam",
+        subject="LEK",
+        task_type="medical_licensing_exam_mcq",
+    )
+
+
+def load_polish_ldek_medical_pl() -> list[McqRow]:
+    return load_medical_letter_exam_dataset(
+        "amu-cai/medical-exams-LDEK-PL-2008-2024",
+        source_id="polish_ldek_medical_pl",
+        language="pl",
+        language_name="Polish",
+        domain="dental_medical_licensing_exam",
+        subject="LDEK",
+        task_type="dental_medical_licensing_exam_mcq",
+    )
+
+
+def load_polish_lek_medical_en() -> list[McqRow]:
+    return load_medical_letter_exam_dataset(
+        "amu-cai/medical-exams-LEK-EN-2013-2024",
+        source_id="polish_lek_medical_en",
+        language="en",
+        language_name="English",
+        domain="medical_licensing_exam",
+        subject="LEK English",
+        task_type="medical_licensing_exam_mcq",
+    )
+
+
+def load_polish_ldek_medical_en() -> list[McqRow]:
+    return load_medical_letter_exam_dataset(
+        "amu-cai/medical-exams-LDEK-EN-2013-2024",
+        source_id="polish_ldek_medical_en",
+        language="en",
+        language_name="English",
+        domain="dental_medical_licensing_exam",
+        subject="LDEK English",
+        task_type="dental_medical_licensing_exam_mcq",
+    )
+
+
+def load_danish_citizenship_test() -> list[McqRow]:
+    load_dataset = require_load_dataset()
+    rows = []
+    source_split = "train"
+    print(f"Loading Danish citizenship test/{source_split}", flush=True)
+    dataset = load_dataset("sorenmulli/citizenship-test-da", split=source_split)
+    for index, raw_row in enumerate(dataset):
+        raw = dict(raw_row)
+        row = make_mcq_row(
+            source_id="danish_citizenship_test",
+            source_split=source_split,
+            source_record_id=f"{normalize_ws(raw.get('origin'))}/{normalize_ws(raw.get('index')) or index}",
+            language="da",
+            language_name="Danish",
+            domain="citizenship_exam",
+            subject=normalize_ws(raw.get("origin")) or "Indfødsretsprøven",
+            grade=None,
+            task_type="citizenship_exam_mcq",
+            question=normalize_ws(raw.get("question")),
+            options=make_options([raw.get("option-A"), raw.get("option-B"), raw.get("option-C")]),
+            answer=normalize_ws(raw.get("correct")),
+            raw=raw,
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
 def load_polish_matura_dokato() -> list[McqRow]:
     load_dataset = require_load_dataset()
     rows = []
@@ -1077,6 +1266,16 @@ def load_catalan_public_exams() -> list[McqRow]:
         language="ca",
         language_name="Catalan",
         require_question_terminal=True,
+    )
+
+
+def load_spanish_public_exams() -> list[McqRow]:
+    return load_aya_public_exam(
+        "amayuelas/aya-global-exams-spanish",
+        source_id="spanish_public_exams",
+        language="es",
+        language_name="Spanish",
+        require_question_terminal=False,
     )
 
 
@@ -1482,6 +1681,16 @@ def main() -> None:
             rows.extend(load_llmzszl())
         elif source == "polish_pes_medical":
             rows.extend(load_polish_pes_medical())
+        elif source == "polish_lek_medical_pl":
+            rows.extend(load_polish_lek_medical_pl())
+        elif source == "polish_ldek_medical_pl":
+            rows.extend(load_polish_ldek_medical_pl())
+        elif source == "polish_lek_medical_en":
+            rows.extend(load_polish_lek_medical_en())
+        elif source == "polish_ldek_medical_en":
+            rows.extend(load_polish_ldek_medical_en())
+        elif source == "danish_citizenship_test":
+            rows.extend(load_danish_citizenship_test())
         elif source == "swedish_medical_exams_hf":
             rows.extend(load_swedish_medical_exams_hf())
         elif source == "polish_matura_dokato":
@@ -1494,6 +1703,8 @@ def main() -> None:
             rows.extend(load_basque_public_exams())
         elif source == "catalan_public_exams":
             rows.extend(load_catalan_public_exams())
+        elif source == "spanish_public_exams":
+            rows.extend(load_spanish_public_exams())
         elif source == "global_mmlu":
             rows.extend(load_global_mmlu())
         elif source == "mmmlu":

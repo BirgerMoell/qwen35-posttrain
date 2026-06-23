@@ -82,6 +82,60 @@
       "notes": "Structured Polish medical specialist exam MCQs with year, season, specialty, question text/options, and answer letter. v0.3 materializes only rows with parseable A-E options and an answer."
     },
     {
+      "id": "polish_lek_medical_pl",
+      "name": "Polish LEK medical licensing exams 2008-2024",
+      "languages": ["pl"],
+      "domains": ["medical_licensing_exam", "professional_exam", "medicine"],
+      "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-LEK-PL-2008-2024",
+      "paper_url": "https://arxiv.org/abs/2412.00559",
+      "license": "unknown/missing on Hugging Face dataset card",
+      "redistribution_status": "unknown_missing_license",
+      "notes": "Structured Polish LEK licensing exam MCQs with year, season, question text/options, and answer letter. v0.4 materializes only rows with unique option labels and an answer."
+    },
+    {
+      "id": "polish_ldek_medical_pl",
+      "name": "Polish LDEK dental medical licensing exams 2008-2024",
+      "languages": ["pl"],
+      "domains": ["dental_medical_licensing_exam", "professional_exam", "medicine", "dentistry"],
+      "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-LDEK-PL-2008-2024",
+      "paper_url": "https://arxiv.org/abs/2412.00559",
+      "license": "unknown/missing on Hugging Face dataset card",
+      "redistribution_status": "unknown_missing_license",
+      "notes": "Structured Polish LDEK dental licensing exam MCQs with year, season, question text/options, and answer letter. v0.4 materializes only rows with unique option labels and an answer."
+    },
+    {
+      "id": "polish_lek_medical_en",
+      "name": "Polish LEK medical licensing exams in English 2013-2024",
+      "languages": ["en"],
+      "domains": ["medical_licensing_exam", "professional_exam", "medicine"],
+      "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-LEK-EN-2013-2024",
+      "paper_url": "https://arxiv.org/abs/2412.00559",
+      "license": "unknown/missing on Hugging Face dataset card",
+      "redistribution_status": "unknown_missing_license",
+      "notes": "English LEK licensing exam MCQs from the same Polish medical-exam collection. Useful for bilingual medical-exam coverage and answer-keyed RLVR."
+    },
+    {
+      "id": "polish_ldek_medical_en",
+      "name": "Polish LDEK dental medical licensing exams in English 2013-2024",
+      "languages": ["en"],
+      "domains": ["dental_medical_licensing_exam", "professional_exam", "medicine", "dentistry"],
+      "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-LDEK-EN-2013-2024",
+      "paper_url": "https://arxiv.org/abs/2412.00559",
+      "license": "unknown/missing on Hugging Face dataset card",
+      "redistribution_status": "unknown_missing_license",
+      "notes": "English LDEK dental licensing exam MCQs from the same Polish medical-exam collection. Useful for bilingual medical/dental coverage and answer-keyed RLVR."
+    },
+    {
+      "id": "danish_citizenship_test",
+      "name": "Danish citizenship and permanent-residence test questions",
+      "languages": ["da"],
+      "domains": ["citizenship_exam", "civics", "history", "society"],
+      "source_url": "https://huggingface.co/datasets/sorenmulli/citizenship-test-da",
+      "license": "unknown/missing on Hugging Face dataset card",
+      "redistribution_status": "unknown_missing_license",
+      "notes": "Structured Danish Indfødsretsprøven/Medborgerskabsprøven MCQs with exam origin, two or three options, and answer letter."
+    },
+    {
       "id": "swedish_medical_exams_hf",
       "name": "Swedish medical exam MCQs",
       "languages": ["sv"],
@@ -145,6 +199,17 @@
       "license": "Open Information Use License - Catalonia",
       "redistribution_status": "declared_open_license_needs_review",
       "notes": "Structured Catalan professional/public-service legal MCQs. v0.3 applies a conservative quality filter to avoid rows where PDF extraction split the stem/options incorrectly."
+    },
+    {
+      "id": "spanish_public_exams",
+      "name": "Spanish public-service legal exams",
+      "languages": ["es"],
+      "domains": ["public_service_exam", "law", "government"],
+      "source_url": "https://huggingface.co/datasets/amayuelas/aya-global-exams-spanish",
+      "upstream_official_url": "https://sede.inap.gob.es/en/procesos-selectivos",
+      "license": "AGPL/GPL in row metadata; exact version not normalized to SPDX",
+      "redistribution_status": "declared_copyleft_license_needs_review",
+      "notes": "Structured Spanish public-service legal MCQs sourced from INAP process materials. Kept under strong_copyleft_needs_review until the exact upstream terms are normalized."
     },
     {
       "id": "global_mmlu",
