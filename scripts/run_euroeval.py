@@ -10,7 +10,6 @@ Usage: python scripts/run_euroeval.py --model <path> --language sv --model-impl 
 """
 import importlib.metadata as _md
 import importlib.util as _iu
-import runpy
 import sys
 
 _orig_version = _md.version
@@ -34,6 +33,7 @@ _iu.find_spec = _find_spec
 # also block a direct import, in case EuroEval try/excepts it
 sys.modules["flash_attn"] = None  # type: ignore
 
-# hand off to `python -m euroeval <args>`
+# hand off to EuroEval's CLI (console-script entry point euroeval.cli:benchmark)
 sys.argv = ["euroeval"] + sys.argv[1:]
-runpy.run_module("euroeval", run_name="__main__")
+from euroeval.cli import benchmark  # noqa: E402
+benchmark()
