@@ -1,0 +1,35 @@
+# SFT — Qwen3.6-27B on the EU multilingual mix (euroblocks 85/15). Same recipe as the 9B run.
+# Qwen3.6-27B uses the qwen3_5 architecture (transformers 5.x supports it) so the existing
+# entrypoints/configs work unchanged — just a bigger model. Run multi-node: `sbatch --nodes=4`
+# for speed (27B full FT fits on 1 node but is slow; 4 nodes ~4x faster).
+
+# ── ModelConfig ──
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.6-27B
+torch_dtype: bfloat16
+
+# ── DatasetMixtureConfig (parquet, memory-mapped) ──
+datasets:
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet
+    split: "train[:400000]"
+
+# ── SFTConfig ──
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen36-27b-sft
+max_length: 4096
+packing: true
+dataset_num_proc: 8
+ddp_timeout: 10800
+max_steps: 200
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16     # global batch 128 on 1 node; scales with --nodes
+learning_rate: 8.0e-6               # slightly lower for the larger model
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 10
+save_steps: 100
+save_total_limit: 2
+report_to: none
