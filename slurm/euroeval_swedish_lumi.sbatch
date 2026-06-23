@@ -33,6 +33,7 @@ SHIM=/scratch/project_465002530/users/bmoell/euroeval-shim   # hides flash_attn 
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   export PYTHONPATH=$OVERLAY:\${PYTHONPATH:-} HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
   export HF_HUB_OFFLINE=$OFFLINE HF_DATASETS_OFFLINE=$OFFLINE &&
+  export HIP_VISIBLE_DEVICES=\${ROCR_VISIBLE_DEVICES:-0} && unset ROCR_VISIBLE_DEVICES &&
   cd '$RESULTS' &&
   python3 $SLURM_SUBMIT_DIR/scripts/run_euroeval.py --model '$MODEL' --language $LANGUAGES \
     --model-impl transformers --device cuda --verbose --force
