@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Iterable
 
 DATASET_ID = "oellm-eu-exam-mcq-v1"
-VERSION = "v0.2.0"
+VERSION = "v0.3.0"
 DEFAULT_OUT = Path("data/exam_mcq/oellm-eu-exam-mcq-v1")
 DEFAULT_SOURCE_REGISTRY = Path("data/exam_mcq/source_registry.json")
 DEFAULT_EXAMS_REPO = Path("/private/tmp/exams-qa")
@@ -39,8 +39,13 @@ DEFAULT_SOURCES = (
     "exams_qa",
     "hogskoleprovet_ord",
     "llmzszl",
+    "polish_pes_medical",
     "swedish_medical_exams_hf",
     "polish_matura_dokato",
+    "slovak_mathbio_dokato",
+    "slovak_financial_exam",
+    "basque_public_exams",
+    "catalan_public_exams",
     "global_mmlu",
     "mmmlu",
     "belebele",
@@ -166,6 +171,15 @@ SOURCE_META = {
         "license_filter_tags": ["unknown_or_missing", "national_exam"],
         "redistribution_status": "unknown_missing_license",
     },
+    "polish_pes_medical": {
+        "name": "Polish PES specialist medical exams",
+        "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-PES-PL-2007-2024",
+        "source_license": "unknown/missing on Hugging Face dataset card",
+        "license_id": "unknown",
+        "license_category": "unknown_or_missing",
+        "license_filter_tags": ["unknown_or_missing", "official_public_exam", "medical_exam", "specialist_exam"],
+        "redistribution_status": "unknown_missing_license",
+    },
     "swedish_medical_exams_hf": {
         "name": "Swedish medical exam MCQs",
         "source_url": "https://huggingface.co/datasets/sarafuyu/swedish-medical-exams-mcq-1006-json",
@@ -183,6 +197,42 @@ SOURCE_META = {
         "license_category": "noncommercial_sharealike",
         "license_filter_tags": ["attribution_required", "noncommercial", "sharealike"],
         "redistribution_status": "redistributable_noncommercial_sharealike",
+    },
+    "slovak_mathbio_dokato": {
+        "name": "Slovak math/biology university-entry exams",
+        "source_url": "https://huggingface.co/datasets/dokato/exam-slovak-mathbio",
+        "source_license": "CC-BY-NC-SA-2.0",
+        "license_id": "cc-by-nc-sa-2.0",
+        "license_category": "noncommercial_sharealike",
+        "license_filter_tags": ["attribution_required", "noncommercial", "sharealike"],
+        "redistribution_status": "redistributable_noncommercial_sharealike",
+    },
+    "slovak_financial_exam": {
+        "name": "Slovak financial certification exam",
+        "source_url": "https://huggingface.co/datasets/TUKE-KEMT/slovak-financial-exam",
+        "source_license": "CC-BY-SA-4.0",
+        "license_id": "cc-by-sa-4.0",
+        "license_category": "sharealike",
+        "license_filter_tags": ["attribution_required", "sharealike", "financial_exam"],
+        "redistribution_status": "redistributable_sharealike",
+    },
+    "basque_public_exams": {
+        "name": "Basque public-service legal exams",
+        "source_url": "https://huggingface.co/datasets/amayuelas/aya-global-exams-basque",
+        "source_license": "Open License (dataset row metadata; exact terms not normalized)",
+        "license_id": "open-license",
+        "license_category": "custom_open_needs_review",
+        "license_filter_tags": ["custom_open_license", "needs_license_review", "public_service_exam"],
+        "redistribution_status": "declared_open_license_needs_review",
+    },
+    "catalan_public_exams": {
+        "name": "Catalan public-service legal exams",
+        "source_url": "https://huggingface.co/datasets/amayuelas/aya-global-exams-catalan",
+        "source_license": "Open Information Use License - Catalonia",
+        "license_id": "open-information-use-license-catalonia",
+        "license_category": "custom_open_needs_review",
+        "license_filter_tags": ["custom_open_license", "needs_license_review", "public_service_exam"],
+        "redistribution_status": "declared_open_license_needs_review",
     },
     "global_mmlu": {
         "name": "Global-MMLU",
@@ -238,8 +288,19 @@ SOURCE_ALIASES = {
     "hogskoleprovet_ord": "hogskoleprovet_ord",
     "llmzszl": "llmzszl",
     "polish-national-exams": "llmzszl",
+    "pes": "polish_pes_medical",
+    "polish-pes": "polish_pes_medical",
+    "polish_pes_medical": "polish_pes_medical",
     "polish_matura": "polish_matura_dokato",
     "polish_matura_dokato": "polish_matura_dokato",
+    "slovak_mathbio": "slovak_mathbio_dokato",
+    "slovak_mathbio_dokato": "slovak_mathbio_dokato",
+    "slovak_financial": "slovak_financial_exam",
+    "slovak_financial_exam": "slovak_financial_exam",
+    "basque-public": "basque_public_exams",
+    "basque_public_exams": "basque_public_exams",
+    "catalan-public": "catalan_public_exams",
+    "catalan_public_exams": "catalan_public_exams",
     "swedish-medical": "swedish_medical_exams_hf",
     "swedish_medical_exams_hf": "swedish_medical_exams_hf",
     "global-mmlu": "global_mmlu",
@@ -383,6 +444,8 @@ def license_category_for(license_id: str) -> str:
         return "sharealike"
     if license_id == "cc-by-nc-sa-2.0":
         return "noncommercial_sharealike"
+    if license_id in {"open-license", "open-information-use-license-catalonia"}:
+        return "custom_open_needs_review"
     return "unknown_or_missing"
 
 
@@ -395,6 +458,8 @@ def license_tags_for(license_id: str) -> list[str]:
         return ["attribution_required", "sharealike"]
     if license_id == "cc-by-nc-sa-2.0":
         return ["attribution_required", "noncommercial", "sharealike"]
+    if license_id in {"open-license", "open-information-use-license-catalonia"}:
+        return ["custom_open_license", "needs_license_review"]
     return ["unknown_or_missing"]
 
 
@@ -420,6 +485,30 @@ def make_options(values: Iterable[object]) -> list[dict]:
         if text:
             options.append({"label": label, "text": text})
     return options
+
+
+def parse_labeled_question_options(text: object) -> tuple[str, list[dict]]:
+    stem_lines: list[str] = []
+    options: list[dict] = []
+    current_label = ""
+    current_text = ""
+    for raw_line in str(text or "").splitlines():
+        line = normalize_ws(raw_line)
+        if not line:
+            continue
+        option_match = re.match(r"^([A-Z])[\).]\s*(.+)$", line)
+        if option_match:
+            if current_label and current_text:
+                options.append({"label": current_label, "text": normalize_ws(current_text)})
+            current_label = option_match.group(1)
+            current_text = option_match.group(2)
+        elif current_label:
+            current_text = normalize_ws(f"{current_text} {line}")
+        else:
+            stem_lines.append(line)
+    if current_label and current_text:
+        options.append({"label": current_label, "text": normalize_ws(current_text)})
+    return normalize_ws(" ".join(stem_lines)), options
 
 
 def numeric_answer_to_letter(value: object, *, one_based: bool) -> str:
@@ -463,6 +552,9 @@ def make_mcq_row(
     question = normalize_ws(question)
     answer = normalize_ws(answer).upper()
     if not question or not options or not ANSWER_RE.match(answer):
+        return None
+    labels = [normalize_ws(option.get("label")).upper() for option in options]
+    if len(labels) != len(set(labels)):
         return None
     correct_text = answer_text(options, answer)
     if not correct_text:
@@ -806,6 +898,39 @@ def load_llmzszl() -> list[McqRow]:
     return rows
 
 
+def load_polish_pes_medical() -> list[McqRow]:
+    load_dataset = require_load_dataset()
+    rows = []
+    source_split = "train"
+    print(f"Loading Polish PES medical exams/{source_split}", flush=True)
+    dataset = load_dataset("amu-cai/medical-exams-PES-PL-2007-2024", split=source_split)
+    for index, raw_row in enumerate(dataset):
+        raw = dict(raw_row)
+        question, options = parse_labeled_question_options(raw.get("question_w_options"))
+        row = make_mcq_row(
+            source_id="polish_pes_medical",
+            source_split=source_split,
+            source_record_id=(
+                f"{normalize_ws(raw.get('edition'))}/{normalize_ws(raw.get('year'))}/"
+                f"{normalize_ws(raw.get('season'))}/{normalize_ws(raw.get('specialty'))}/"
+                f"{normalize_ws(raw.get('question_id')) or index}"
+            ),
+            language="pl",
+            language_name="Polish",
+            domain="medical_specialist_exam",
+            subject=normalize_ws(raw.get("specialty")),
+            grade=normalize_ws(f"{normalize_ws(raw.get('year'))} {normalize_ws(raw.get('season'))}"),
+            task_type="medical_specialist_exam_mcq",
+            question=question,
+            options=options,
+            answer=normalize_ws(raw.get("answer")),
+            raw=raw,
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
 def load_polish_matura_dokato() -> list[McqRow]:
     load_dataset = require_load_dataset()
     rows = []
@@ -832,6 +957,127 @@ def load_polish_matura_dokato() -> list[McqRow]:
         if row:
             rows.append(row)
     return rows
+
+
+def load_slovak_mathbio_dokato() -> list[McqRow]:
+    load_dataset = require_load_dataset()
+    rows = []
+    source_split = "train"
+    print(f"Loading Slovak math/bio dokato/{source_split}", flush=True)
+    dataset = load_dataset("dokato/exam-slovak-mathbio", split=source_split)
+    for index, raw_row in enumerate(dataset):
+        raw = dict(raw_row)
+        row = make_mcq_row(
+            source_id="slovak_mathbio_dokato",
+            source_split=source_split,
+            source_record_id=f"{normalize_ws(raw.get('file_name'))}/{normalize_ws(raw.get('original_question_num')) or index}",
+            language="sk",
+            language_name="Slovak",
+            domain="university_entry_exam",
+            subject=normalize_ws(raw.get("category_original_lang")) or normalize_ws(raw.get("category_en")),
+            grade=normalize_ws(raw.get("level")),
+            task_type="university_entry_exam_mcq",
+            question=normalize_ws(raw.get("question")),
+            options=make_options(raw.get("options") or []),
+            answer=numeric_answer_to_letter(raw.get("answer"), one_based=True),
+            raw=raw,
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
+def load_slovak_financial_exam() -> list[McqRow]:
+    load_dataset = require_load_dataset()
+    rows = []
+    source_split = "test"
+    print(f"Loading Slovak financial exam/{source_split}", flush=True)
+    dataset = load_dataset("TUKE-KEMT/slovak-financial-exam", split=source_split)
+    for index, raw_row in enumerate(dataset):
+        raw = dict(raw_row)
+        subject = " / ".join(
+            item for item in [normalize_ws(raw.get("sector")), normalize_ws(raw.get("area"))] if item
+        )
+        row = make_mcq_row(
+            source_id="slovak_financial_exam",
+            source_split=source_split,
+            source_record_id=normalize_ws(raw.get("id")) or str(index),
+            language="sk",
+            language_name="Slovak",
+            domain="financial_certification_exam",
+            subject=subject,
+            grade=normalize_ws(raw.get("level")),
+            task_type="financial_certification_exam_mcq",
+            question=normalize_ws(raw.get("prompt")),
+            options=make_options(raw.get("answers") or []),
+            answer=numeric_answer_to_letter(raw.get("label"), one_based=False),
+            raw=raw,
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
+def load_aya_public_exam(
+    dataset_name: str,
+    *,
+    source_id: str,
+    language: str,
+    language_name: str,
+    require_question_terminal: bool,
+) -> list[McqRow]:
+    load_dataset = require_load_dataset()
+    rows = []
+    source_split = "train"
+    print(f"Loading {dataset_name}/{source_split}", flush=True)
+    dataset = load_dataset(dataset_name, split=source_split)
+    for index, raw_row in enumerate(dataset):
+        raw = dict(raw_row)
+        question = normalize_ws(raw.get("question"))
+        options = make_options(raw.get("options") or [])
+        answer = numeric_answer_to_letter(raw.get("answer"), one_based=True)
+        if len(options) != 4 or not answer:
+            continue
+        if require_question_terminal and not question.endswith(("?", ":")):
+            continue
+        row = make_mcq_row(
+            source_id=source_id,
+            source_split=source_split,
+            source_record_id=f"{normalize_ws(raw.get('file_name'))}/{normalize_ws(raw.get('original_question_num')) or index}",
+            language=language,
+            language_name=language_name,
+            domain="public_service_exam",
+            subject=normalize_ws(raw.get("category_original_lang")) or normalize_ws(raw.get("category_en")),
+            grade=normalize_ws(raw.get("level")),
+            task_type="public_service_exam_mcq",
+            question=question,
+            options=options,
+            answer=answer,
+            raw=raw,
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
+def load_basque_public_exams() -> list[McqRow]:
+    return load_aya_public_exam(
+        "amayuelas/aya-global-exams-basque",
+        source_id="basque_public_exams",
+        language="eu",
+        language_name="Basque",
+        require_question_terminal=False,
+    )
+
+
+def load_catalan_public_exams() -> list[McqRow]:
+    return load_aya_public_exam(
+        "amayuelas/aya-global-exams-catalan",
+        source_id="catalan_public_exams",
+        language="ca",
+        language_name="Catalan",
+        require_question_terminal=True,
+    )
 
 
 def load_swedish_medical_exams_hf() -> list[McqRow]:
@@ -1234,10 +1480,20 @@ def main() -> None:
             rows.extend(load_hogskoleprovet_ord(args.hogskoleprovet_manifest, args.pdf_cache_dir))
         elif source == "llmzszl":
             rows.extend(load_llmzszl())
+        elif source == "polish_pes_medical":
+            rows.extend(load_polish_pes_medical())
         elif source == "swedish_medical_exams_hf":
             rows.extend(load_swedish_medical_exams_hf())
         elif source == "polish_matura_dokato":
             rows.extend(load_polish_matura_dokato())
+        elif source == "slovak_mathbio_dokato":
+            rows.extend(load_slovak_mathbio_dokato())
+        elif source == "slovak_financial_exam":
+            rows.extend(load_slovak_financial_exam())
+        elif source == "basque_public_exams":
+            rows.extend(load_basque_public_exams())
+        elif source == "catalan_public_exams":
+            rows.extend(load_catalan_public_exams())
         elif source == "global_mmlu":
             rows.extend(load_global_mmlu())
         elif source == "mmmlu":

@@ -71,6 +71,17 @@
       "notes": "Dataset card lists 18.8k Polish rows; the paper describes a collection of Polish national exams with closed-ended questions from CKE archives."
     },
     {
+      "id": "polish_pes_medical",
+      "name": "Polish PES specialist medical exams 2007-2024",
+      "languages": ["pl"],
+      "domains": ["medical_specialist_exam", "professional_exam", "medicine"],
+      "source_url": "https://huggingface.co/datasets/amu-cai/medical-exams-PES-PL-2007-2024",
+      "paper_url": "https://arxiv.org/abs/2412.00559",
+      "license": "unknown/missing on Hugging Face dataset card",
+      "redistribution_status": "unknown_missing_license",
+      "notes": "Structured Polish medical specialist exam MCQs with year, season, specialty, question text/options, and answer letter. v0.3 materializes only rows with parseable A-E options and an answer."
+    },
+    {
       "id": "swedish_medical_exams_hf",
       "name": "Swedish medical exam MCQs",
       "languages": ["sv"],
@@ -91,6 +102,49 @@
       "license": "CC-BY-NC-SA-2.0",
       "redistribution_status": "redistributable_noncommercial_sharealike",
       "notes": "Small structured set with official CKE PDF URLs in each row. Filter out with license_id=cc-by-nc-sa-2.0 for commercial/permissive-only runs."
+    },
+    {
+      "id": "slovak_mathbio_dokato",
+      "name": "Slovak math/biology university-entry exams",
+      "languages": ["sk"],
+      "domains": ["university_entry_exam", "mathematics", "biology"],
+      "source_url": "https://huggingface.co/datasets/dokato/exam-slovak-mathbio",
+      "paper_url": "https://arxiv.org/abs/2411.19799",
+      "license": "CC-BY-NC-SA-2.0",
+      "redistribution_status": "redistributable_noncommercial_sharealike",
+      "notes": "Structured Slovak MCQ rows from SCIO-style math/biology university-entry PDFs. Filter out with license_id=cc-by-nc-sa-2.0 for commercial/permissive-only runs."
+    },
+    {
+      "id": "slovak_financial_exam",
+      "name": "Slovak financial certification exam",
+      "languages": ["sk"],
+      "domains": ["financial_certification_exam", "professional_exam"],
+      "source_url": "https://huggingface.co/datasets/TUKE-KEMT/slovak-financial-exam",
+      "license": "CC-BY-SA-4.0",
+      "redistribution_status": "redistributable_sharealike",
+      "notes": "Structured Slovak multiple-choice financial certification questions with answer labels and sector/area metadata."
+    },
+    {
+      "id": "basque_public_exams",
+      "name": "Basque public-service legal exams",
+      "languages": ["eu"],
+      "domains": ["public_service_exam", "law", "government"],
+      "source_url": "https://huggingface.co/datasets/amayuelas/aya-global-exams-basque",
+      "upstream_official_url": "https://www.ivap.euskadi.eus/",
+      "license": "Open License in row metadata; exact legal terms not normalized to SPDX",
+      "redistribution_status": "declared_open_license_needs_review",
+      "notes": "Structured Basque professional/public-service legal MCQs. Kept under custom_open_needs_review until the upstream open-license terms are normalized."
+    },
+    {
+      "id": "catalan_public_exams",
+      "name": "Catalan public-service legal exams",
+      "languages": ["ca"],
+      "domains": ["public_service_exam", "law", "government"],
+      "source_url": "https://huggingface.co/datasets/amayuelas/aya-global-exams-catalan",
+      "upstream_official_url": "https://analisi.transparenciacatalunya.cat/Sector-P-blic/Enunciats-dels-ex-mens-de-les-convocat-ries-per-a-/6p3u-9s8y/data_preview",
+      "license": "Open Information Use License - Catalonia",
+      "redistribution_status": "declared_open_license_needs_review",
+      "notes": "Structured Catalan professional/public-service legal MCQs. v0.3 applies a conservative quality filter to avoid rows where PDF extraction split the stem/options incorrectly."
     },
     {
       "id": "global_mmlu",
@@ -135,6 +189,87 @@
   ],
   "high_value_discovery_targets": [
     {
+      "id": "germany_einbuergerungstest_catalogue",
+      "languages": ["de"],
+      "domains": ["naturalization_exam", "civics", "law", "government"],
+      "source_url": "https://www.gesetze-im-internet.de/einbtestv/anlage_1.html",
+      "license": "official federal legal text; answer key not present in catalogue HTML",
+      "redistribution_status": "link_only_answer_key_required",
+      "notes": "Official catalogue lists 310 approved naturalization-test questions with four options each. Do not materialize until a real official answer source is joined."
+    },
+    {
+      "id": "latvia_visc_state_exam_archive",
+      "languages": ["lv", "en", "fr", "de", "ru"],
+      "domains": ["school_leaving_exam", "state_exam"],
+      "source_url": "https://www.visc.gov.lv/lv/valsts-parbaudes-darbu-uzdevumi",
+      "license": "official public archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "VISC/VIAA page lists annual state examination tasks from 2013/2014 onward. Target MCQ/listening/answer-key sections first."
+    },
+    {
+      "id": "lithuania_nsa_brandos_egzaminai",
+      "languages": ["lt", "en", "fr", "de", "ru"],
+      "domains": ["school_leaving_exam", "brandos_egzaminai"],
+      "source_url": "https://www.nsa.smsm.lt/pasiekimu-departamentas/egzaminai-ir-pasiekimu-patikrinimai/valstybiniai-brandos-egzaminai/egzaminu-uzduotys/",
+      "license": "official public archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "Official NŠA archive lists brandos exam tasks by year, including foreign-language exam packages and attachments."
+    },
+    {
+      "id": "wales_wjec_past_papers",
+      "languages": ["cy", "en"],
+      "domains": ["school_exam", "gcse", "a_level", "vocational_exam"],
+      "source_url": "https://www.wjec.co.uk/home/past-papers/",
+      "license": "official exam-board archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "WJEC/CBAC publishes past papers and mark schemes, with Welsh-language material. Parser should start with item-bank/mark-scheme pairs that are explicit MCQ."
+    },
+    {
+      "id": "malta_matsec_past_papers",
+      "languages": ["mt", "en"],
+      "domains": ["school_leaving_exam", "matsec", "sec", "intermediate", "advanced"],
+      "source_url": "https://www.um.edu.mt/matsec/",
+      "license": "official MATSEC archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "Target SEC/Matriculation past papers with mark schemes, especially subjects with multiple-choice sections."
+    },
+    {
+      "id": "slovenia_ric_matura_archive",
+      "languages": ["sl", "en", "fr", "de", "it"],
+      "domains": ["school_leaving_exam", "matura"],
+      "source_url": "https://www.ric.si/splosna_matura/predmeti/",
+      "license": "official public archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "Državni izpitni center subject pages provide exam materials; extract only question/answer pairs with explicit answer keys."
+    },
+    {
+      "id": "croatia_ncvvo_matura_archive",
+      "languages": ["hr", "en", "fr", "de", "it", "es"],
+      "domains": ["school_leaving_exam", "drzavna_matura"],
+      "source_url": "https://www.ncvvo.hr/ispitni-katalozi-i-provedeni-ispiti/",
+      "license": "official public archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "NCVVO archive covers Croatian state-matura materials and solutions. Parser should target closed-ended answer-sheet tasks first."
+    },
+    {
+      "id": "netherlands_examenblad_archive",
+      "languages": ["nl", "en", "fr", "de"],
+      "domains": ["school_leaving_exam", "central_exam"],
+      "source_url": "https://www.examenblad.nl/",
+      "license": "official public archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "Examenblad publishes Dutch central exams and correction guidelines; likely valuable for Dutch reasoning and exact-answer tasks."
+    },
+    {
+      "id": "norway_udir_exam_archive",
+      "languages": ["no", "nb", "nn", "en", "fr", "de", "es"],
+      "domains": ["school_exam", "central_exam"],
+      "source_url": "https://www.udir.no/eksamen-og-prover/eksamen/",
+      "license": "official public archive; redistribution not verified",
+      "redistribution_status": "link_only_review_required",
+      "notes": "Udir exam pages are high-value for Norwegian Bokmål/Nynorsk; parser must respect login-gated material and only use public files."
+    },
+    {
       "id": "spain_mir_fse",
       "languages": ["es"],
       "domains": ["medical_licensing", "residency_exam"],
@@ -144,8 +279,8 @@
     {
       "id": "polish_medical_exams",
       "languages": ["pl", "en"],
-      "domains": ["medical_licensing", "specialist_exam"],
-      "search": "Polish Medical Exams LEK LDEK PES dataset Medical Examination Center Chief Medical Chamber",
+      "domains": ["medical_licensing", "lek", "ldek"],
+      "search": "Polish Medical Exams LEK LDEK official questions answers Medical Examination Center",
       "redistribution_status": "needs_live_verification"
     },
     {

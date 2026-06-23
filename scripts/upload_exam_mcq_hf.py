@@ -25,7 +25,7 @@ def main() -> None:
         repo_id=args.repo_id,
         repo_type="dataset",
         folder_path=str(args.dataset_dir),
-        commit_message="Add European exam MCQ GRPO/DPO dataset v0.1",
+        commit_message="Upload European exam MCQ GRPO/DPO dataset v0.3",
     )
     print(f"Uploaded dataset to https://huggingface.co/datasets/{args.repo_id}")
 

@@ -14,12 +14,12 @@ academic-exam benchmarks, and reading/causal reasoning MCQ sources.
 
 ## Current Build
 
-Version: `v0.2.0`
+Version: `v0.3.0`
 
-- 381,597 GRPO/RLVR rows
-- 1,141,467 DPO preference pairs
+- 562,697 GRPO/RLVR rows
+- 1,862,991 DPO preference pairs
 - 35 language codes
-- 9 sources
+- 14 sources
 - mixed licenses, filterable per row
 
 Files:
@@ -41,8 +41,18 @@ The real national/official exam layer currently includes:
 - `hogskoleprovet_ord`: 145 Swedish Högskoleprovet ORD rows parsed from official
   Studera/UHR PDFs and answer keys, `unknown`
 - `llmzszl`: 14,269 Polish national/professional exam rows, `unknown`
+- `polish_pes_medical`: 178,392 Polish specialist medical exam rows from
+  PES 2007-2024, `unknown`
 - `swedish_medical_exams_hf`: 1,006 Swedish medical licensing rows, `unknown`
 - `polish_matura_dokato`: 52 Polish matura rows, `cc-by-nc-sa-2.0`
+- `slovak_mathbio_dokato`: 131 Slovak math/biology university-entry rows,
+  `cc-by-nc-sa-2.0`
+- `slovak_financial_exam`: 1,086 Slovak financial certification rows,
+  `cc-by-sa-4.0`
+- `basque_public_exams`: 719 Basque public-service legal exam rows,
+  custom open license needing review
+- `catalan_public_exams`: 772 Catalan public-service legal exam rows,
+  Open Information Use License - Catalonia, needing review
 
 The broader MCQ layer adds Global-MMLU, MMMLU, Belebele, and XCOPA for
 exam-style academic knowledge, reading comprehension, and causal reasoning.
@@ -63,10 +73,12 @@ Current license counts:
 
 - `apache-2.0`: 243,558 rows
 - `mit`: 70,209 rows
-- `cc-by-sa-4.0`: 50,558 rows
+- `cc-by-sa-4.0`: 51,644 rows
 - `cc-by-4.0`: 1,800 rows
-- `cc-by-nc-sa-2.0`: 52 rows
-- `unknown`: 15,420 rows
+- `cc-by-nc-sa-2.0`: 183 rows
+- `open-license`: 719 rows
+- `open-information-use-license-catalonia`: 772 rows
+- `unknown`: 193,812 rows
 
 Examples:
 
@@ -153,15 +165,22 @@ python3 scripts/discover_hogskoleprovet_sources.py
 High-priority parser targets:
 
 - Spanish MIR/FSE medical residency exams
-- Polish LEK/LDEK/PES and PES specialist medical exams
+- Polish LEK/LDEK medical licensing exams
 - Italian MUR medicine admission tests
 - French baccalauréat annales
 - Czech CERMAT maturita
+- Latvian VISC/VIAA state exam archives
+- Lithuanian NŠA brandos exam archives
+- WJEC/CBAC Welsh and English past papers
+- Maltese MATSEC past papers
+- Slovenian RIC matura archives
+- Croatian NCVVO državna matura archives
+- German Einbürgerungstest catalogue once official answer keys are joined
 - Dutch Examenblad
+- Norwegian Udir exam archives
 - Finnish ylioppilaskoe
 - Hungarian érettségi
 - Romanian bacalaureat
-- Croatian državna matura
 - national bar/law/state-service exams where official MCQ PDFs and answer keys
   are public
 

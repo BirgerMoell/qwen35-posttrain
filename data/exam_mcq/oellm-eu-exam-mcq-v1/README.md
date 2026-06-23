@@ -23,8 +23,8 @@ training.
 
 This build contains:
 
-- GRPO/RLVR rows: 381597
-- DPO pairs: 1141467
+- GRPO/RLVR rows: 562697
+- DPO pairs: 1862991
 - Languages: bg, ca, cs, da, de, el, en, es, et, eu, fi, fr, hr, hu, hy, is, it, ka, lt, lv, mk, mt, nb, nl, pl, pt, ro, ru, sk, sl, sq, sr, sv, tr, uk
 
 ## License Filtering
@@ -36,20 +36,27 @@ Licenses in this build:
 
 - `apache-2.0`: 243558 rows
 - `cc-by-4.0`: 1800 rows
-- `cc-by-nc-sa-2.0`: 52 rows
-- `cc-by-sa-4.0`: 50558 rows
+- `cc-by-nc-sa-2.0`: 183 rows
+- `cc-by-sa-4.0`: 51644 rows
 - `mit`: 70209 rows
-- `unknown`: 15420 rows
+- `open-information-use-license-catalonia`: 772 rows
+- `open-license`: 719 rows
+- `unknown`: 193812 rows
 
 Sources:
 
+- `basque_public_exams`: 719 rows, `open-license`, `declared_open_license_needs_review`
 - `belebele`: 31500 rows, `cc-by-sa-4.0`, `redistributable_sharealike`
+- `catalan_public_exams`: 772 rows, `open-information-use-license-catalonia`, `declared_open_license_needs_review`
 - `exams_qa`: 19058 rows, `cc-by-sa-4.0`, `redistributable_sharealike`
 - `global_mmlu`: 243558 rows, `apache-2.0`, `redistributable_declared_license`
 - `hogskoleprovet_ord`: 145 rows, `unknown`, `official_public_unknown_redistribution`
 - `llmzszl`: 14269 rows, `unknown`, `unknown_missing_license`
 - `mmmlu`: 70209 rows, `mit`, `redistributable_declared_license`
 - `polish_matura_dokato`: 52 rows, `cc-by-nc-sa-2.0`, `redistributable_noncommercial_sharealike`
+- `polish_pes_medical`: 178392 rows, `unknown`, `unknown_missing_license`
+- `slovak_financial_exam`: 1086 rows, `cc-by-sa-4.0`, `redistributable_sharealike`
+- `slovak_mathbio_dokato`: 131 rows, `cc-by-nc-sa-2.0`, `redistributable_noncommercial_sharealike`
 - `swedish_medical_exams_hf`: 1006 rows, `unknown`, `official_public_unknown_redistribution`
 - `xcopa`: 1800 rows, `cc-by-4.0`, `redistributable_attribution`
 
