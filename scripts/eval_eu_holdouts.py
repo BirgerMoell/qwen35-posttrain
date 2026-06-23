@@ -144,6 +144,8 @@ def main():
     ap.add_argument("--data", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--max-new-tokens", type=int, default=512)
+    ap.add_argument("--batch-size", type=int, default=32, help="batched generation — the speedup")
+    ap.add_argument("--max-input-len", type=int, default=4096, help="truncate long prompts")
     ap.add_argument("--limit-per-bucket", type=int, default=None)
     ap.add_argument("--exclude-buckets", default="long_context_retrieval",
                     help="comma-separated buckets to skip (default: long_context_retrieval — "
@@ -162,30 +164,41 @@ def main():
             if seen.get(b, 0) < a.limit_per_bucket:
                 kept.append(r); seen[b] = seen.get(b, 0) + 1
         rows = kept
-    print(f"[holdouts] {len(rows)} rows; loading {a.model}")
+    print(f"[holdouts] {len(rows)} rows; loading {a.model}", flush=True)
 
     tok = AutoTokenizer.from_pretrained(a.model, trust_remote_code=True)
+    tok.padding_side = "left"   # left-pad for batched generation
+    if tok.pad_token is None:
+        tok.pad_token = tok.eos_token
     model = AutoModelForCausalLM.from_pretrained(
         a.model, dtype=torch.bfloat16, device_map="auto", trust_remote_code=True
     ).eval()
 
+    # Pre-render chat-templated prompts; sort by length so each batch pads minimally (big speedup).
+    def user_text(r):
+        return (r.get("context", "") + "\n\n" + r["prompt"]) if r.get("context") else r["prompt"]
+    rendered = [tok.apply_chat_template([{"role": "user", "content": user_text(r)}],
+                                        add_generation_prompt=True, tokenize=False) for r in rows]
+    order = sorted(range(len(rows)), key=lambda i: len(rendered[i]))
+
     by_bucket, by_lang = {}, {}
-    for i, r in enumerate(rows):
-        user = (r.get("context", "") + "\n\n" + r["prompt"]) if r.get("context") else r["prompt"]
-        inputs = tok.apply_chat_template(
-            [{"role": "user", "content": user}], add_generation_prompt=True,
-            return_tensors="pt", return_dict=True,
-        ).to(model.device)
+    bs = a.batch_size
+    for s in range(0, len(order), bs):
+        idx = order[s:s + bs]
+        batch_texts = [rendered[i] for i in idx]
+        inputs = tok(batch_texts, return_tensors="pt", padding=True, truncation=True,
+                     max_length=a.max_input_len).to(model.device)
         with torch.no_grad():
             out = model.generate(**inputs, max_new_tokens=a.max_new_tokens, do_sample=False,
-                                 pad_token_id=tok.pad_token_id or tok.eos_token_id)
-        ans = tok.decode(out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
-        ok = score_row(ans, r)
-        b, lng = r["bucket"], r.get("language", "?")
-        by_bucket.setdefault(b, []).append(ok)
-        by_lang.setdefault(lng, []).append(ok)
-        if (i + 1) % 50 == 0:
-            print(f"[holdouts] {i+1}/{len(rows)}")
+                                 pad_token_id=tok.pad_token_id)
+        gen = out[:, inputs["input_ids"].shape[1]:]
+        for k, i in enumerate(idx):
+            ans = tok.decode(gen[k], skip_special_tokens=True)
+            r = rows[i]
+            ok = score_row(ans, r)
+            by_bucket.setdefault(r["bucket"], []).append(ok)
+            by_lang.setdefault(r.get("language", "?"), []).append(ok)
+        print(f"[holdouts] {min(s + bs, len(order))}/{len(order)}", flush=True)
 
     def acc(d):
         return {k: round(100 * sum(v) / len(v), 1) for k, v in sorted(d.items())}
