@@ -1,9 +1,9 @@
 {
   "dataset_id": "oellm-eu-exam-mcq-v1",
-  "version": "v0.4.0",
+  "version": "v0.5.0",
   "created": "2026-06-23",
-  "rows_grpo": 577674,
-  "rows_dpo": 1920917,
+  "rows_grpo": 582983,
+  "rows_dpo": 1936764,
   "selected_sources": [
     "exams_qa",
     "hogskoleprovet_ord",
@@ -14,6 +14,14 @@
     "polish_lek_medical_en",
     "polish_ldek_medical_en",
     "danish_citizenship_test",
+    "estonian_language_exams",
+    "estonian_school_tests",
+    "bulgarian_culture_exams",
+    "albanian_medical_systems",
+    "albanian_medical_chemistry",
+    "czech_bio_exam",
+    "czech_lit_exam",
+    "italian_bio_quiz",
     "swedish_medical_exams_hf",
     "polish_matura_dokato",
     "slovak_mathbio_dokato",
@@ -29,15 +37,15 @@
   "include_swedish_medical": false,
   "license": "Mixed; filter rows by license_id, license_category, source_id, and redistribution_status.",
   "by_language": {
-    "bg": 3837,
+    "bg": 6566,
     "ca": 1672,
-    "cs": 15227,
+    "cs": 15308,
     "da": 1505,
     "de": 29842,
     "el": 15227,
     "en": 20678,
     "es": 29970,
-    "et": 1500,
+    "et": 2438,
     "eu": 1619,
     "fi": 900,
     "fr": 29587,
@@ -45,7 +53,7 @@
     "hu": 3167,
     "hy": 900,
     "is": 900,
-    "it": 31125,
+    "it": 32016,
     "ka": 900,
     "lt": 15820,
     "lv": 900,
@@ -59,20 +67,28 @@
     "ru": 15227,
     "sk": 2117,
     "sl": 900,
-    "sq": 2405,
+    "sq": 3075,
     "sr": 16863,
     "sv": 16378,
     "tr": 17789,
     "uk": 15227
   },
   "by_source": {
+    "albanian_medical_chemistry": 270,
+    "albanian_medical_systems": 400,
     "basque_public_exams": 719,
     "belebele": 31500,
+    "bulgarian_culture_exams": 2729,
     "catalan_public_exams": 772,
+    "czech_bio_exam": 50,
+    "czech_lit_exam": 31,
     "danish_citizenship_test": 605,
+    "estonian_language_exams": 462,
+    "estonian_school_tests": 476,
     "exams_qa": 19058,
     "global_mmlu": 243558,
     "hogskoleprovet_ord": 145,
+    "italian_bio_quiz": 891,
     "llmzszl": 14269,
     "mmmlu": 70209,
     "polish_ldek_medical_en": 2726,
@@ -89,40 +105,55 @@
   },
   "by_split": {
     "test": 10691,
-    "train": 559736,
+    "train": 565045,
     "validation": 7247
   },
   "by_license_id": {
     "agpl-gpl": 466,
     "apache-2.0": 243558,
     "cc-by-4.0": 1800,
-    "cc-by-nc-sa-2.0": 183,
+    "cc-by-nc-sa-2.0": 1155,
     "cc-by-sa-4.0": 51644,
+    "cc-unspecified": 938,
     "mit": 70209,
     "open-information-use-license-catalonia": 772,
-    "open-license": 719,
-    "unknown": 208323
+    "open-license": 1389,
+    "unknown": 211052
   },
   "by_license_category": {
     "attribution": 1800,
-    "custom_open_needs_review": 1491,
-    "noncommercial_sharealike": 183,
+    "custom_open_needs_review": 3099,
+    "noncommercial_sharealike": 1155,
     "permissive": 313767,
     "sharealike": 51644,
     "strong_copyleft_needs_review": 466,
-    "unknown_or_missing": 208323
+    "unknown_or_missing": 211052
   },
   "by_redistribution_status": {
     "declared_copyleft_license_needs_review": 466,
-    "declared_open_license_needs_review": 1491,
+    "declared_open_license_needs_review": 3099,
     "official_public_unknown_redistribution": 1151,
     "redistributable_attribution": 1800,
     "redistributable_declared_license": 313767,
-    "redistributable_noncommercial_sharealike": 183,
+    "redistributable_noncommercial_sharealike": 1155,
     "redistributable_sharealike": 51644,
-    "unknown_missing_license": 207172
+    "unknown_missing_license": 209901
   },
   "source_licenses": {
+    "albanian_medical_chemistry": {
+      "rows": 270,
+      "source_license": "open in dataset row metadata; exact terms not normalized",
+      "license_id": "open-license",
+      "redistribution_status": "declared_open_license_needs_review",
+      "source_url": "https://huggingface.co/datasets/marjpri/albanian-medical-exams-chemistry-mcq-270"
+    },
+    "albanian_medical_systems": {
+      "rows": 400,
+      "source_license": "open in dataset row metadata; exact terms not normalized",
+      "license_id": "open-license",
+      "redistribution_status": "declared_open_license_needs_review",
+      "source_url": "https://huggingface.co/datasets/marjpri/albanian-medical-exams-systems-mcq-400"
+    },
     "basque_public_exams": {
       "rows": 719,
       "source_license": "Open License (dataset row metadata; exact terms not normalized)",
@@ -137,6 +168,13 @@
       "redistribution_status": "redistributable_sharealike",
       "source_url": "https://huggingface.co/datasets/facebook/belebele"
     },
+    "bulgarian_culture_exams": {
+      "rows": 2729,
+      "source_license": "unknown/missing on Hugging Face dataset card",
+      "license_id": "unknown",
+      "redistribution_status": "unknown_missing_license",
+      "source_url": "https://huggingface.co/datasets/ulsit46420/bg-culture-exams"
+    },
     "catalan_public_exams": {
       "rows": 772,
       "source_license": "Open Information Use License - Catalonia",
@@ -144,12 +182,40 @@
       "redistribution_status": "declared_open_license_needs_review",
       "source_url": "https://huggingface.co/datasets/amayuelas/aya-global-exams-catalan"
     },
+    "czech_bio_exam": {
+      "rows": 50,
+      "source_license": "CC-BY-NC-SA-2.0",
+      "license_id": "cc-by-nc-sa-2.0",
+      "redistribution_status": "redistributable_noncommercial_sharealike",
+      "source_url": "https://huggingface.co/datasets/dokato/exam-czech-bio"
+    },
+    "czech_lit_exam": {
+      "rows": 31,
+      "source_license": "CC-BY-NC-SA-2.0",
+      "license_id": "cc-by-nc-sa-2.0",
+      "redistribution_status": "redistributable_noncommercial_sharealike",
+      "source_url": "https://huggingface.co/datasets/dokato/czech-lit-exam"
+    },
     "danish_citizenship_test": {
       "rows": 605,
       "source_license": "unknown/missing on Hugging Face dataset card",
       "license_id": "unknown",
       "redistribution_status": "unknown_missing_license",
       "source_url": "https://huggingface.co/datasets/sorenmulli/citizenship-test-da"
+    },
+    "estonian_language_exams": {
+      "rows": 462,
+      "source_license": "HF dataset card tag: cc; row metadata says open; exact terms not normalized",
+      "license_id": "cc-unspecified",
+      "redistribution_status": "declared_open_license_needs_review",
+      "source_url": "https://huggingface.co/datasets/Gabrui/estonian_language_exams"
+    },
+    "estonian_school_tests": {
+      "rows": 476,
+      "source_license": "HF dataset card tag: cc; row metadata says open; exact terms not normalized",
+      "license_id": "cc-unspecified",
+      "redistribution_status": "declared_open_license_needs_review",
+      "source_url": "https://huggingface.co/datasets/Gabrui/estonian_school_tests"
     },
     "exams_qa": {
       "rows": 19058,
@@ -171,6 +237,13 @@
       "license_id": "unknown",
       "redistribution_status": "official_public_unknown_redistribution",
       "source_url": "https://www.studera.nu/hogskoleprov/om/forbereda/tidigare/"
+    },
+    "italian_bio_quiz": {
+      "rows": 891,
+      "source_license": "CC-BY-NC-SA-2.0",
+      "license_id": "cc-by-nc-sa-2.0",
+      "redistribution_status": "redistributable_noncommercial_sharealike",
+      "source_url": "https://huggingface.co/datasets/dokato/quiz-bio-it"
     },
     "llmzszl": {
       "rows": 14269,
@@ -274,8 +347,8 @@
     "pl:okulistyka": 3681,
     "pl:rehabilitacja medyczna": 3680,
     "pl:radiologia i diagnostyka obrazowa": 3677,
-    "pl:medycyna pracy": 3675,
     "pl:gastroenterologia": 3675,
+    "pl:medycyna pracy": 3675,
     "pl:psychiatria": 3671,
     "pl:endokrynologia": 3669,
     "pl:chirurgia onkologiczna": 3665,
@@ -300,10 +373,10 @@
     "pl:medycyna rodzinna": 3107,
     "pl:diabetologia": 3099,
     "pl:transplantologia kliniczna": 3090,
-    "es:professional_law": 3073,
-    "it:professional_law": 3073,
     "de:professional_law": 3073,
     "fr:professional_law": 3073,
+    "es:professional_law": 3073,
+    "it:professional_law": 3073,
     "pt:professional_law": 3073,
     "pl:stomatologia dziecięca": 2994,
     "pl:choroby wewnętrzne": 2989,
@@ -311,8 +384,8 @@
     "pl:chirurgia ogólna": 2982,
     "pl:położnictwo i ginekologia": 2973,
     "pl:stomatologia zachowawcza z endodoncją": 2964,
-    "pl:ginekologia onkologiczna": 2956,
     "pl:otorynolaryngologia": 2956,
+    "pl:ginekologia onkologiczna": 2956,
     "pl:ortopedia i traumatologia narządu ruchu": 2937,
     "pl:neurochirurgia": 2825
   }

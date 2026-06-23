@@ -136,6 +136,93 @@
       "notes": "Structured Danish Indfødsretsprøven/Medborgerskabsprøven MCQs with exam origin, two or three options, and answer letter."
     },
     {
+      "id": "estonian_language_exams",
+      "name": "Estonian language proficiency exams",
+      "languages": ["et"],
+      "domains": ["language_proficiency_exam", "estonian_language"],
+      "source_url": "https://huggingface.co/datasets/Gabrui/estonian_language_exams",
+      "upstream_official_url": "https://web.meis.ee/testest/goto.php?target=root_1&client_id=integratsioon",
+      "license": "HF dataset card tag: cc; row metadata says open; exact terms not normalized",
+      "redistribution_status": "declared_open_license_needs_review",
+      "notes": "Structured Estonian language-proficiency MCQs. v0.5 filters rows with obvious mojibake before materializing."
+    },
+    {
+      "id": "estonian_school_tests",
+      "name": "Estonian school tests",
+      "languages": ["et"],
+      "domains": ["school_exam", "baseline_test"],
+      "source_url": "https://huggingface.co/datasets/Gabrui/estonian_school_tests",
+      "upstream_official_url": "https://eis.ekk.edu.ee/eis/lahendamine",
+      "license": "HF dataset card tag: cc; row metadata says open; exact terms not normalized",
+      "redistribution_status": "declared_open_license_needs_review",
+      "notes": "Structured Estonian school-test MCQs with answer indices. v0.5 filters rows with obvious mojibake before materializing."
+    },
+    {
+      "id": "bulgarian_culture_exams",
+      "name": "Bulgarian culture and state-exam MCQs",
+      "languages": ["bg"],
+      "domains": ["school_exam", "state_exam", "language", "history", "geography", "literature"],
+      "source_url": "https://huggingface.co/datasets/ulsit46420/bg-culture-exams",
+      "license": "unknown/missing on Hugging Face dataset card",
+      "redistribution_status": "unknown_missing_license",
+      "notes": "Raw files use a custom delimiter and include Bulgarian language, literature, geography, and history MCQs. v0.5 uses a custom parser and skips malformed/context-only rows."
+    },
+    {
+      "id": "albanian_medical_systems",
+      "name": "Albanian medical systems MCQs",
+      "languages": ["sq"],
+      "domains": ["medical_exam", "medicine"],
+      "source_url": "https://huggingface.co/datasets/marjpri/albanian-medical-exams-systems-mcq-400",
+      "upstream_official_url": "https://qsha.gov.al/porvimi-i-informatizuar-i-mjekesise/",
+      "license": "open in dataset row metadata; exact terms not normalized",
+      "redistribution_status": "declared_open_license_needs_review",
+      "notes": "Structured Albanian medical MCQs from QSHA source metadata. v0.5 filters rows with obvious mojibake before materializing."
+    },
+    {
+      "id": "albanian_medical_chemistry",
+      "name": "Albanian medical chemistry MCQs",
+      "languages": ["sq"],
+      "domains": ["medical_exam", "chemistry", "medicine"],
+      "source_url": "https://huggingface.co/datasets/marjpri/albanian-medical-exams-chemistry-mcq-270",
+      "upstream_official_url": "https://qsha.gov.al/porvimi-i-informatizuar-i-mjekesise/",
+      "license": "open in dataset row metadata; exact terms not normalized",
+      "redistribution_status": "declared_open_license_needs_review",
+      "notes": "Structured Albanian medical-chemistry MCQs from QSHA source metadata. v0.5 filters rows with obvious mojibake before materializing."
+    },
+    {
+      "id": "czech_bio_exam",
+      "name": "Czech biology university-entry exam",
+      "languages": ["cs"],
+      "domains": ["university_entry_exam", "biology"],
+      "source_url": "https://huggingface.co/datasets/dokato/exam-czech-bio",
+      "upstream_official_url": "https://oca-praga.cz/app/uploads/2022/01/otazky-vzorovy_test.pdf",
+      "license": "CC-BY-NC-SA-2.0",
+      "redistribution_status": "redistributable_noncommercial_sharealike",
+      "notes": "Small structured Czech biology university-entry MCQ set. Filter out with license_id=cc-by-nc-sa-2.0 for commercial/permissive-only runs."
+    },
+    {
+      "id": "czech_lit_exam",
+      "name": "Czech grammar and literature exam",
+      "languages": ["cs"],
+      "domains": ["school_leaving_exam", "grammar", "literature"],
+      "source_url": "https://huggingface.co/datasets/dokato/czech-lit-exam",
+      "upstream_official_url": "https://maturita.cermat.cz/files/files/katalog-pozadavku/katalog-pozadavku-2018-CJL.pdf",
+      "license": "CC-BY-NC-SA-2.0",
+      "redistribution_status": "redistributable_noncommercial_sharealike",
+      "notes": "Small structured Czech grammar/literature MCQ set. Filter out with license_id=cc-by-nc-sa-2.0 for commercial/permissive-only runs."
+    },
+    {
+      "id": "italian_bio_quiz",
+      "name": "Italian biology university quiz",
+      "languages": ["it"],
+      "domains": ["university_entry_exam", "biology"],
+      "source_url": "https://huggingface.co/datasets/dokato/quiz-bio-it",
+      "upstream_official_url": "https://www.farm.unipi.it/wp-content/uploads/2020/07/QUIZ-BIOLOGIA-con-risposte.pdf",
+      "license": "CC-BY-NC-SA-2.0",
+      "redistribution_status": "redistributable_noncommercial_sharealike",
+      "notes": "Structured Italian biology MCQs with answer indices. Filter out with license_id=cc-by-nc-sa-2.0 for commercial/permissive-only runs."
+    },
+    {
       "id": "swedish_medical_exams_hf",
       "name": "Swedish medical exam MCQs",
       "languages": ["sv"],

@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Iterable
 
 DATASET_ID = "oellm-eu-exam-mcq-v1"
-VERSION = "v0.4.0"
+VERSION = "v0.5.0"
 DEFAULT_OUT = Path("data/exam_mcq/oellm-eu-exam-mcq-v1")
 DEFAULT_SOURCE_REGISTRY = Path("data/exam_mcq/source_registry.json")
 DEFAULT_EXAMS_REPO = Path("/private/tmp/exams-qa")
@@ -45,6 +45,14 @@ DEFAULT_SOURCES = (
     "polish_lek_medical_en",
     "polish_ldek_medical_en",
     "danish_citizenship_test",
+    "estonian_language_exams",
+    "estonian_school_tests",
+    "bulgarian_culture_exams",
+    "albanian_medical_systems",
+    "albanian_medical_chemistry",
+    "czech_bio_exam",
+    "czech_lit_exam",
+    "italian_bio_quiz",
     "swedish_medical_exams_hf",
     "polish_matura_dokato",
     "slovak_mathbio_dokato",
@@ -231,6 +239,78 @@ SOURCE_META = {
         "license_filter_tags": ["unknown_or_missing", "official_public_exam", "citizenship_exam"],
         "redistribution_status": "unknown_missing_license",
     },
+    "estonian_language_exams": {
+        "name": "Estonian language proficiency exams",
+        "source_url": "https://huggingface.co/datasets/Gabrui/estonian_language_exams",
+        "source_license": "HF dataset card tag: cc; row metadata says open; exact terms not normalized",
+        "license_id": "cc-unspecified",
+        "license_category": "custom_open_needs_review",
+        "license_filter_tags": ["cc_unspecified", "custom_open_license", "needs_license_review", "language_exam"],
+        "redistribution_status": "declared_open_license_needs_review",
+    },
+    "estonian_school_tests": {
+        "name": "Estonian school tests",
+        "source_url": "https://huggingface.co/datasets/Gabrui/estonian_school_tests",
+        "source_license": "HF dataset card tag: cc; row metadata says open; exact terms not normalized",
+        "license_id": "cc-unspecified",
+        "license_category": "custom_open_needs_review",
+        "license_filter_tags": ["cc_unspecified", "custom_open_license", "needs_license_review", "school_exam"],
+        "redistribution_status": "declared_open_license_needs_review",
+    },
+    "bulgarian_culture_exams": {
+        "name": "Bulgarian culture and state-exam MCQs",
+        "source_url": "https://huggingface.co/datasets/ulsit46420/bg-culture-exams",
+        "source_license": "unknown/missing on Hugging Face dataset card",
+        "license_id": "unknown",
+        "license_category": "unknown_or_missing",
+        "license_filter_tags": ["unknown_or_missing", "school_exam", "state_exam"],
+        "redistribution_status": "unknown_missing_license",
+    },
+    "albanian_medical_systems": {
+        "name": "Albanian medical systems MCQs",
+        "source_url": "https://huggingface.co/datasets/marjpri/albanian-medical-exams-systems-mcq-400",
+        "source_license": "open in dataset row metadata; exact terms not normalized",
+        "license_id": "open-license",
+        "license_category": "custom_open_needs_review",
+        "license_filter_tags": ["custom_open_license", "needs_license_review", "medical_exam"],
+        "redistribution_status": "declared_open_license_needs_review",
+    },
+    "albanian_medical_chemistry": {
+        "name": "Albanian medical chemistry MCQs",
+        "source_url": "https://huggingface.co/datasets/marjpri/albanian-medical-exams-chemistry-mcq-270",
+        "source_license": "open in dataset row metadata; exact terms not normalized",
+        "license_id": "open-license",
+        "license_category": "custom_open_needs_review",
+        "license_filter_tags": ["custom_open_license", "needs_license_review", "medical_exam"],
+        "redistribution_status": "declared_open_license_needs_review",
+    },
+    "czech_bio_exam": {
+        "name": "Czech biology university-entry exam",
+        "source_url": "https://huggingface.co/datasets/dokato/exam-czech-bio",
+        "source_license": "CC-BY-NC-SA-2.0",
+        "license_id": "cc-by-nc-sa-2.0",
+        "license_category": "noncommercial_sharealike",
+        "license_filter_tags": ["attribution_required", "noncommercial", "sharealike"],
+        "redistribution_status": "redistributable_noncommercial_sharealike",
+    },
+    "czech_lit_exam": {
+        "name": "Czech grammar and literature exam",
+        "source_url": "https://huggingface.co/datasets/dokato/czech-lit-exam",
+        "source_license": "CC-BY-NC-SA-2.0",
+        "license_id": "cc-by-nc-sa-2.0",
+        "license_category": "noncommercial_sharealike",
+        "license_filter_tags": ["attribution_required", "noncommercial", "sharealike"],
+        "redistribution_status": "redistributable_noncommercial_sharealike",
+    },
+    "italian_bio_quiz": {
+        "name": "Italian biology university quiz",
+        "source_url": "https://huggingface.co/datasets/dokato/quiz-bio-it",
+        "source_license": "CC-BY-NC-SA-2.0",
+        "license_id": "cc-by-nc-sa-2.0",
+        "license_category": "noncommercial_sharealike",
+        "license_filter_tags": ["attribution_required", "noncommercial", "sharealike"],
+        "redistribution_status": "redistributable_noncommercial_sharealike",
+    },
     "swedish_medical_exams_hf": {
         "name": "Swedish medical exam MCQs",
         "source_url": "https://huggingface.co/datasets/sarafuyu/swedish-medical-exams-mcq-1006-json",
@@ -361,6 +441,22 @@ SOURCE_ALIASES = {
     "polish_ldek_medical_en": "polish_ldek_medical_en",
     "danish-citizenship": "danish_citizenship_test",
     "danish_citizenship_test": "danish_citizenship_test",
+    "estonian-language": "estonian_language_exams",
+    "estonian_language_exams": "estonian_language_exams",
+    "estonian-school": "estonian_school_tests",
+    "estonian_school_tests": "estonian_school_tests",
+    "bulgarian-culture": "bulgarian_culture_exams",
+    "bulgarian_culture_exams": "bulgarian_culture_exams",
+    "albanian-systems": "albanian_medical_systems",
+    "albanian_medical_systems": "albanian_medical_systems",
+    "albanian-chemistry": "albanian_medical_chemistry",
+    "albanian_medical_chemistry": "albanian_medical_chemistry",
+    "czech-bio": "czech_bio_exam",
+    "czech_bio_exam": "czech_bio_exam",
+    "czech-lit": "czech_lit_exam",
+    "czech_lit_exam": "czech_lit_exam",
+    "italian-bio": "italian_bio_quiz",
+    "italian_bio_quiz": "italian_bio_quiz",
     "polish_matura": "polish_matura_dokato",
     "polish_matura_dokato": "polish_matura_dokato",
     "slovak_mathbio": "slovak_mathbio_dokato",
@@ -703,6 +799,19 @@ def require_load_dataset():
     except ImportError as exc:
         raise SystemExit("Missing dependency: pip install datasets") from exc
     return load_dataset
+
+
+def require_hf_hub_download():
+    try:
+        from huggingface_hub import hf_hub_download
+    except ImportError as exc:
+        raise SystemExit("Missing dependency: pip install huggingface_hub") from exc
+    return hf_hub_download
+
+
+def has_obvious_mojibake(*values: object) -> bool:
+    text = " ".join(str(value or "") for value in values)
+    return any(marker in text for marker in ["�", "Ć", "Ä", "Å", "ļ", "æ½"])
 
 
 def read_tar_jsonl(path: Path) -> Iterable[dict]:
@@ -1118,6 +1227,201 @@ def load_danish_citizenship_test() -> list[McqRow]:
         if row:
             rows.append(row)
     return rows
+
+
+def load_indexed_options_dataset(
+    dataset_name: str,
+    *,
+    source_id: str,
+    language: str,
+    language_name: str,
+    domain: str,
+    task_type: str,
+    filter_mojibake: bool = False,
+) -> list[McqRow]:
+    load_dataset = require_load_dataset()
+    rows = []
+    source_split = "train"
+    print(f"Loading {dataset_name}/{source_split}", flush=True)
+    dataset = load_dataset(dataset_name, split=source_split)
+    for index, raw_row in enumerate(dataset):
+        raw = dict(raw_row)
+        question = normalize_ws(raw.get("question"))
+        options = make_options(raw.get("options") or [])
+        answer = numeric_answer_to_letter(raw.get("answer"), one_based=True)
+        if filter_mojibake and has_obvious_mojibake(question, *(option["text"] for option in options), answer):
+            continue
+        row = make_mcq_row(
+            source_id=source_id,
+            source_split=source_split,
+            source_record_id=f"{normalize_ws(raw.get('file_name'))}/{normalize_ws(raw.get('original_question_num')) or index}",
+            language=language,
+            language_name=language_name,
+            domain=domain,
+            subject=normalize_ws(raw.get("category_en")) or normalize_ws(raw.get("category_original_lang")),
+            grade=normalize_ws(raw.get("level")),
+            task_type=task_type,
+            question=question,
+            options=options,
+            answer=answer,
+            raw=raw,
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
+def load_estonian_language_exams() -> list[McqRow]:
+    return load_indexed_options_dataset(
+        "Gabrui/estonian_language_exams",
+        source_id="estonian_language_exams",
+        language="et",
+        language_name="Estonian",
+        domain="language_proficiency_exam",
+        task_type="language_proficiency_exam_mcq",
+        filter_mojibake=True,
+    )
+
+
+def load_estonian_school_tests() -> list[McqRow]:
+    return load_indexed_options_dataset(
+        "Gabrui/estonian_school_tests",
+        source_id="estonian_school_tests",
+        language="et",
+        language_name="Estonian",
+        domain="school_exam",
+        task_type="school_exam_mcq",
+        filter_mojibake=True,
+    )
+
+
+BG_ANSWER_MAP = {
+    "A": "A",
+    "B": "B",
+    "C": "C",
+    "D": "D",
+    "E": "E",
+    "А": "A",
+    "Б": "B",
+    "В": "C",
+    "Г": "D",
+    "Д": "E",
+}
+
+
+def bg_answer_to_letter(value: object) -> str:
+    return BG_ANSWER_MAP.get(normalize_ws(value).upper(), "")
+
+
+def load_bulgarian_culture_exams() -> list[McqRow]:
+    hf_hub_download = require_hf_hub_download()
+    rows = []
+    repo_id = "ulsit46420/bg-culture-exams"
+    files = [
+        ("train", "train/db.csv"),
+        ("train", "train/dg.csv"),
+        ("train", "train/di.csv"),
+        ("test", "test/db.csv"),
+        ("test", "test/dg.csv"),
+        ("test", "test/di.csv"),
+    ]
+    for source_split, filename in files:
+        print(f"Loading Bulgarian culture exams {filename}", flush=True)
+        path = Path(hf_hub_download(repo_id=repo_id, repo_type="dataset", filename=filename))
+        for line_index, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines()):
+            parts = [normalize_ws(part) for part in line.split("__,__")]
+            if len(parts) < 11:
+                continue
+            file_name, question_number, raw_task_type, category, topic = parts[:5]
+            answer = bg_answer_to_letter(parts[-1])
+            if not answer:
+                continue
+            if raw_task_type in {"multiple_choice_short_text", "multiple_choice_with_text"} and len(parts) >= 12:
+                question = normalize_ws(f"{parts[5]}\n\n{parts[6]}")
+                option_values = parts[7:-1]
+            else:
+                question = parts[5]
+                option_values = parts[6:-1]
+            subject = " / ".join(item for item in [category, topic] if item)
+            row = make_mcq_row(
+                source_id="bulgarian_culture_exams",
+                source_split=source_split,
+                source_record_id=f"{filename}/{question_number or line_index}",
+                language="bg",
+                language_name="Bulgarian",
+                domain="school_exam",
+                subject=subject,
+                grade=None,
+                task_type=raw_task_type or "bulgarian_exam_mcq",
+                question=question,
+                options=make_options(option_values),
+                answer=answer,
+                raw={
+                    "source_file": filename,
+                    "line_index": line_index,
+                    "parts": parts,
+                },
+            )
+            if row:
+                rows.append(row)
+    return rows
+
+
+def load_albanian_medical_systems() -> list[McqRow]:
+    return load_indexed_options_dataset(
+        "marjpri/albanian-medical-exams-systems-mcq-400",
+        source_id="albanian_medical_systems",
+        language="sq",
+        language_name="Albanian",
+        domain="medical_exam",
+        task_type="medical_exam_mcq",
+        filter_mojibake=True,
+    )
+
+
+def load_albanian_medical_chemistry() -> list[McqRow]:
+    return load_indexed_options_dataset(
+        "marjpri/albanian-medical-exams-chemistry-mcq-270",
+        source_id="albanian_medical_chemistry",
+        language="sq",
+        language_name="Albanian",
+        domain="medical_exam",
+        task_type="medical_exam_mcq",
+        filter_mojibake=True,
+    )
+
+
+def load_czech_bio_exam() -> list[McqRow]:
+    return load_indexed_options_dataset(
+        "dokato/exam-czech-bio",
+        source_id="czech_bio_exam",
+        language="cs",
+        language_name="Czech",
+        domain="university_entry_exam",
+        task_type="university_entry_exam_mcq",
+    )
+
+
+def load_czech_lit_exam() -> list[McqRow]:
+    return load_indexed_options_dataset(
+        "dokato/czech-lit-exam",
+        source_id="czech_lit_exam",
+        language="cs",
+        language_name="Czech",
+        domain="school_leaving_exam",
+        task_type="grammar_literature_exam_mcq",
+    )
+
+
+def load_italian_bio_quiz() -> list[McqRow]:
+    return load_indexed_options_dataset(
+        "dokato/quiz-bio-it",
+        source_id="italian_bio_quiz",
+        language="it",
+        language_name="Italian",
+        domain="university_entry_exam",
+        task_type="biology_exam_mcq",
+    )
 
 
 def load_polish_matura_dokato() -> list[McqRow]:
@@ -1691,6 +1995,22 @@ def main() -> None:
             rows.extend(load_polish_ldek_medical_en())
         elif source == "danish_citizenship_test":
             rows.extend(load_danish_citizenship_test())
+        elif source == "estonian_language_exams":
+            rows.extend(load_estonian_language_exams())
+        elif source == "estonian_school_tests":
+            rows.extend(load_estonian_school_tests())
+        elif source == "bulgarian_culture_exams":
+            rows.extend(load_bulgarian_culture_exams())
+        elif source == "albanian_medical_systems":
+            rows.extend(load_albanian_medical_systems())
+        elif source == "albanian_medical_chemistry":
+            rows.extend(load_albanian_medical_chemistry())
+        elif source == "czech_bio_exam":
+            rows.extend(load_czech_bio_exam())
+        elif source == "czech_lit_exam":
+            rows.extend(load_czech_lit_exam())
+        elif source == "italian_bio_quiz":
+            rows.extend(load_italian_bio_quiz())
         elif source == "swedish_medical_exams_hf":
             rows.extend(load_swedish_medical_exams_hf())
         elif source == "polish_matura_dokato":

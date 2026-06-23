@@ -14,12 +14,12 @@ academic-exam benchmarks, and reading/causal reasoning MCQ sources.
 
 ## Current Build
 
-Version: `v0.4.0`
+Version: `v0.5.0`
 
-- 577,674 GRPO/RLVR rows
-- 1,920,917 DPO preference pairs
+- 582,983 GRPO/RLVR rows
+- 1,936,764 DPO preference pairs
 - 35 language codes
-- 20 sources
+- 28 sources
 - mixed licenses, filterable per row
 
 Files:
@@ -49,6 +49,20 @@ The real national/official exam layer currently includes:
 - `polish_ldek_medical_en`: 2,726 English LDEK dental licensing rows, `unknown`
 - `danish_citizenship_test`: 605 Danish citizenship/permanent-residence test
   rows, `unknown`
+- `estonian_language_exams`: 462 Estonian language-proficiency rows,
+  `cc-unspecified`
+- `estonian_school_tests`: 476 Estonian school-test rows, `cc-unspecified`
+- `bulgarian_culture_exams`: 2,729 Bulgarian language/literature/geography/history
+  rows parsed from custom-delimited raw files, `unknown`
+- `albanian_medical_systems`: 400 Albanian medical systems rows,
+  custom open license needing review
+- `albanian_medical_chemistry`: 270 Albanian medical chemistry rows,
+  custom open license needing review
+- `czech_bio_exam`: 50 Czech biology university-entry rows,
+  `cc-by-nc-sa-2.0`
+- `czech_lit_exam`: 31 Czech grammar/literature rows, `cc-by-nc-sa-2.0`
+- `italian_bio_quiz`: 891 Italian biology university quiz rows,
+  `cc-by-nc-sa-2.0`
 - `swedish_medical_exams_hf`: 1,006 Swedish medical licensing rows, `unknown`
 - `polish_matura_dokato`: 52 Polish matura rows, `cc-by-nc-sa-2.0`
 - `slovak_mathbio_dokato`: 131 Slovak math/biology university-entry rows,
@@ -83,11 +97,12 @@ Current license counts:
 - `mit`: 70,209 rows
 - `cc-by-sa-4.0`: 51,644 rows
 - `cc-by-4.0`: 1,800 rows
-- `cc-by-nc-sa-2.0`: 183 rows
-- `open-license`: 719 rows
+- `cc-by-nc-sa-2.0`: 1,155 rows
+- `cc-unspecified`: 938 rows
+- `open-license`: 1,389 rows
 - `open-information-use-license-catalonia`: 772 rows
 - `agpl-gpl`: 466 rows
-- `unknown`: 208,323 rows
+- `unknown`: 211,052 rows
 
 Examples:
 
@@ -174,7 +189,6 @@ python3 scripts/discover_hogskoleprovet_sources.py
 High-priority parser targets:
 
 - Spanish MIR/FSE medical residency exams
-- Polish LEK/LDEK medical licensing exams
 - Italian MUR medicine admission tests
 - French baccalauréat annales
 - Czech CERMAT maturita

@@ -23,8 +23,8 @@ training.
 
 This build contains:
 
-- GRPO/RLVR rows: 577674
-- DPO pairs: 1920917
+- GRPO/RLVR rows: 582983
+- DPO pairs: 1936764
 - Languages: bg, ca, cs, da, de, el, en, es, et, eu, fi, fr, hr, hu, hy, is, it, ka, lt, lv, mk, mt, nb, nl, pl, pt, ro, ru, sk, sl, sq, sr, sv, tr, uk
 
 ## License Filtering
@@ -37,22 +37,31 @@ Licenses in this build:
 - `agpl-gpl`: 466 rows
 - `apache-2.0`: 243558 rows
 - `cc-by-4.0`: 1800 rows
-- `cc-by-nc-sa-2.0`: 183 rows
+- `cc-by-nc-sa-2.0`: 1155 rows
 - `cc-by-sa-4.0`: 51644 rows
+- `cc-unspecified`: 938 rows
 - `mit`: 70209 rows
 - `open-information-use-license-catalonia`: 772 rows
-- `open-license`: 719 rows
-- `unknown`: 208323 rows
+- `open-license`: 1389 rows
+- `unknown`: 211052 rows
 
 Sources:
 
+- `albanian_medical_chemistry`: 270 rows, `open-license`, `declared_open_license_needs_review`
+- `albanian_medical_systems`: 400 rows, `open-license`, `declared_open_license_needs_review`
 - `basque_public_exams`: 719 rows, `open-license`, `declared_open_license_needs_review`
 - `belebele`: 31500 rows, `cc-by-sa-4.0`, `redistributable_sharealike`
+- `bulgarian_culture_exams`: 2729 rows, `unknown`, `unknown_missing_license`
 - `catalan_public_exams`: 772 rows, `open-information-use-license-catalonia`, `declared_open_license_needs_review`
+- `czech_bio_exam`: 50 rows, `cc-by-nc-sa-2.0`, `redistributable_noncommercial_sharealike`
+- `czech_lit_exam`: 31 rows, `cc-by-nc-sa-2.0`, `redistributable_noncommercial_sharealike`
 - `danish_citizenship_test`: 605 rows, `unknown`, `unknown_missing_license`
+- `estonian_language_exams`: 462 rows, `cc-unspecified`, `declared_open_license_needs_review`
+- `estonian_school_tests`: 476 rows, `cc-unspecified`, `declared_open_license_needs_review`
 - `exams_qa`: 19058 rows, `cc-by-sa-4.0`, `redistributable_sharealike`
 - `global_mmlu`: 243558 rows, `apache-2.0`, `redistributable_declared_license`
 - `hogskoleprovet_ord`: 145 rows, `unknown`, `official_public_unknown_redistribution`
+- `italian_bio_quiz`: 891 rows, `cc-by-nc-sa-2.0`, `redistributable_noncommercial_sharealike`
 - `llmzszl`: 14269 rows, `unknown`, `unknown_missing_license`
 - `mmmlu`: 70209 rows, `mit`, `redistributable_declared_license`
 - `polish_ldek_medical_en`: 2726 rows, `unknown`, `unknown_missing_license`
