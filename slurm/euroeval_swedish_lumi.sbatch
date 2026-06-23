@@ -29,8 +29,9 @@ mkdir -p "$RESULTS"
 export PYTORCH_HIP_ALLOC_CONF=expandable_segments:True PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 echo "EUROEVAL  model=$MODEL  tag=$TAG  langs=$LANGUAGES"
 : "${OFFLINE:=0}"   # 1 = force offline (datasets must be pre-cached). 0 = allow HF download.
+SHIM=/scratch/project_465002530/users/bmoell/euroeval-shim   # hides flash_attn (EuroEval refuses it)
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
-  export PYTHONPATH=$OVERLAY:\${PYTHONPATH:-} HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
+  export PYTHONPATH=$SHIM:$OVERLAY:\${PYTHONPATH:-} HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
   export HF_HUB_OFFLINE=$OFFLINE HF_DATASETS_OFFLINE=$OFFLINE &&
   cd '$RESULTS' &&
   python3 -m euroeval --model '$MODEL' --language $LANGUAGES \
