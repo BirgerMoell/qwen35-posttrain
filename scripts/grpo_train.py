@@ -18,7 +18,16 @@ import re
 import torch
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from trl import GRPOConfig, GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
+
+# --- TRL bug workaround (must run BEFORE importing GRPOTrainer) ---
+# trl.import_utils.is_vllm_ascend_available() returns the (exists, version) TUPLE from
+# _is_package_available instead of just the bool. A non-empty tuple is truthy, so TRL's
+# `if is_vllm_ascend_available():` always fires and imports vllm_ascend (a Huawei-NPU package,
+# absent on ROCm) -> ImportError at GRPOTrainer import. Force it False first.
+import trl.import_utils as _trl_iu  # noqa: E402
+_trl_iu.is_vllm_ascend_available = lambda *a, **k: False
+
+from trl import GRPOConfig, GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config  # noqa: E402
 
 LETTER = re.compile(r"\b([A-Da-d])\b")
 
