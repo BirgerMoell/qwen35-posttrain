@@ -31,10 +31,10 @@ echo "EUROEVAL  model=$MODEL  tag=$TAG  langs=$LANGUAGES"
 : "${OFFLINE:=0}"   # 1 = force offline (datasets must be pre-cached). 0 = allow HF download.
 SHIM=/scratch/project_465002530/users/bmoell/euroeval-shim   # hides flash_attn (EuroEval refuses it)
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
-  export PYTHONPATH=$SHIM:$OVERLAY:\${PYTHONPATH:-} HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
+  export PYTHONPATH=$OVERLAY:\${PYTHONPATH:-} HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
   export HF_HUB_OFFLINE=$OFFLINE HF_DATASETS_OFFLINE=$OFFLINE &&
   cd '$RESULTS' &&
-  python3 -m euroeval --model '$MODEL' --language $LANGUAGES \
+  python3 $SLURM_SUBMIT_DIR/scripts/run_euroeval.py --model '$MODEL' --language $LANGUAGES \
     --model-impl transformers --device cuda --verbose --force
 "
 echo "EUROEVAL $TAG DONE $(date) -> $RESULTS"
