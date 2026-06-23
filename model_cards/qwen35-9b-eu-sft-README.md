@@ -71,6 +71,66 @@ small buckets as indicative. A fuller eval is in progress.)*
 The headline: **instruction following 6.7 → 73.3** — the base model rarely produced the
 required answer format in European languages; this model reliably does.
 
+## Example generation (Swedish)
+
+Real output from this model. **Prompt:** `Vad är meningen med livet?`
+(`max_new_tokens=2048`, `temperature=0.7`). The model is a **reasoning model** — it emits an
+internal chain-of-thought inside `<think>…</think>`, then the final answer. For a clean,
+answer-only response use `enable_thinking=False` in `tokenizer.apply_chat_template(...)` or
+strip the `<think>…</think>` block.
+
+<details>
+<summary>Reasoning trace (the model's <code>&lt;think&gt;</code> block — click to expand)</summary>
+
+```
+Here's a thinking process that leads to the suggested response:
+1.  Analyze the Request:
+    *   Question: "Vad är meningen med livet?" (What is the meaning of life?)
+    *   Language: Swedish.
+    *   Nature of Question: Philosophical, subjective, open-ended, potentially profound.
+    *   Goal: Provide a thoughtful, balanced answer that acknowledges the complexity without
+        imposing a single definitive answer.
+2.  Determine the Approach: avoid a single dogmatic answer; present different perspectives
+    (philosophical, scientific, religious, personal); encourage the user to reflect.
+3.  Drafting the Content (Internal Monologue): existentialism (Sartre, Camus); religion;
+    science (evolution, purposelessness); personal meaning (happiness, relationships).
+4.  Refining in Swedish, 5. Polishing/Structuring (bullet points), 6. Final review (tone,
+    natural Swedish, not preachy), 7-8. Final polish.
+Okay, let's write the response based on this thought process.
+```
+</details>
+
+**Final answer (after `</think>`):**
+
+> Frågan om livets mening är en av de mest grundläggande och diskuterade frågorna i
+> mänskligheten. Det finns inget enkelt eller universellt svar, men här är några olika
+> perspektiv som kan hjälpa dig att tänka vidare:
+>
+> 1. **Filosofiskt perspektiv**: Många filosofer har diskuterat livets mening under
+>    årtusenden. Existentialister som Jean-Paul Sartre och Albert Camus menade att människor
+>    måste skapa sin egen mening, eftersom det inte finns en inbyggd mening.
+> 2. **Religiöst perspektiv**: I många religioner finns det en tydlig mening med livet, som
+>    att tjäna Gud eller att följa en specifik väg till evigheten.
+> 3. **Vetenskapligt perspektiv**: Från ett vetenskapligt perspektiv kan man argumentera för
+>    att livet inte har någon inneboende mening, eftersom universum inte verkar ha ett
+>    specifikt syfte.
+> 4. **Personligt perspektiv**: För många människor är livets mening att hitta tillfredsställelse
+>    i vardagliga saker som att älska andra, skapa konst, hjälpa andra eller uppnå personliga mål.
+> 5. **Existentialistiskt perspektiv**: Enligt existentialismen är det upp till varje individ
+>    att skapa sin egen mening.
+> 6. **Humanistiskt perspektiv**: Många anser att livets mening är att skapa en bättre värld
+>    för andra, genom att främja jämlikhet och rättvisa.
+> 7. **Spiritualistiskt perspektiv**: Många anser att livets mening är att lära sig och växa,
+>    genom att utforska sin andliga sida.
+>
+> Det finns ingen enda rätt svar på frågan om livets mening, och det är upp till varje individ
+> att hitta sin egen mening. … Det är viktigare att leva ett meningsfullt liv, snarare än att
+> hitta en specifik mening med livet. Livet är ett mysterium, och det är ok att inte ha alla svar.
+
+*Observations: fluent, idiomatic Swedish with a clear structure; the long conclusion repeats
+itself a few times (an over-generation tendency that the planned preference-optimization stage
+should reduce).*
+
 ## Training
 
 | | |
