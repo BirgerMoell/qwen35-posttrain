@@ -1,0 +1,255 @@
+{
+  "model": "4b-final",
+  "n": 24,
+  "summary": {
+    "sv_purity": 1.0,
+    "sprakkvalitet": null,
+    "korrekthet": null,
+    "instruktion": null,
+    "hjalpsamhet": null
+  },
+  "by_category": {
+    "instruktion": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kreativt": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_allmän": {
+      "n": 1,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_sverige": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "resonemang": {
+      "n": 4,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sammanfattning": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sentiment": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sprakriktighet": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "vardagskunskap": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    }
+  },
+  "results": [
+    {
+      "category": "sentiment",
+      "prompt": "Analysera känslan i följande recension och avgör om den är positiv, negativ eller neutral. Motivera kort. Recension: \"Maten var god men servicen var långsam och lokalen kändes sliten.\"",
+      "answer": "Känslan i recensionen är blandad, men överväger negativt. Den positiva delen om maten (\"maten var god\") kontrasteras av negativa aspekter om servicen (\"servicen var långsam\") och lokalen (\"lokalen kändes sliten\"). Denna kombination av positiva och negativa yttranden, där negativa yttranden dominerar, resulterar i en negativ känsla.",
+      "sv_purity": 1.0,
+      "words": 46
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Är följande kundkommentar positiv eller negativ? Förklara varför. \"Jag hade höga förväntningar men blev tyvärr besviken på kvaliteten.\"",
+      "answer": "Denna kundkommentar är negativ. Ordet \"besviken\" och uttrycket \"höga förväntningar\" tyder på en negativ upplevelse, och meningen \"tyvärr\" förstärker den negativa tonen.",
+      "sv_purity": 1.0,
+      "words": 22
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Vilken känsla uttrycker denna tweet, och hur säker är du? \"Äntligen fredag! Helgen kan inte komma snabbt nog.\"",
+      "answer": "Denna tweet uttrycker en känsla av glädje eller upphetsning, och jag är 96% säker på det. Språket \"Äntligen fredag!\" och \"Helgen kan inte komma snabbt nog\" antyder en positiv och ant期待ig ton.",
+      "sv_purity": 1.0,
+      "words": 32
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vilka är Sveriges tre största sjöar till ytan, i storleksordning?",
+      "answer": "Sveriges tre största sjöar till ytan är Vänern, Mälaren och Vättern. Dessa sjöar är de största sjöarna i Sverige och är viktiga för både fiskeri och turism. De är också viktiga för den svenska ekonomin och har en stor betydelse för den svenska kulturen.",
+      "sv_purity": 1.0,
+      "words": 44
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Förklara kortfattat hur det svenska riksdagsvalet fungerar och vad fyraprocentsspärren innebär.",
+      "answer": "Sveriges riksdagsval hålls vart fjärde år och riksdagen har 349 platser. För att en part i riksdagen ska få minst en mandatplats måste partiet nå 4% av rösträkningen. Om inte, men partiet har minst en mandatplats, tilldelas partiet en platstilldelning i stället för att bli avstängd. Fyraprocentsspärren innebär att en part för att få plats i riksdagen måste nå minst 4% av rösträkningen. Om partiet inte når 4% av rösträkningen, men ändå har minst en mandatplats, tilldelas partiet en platstilldelning i stället för att bli avstängd.",
+      "sv_purity": 1.0,
+      "words": 86
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vem var Selma Lagerlöf och varför är hon viktig i svensk litteraturhistoria?",
+      "answer": "Selma Ottilia Margareta Lagerlöf (1858-1940) var en av Sveriges mest kända och betydande författare. Hon är känd för sina romantiska och realistiska berättelser, som ofta handlar om människor i omvandling eller om övernaturliga fenomen. Lagerlöf är också berömd för sin bok \"När det hände i Skansen\", som är en av de första svenska barnboken.\n\nLagerlöf är viktig i svensk litteraturhistoria för flera anledningar. För det första var hon en av de första kvinnorna i Sverige som blev en erkänd författare. Hon var också en av de första kvinnorna som fick en stipendium för sin litterära verksamhet. Detta var en stor framsteg för kvinnliga författare i Sverige, och Lagerlöf är fortfarande en av de mest respekterade och inflytelserika kvinnliga författare i Sverige.\n\nFör det andra var Lagerlöf en pionjär inom barnlitteraturen. Hennes bok \"När det hände i Skansen\" var en av de första svenska barnboken, och hon var en av de första kvinnorna som skrev barnlitteratur. Hennes verk har haft en stor påverkan på svensk barnlitteratur, och hennes stil och tematik har inspirerat många andra författare.\n\nFör det tredje var Lagerlöf en pionjär inom realismen i svensk litteratur. Hon var en av de första svenska författarna som skrev realistiska berättelser, och hennes verk har haft en stor påverkan på svensk litteraturhistoria. Hennes stil och tematik har inspirerat många andra författare, och hennes verk har blivit en del av svensk litterär tradition.\n\nSammanfattningsvis är Selma Lagerlöf en viktig figur i svensk",
+      "sv_purity": 1.0,
+      "words": 239
+    },
+    {
+      "category": "resonemang",
+      "prompt": "En affär säljer äpplen för 12 kronor styck. Om du köper 7 äpplen och betalar med en hundralapp, hur mycket får du tillbaka? Visa uträkningen.",
+      "answer": "För att lösa detta problem behöver vi först beräkna kostnaden för 7 äpplen, sedan subtrahera denna kostnad från hundralappen och till sist beräkna hur mycket du får tillbaka.\n\nFörst beräknar vi kostnaden för 7 äpplen:\n7 äpplen × 12 kronor per äppl = 84 kronor\n\nDärefter subtraherar vi kostnaden för äpplena från hundralappen:\n1000 kronor - 84 kronor = 916 kronor\n\nDå får du tillbaka 916 kronor.",
+      "sv_purity": 1.0,
+      "words": 67
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Anna är dubbelt så gammal som Erik. Om fem år är deras sammanlagda ålder 40 år. Hur gamla är de nu? Resonera steg för steg.",
+      "answer": "## Steg 1: Definiera variablerna\nLåt oss beteckna Erikens nuvarande ålder som E och Annans nuvarande ålder som A.\n\n## Steg 2: Uttrycka den första uppgiften som en ekvation\nEftersom Anna är dubbelt så gammal som Erik, kan vi skriva den första uppgiften som: A = 2E.\n\n## Steg 3: Uttrycka den andra uppgiften som en ekvation\nOm fem år är deras sammanlagda ålder 40 år, kan vi skriva den andra uppgiften som: (E + 5) + (A + 5) = 40.\n\n## Steg 4: Enkla den andra ekvationen\nVi kan förenkla den andra ekvationen till: E + A + 10 = 40.\n\n## Steg 5: Lös den förenklade ekvationen för A + E\nFrån den förenklade ekvationen kan vi dra slutsatsen att A + E = 30.\n\n## Steg 6: Ersätta A med 2E i ekvationen A + E = 30\nEftersom vi vet att A = 2E från den första uppgiften, kan vi ersätta A med 2E i ekvationen A + E = 30, vilket ger oss 2E + E = 30.\n\n## Steg 7: Lös för E\nVi kan lösa ekvationen 3E = 30 för E, vilket ger oss E = 10.\n\n## Steg 8: Lös för A med hjälp av värdet på E\nNu som vi vet att E = 10 och A = 2E, kan vi lösa",
+      "sv_purity": 1.0,
+      "words": 222
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma? Förklara logiken.",
+      "answer": "## Steg 1: Identifiera de givna påståendena.\nVi har två påståenden: \"Om alla katter är däggdjur\" och \"vissa däggdjur kan simma\".\n\n## Steg 2: Förstå den logiska strukturen i de givna påståendena.\nDet första påståendet är en allmän påstående som säger att alla katter är däggdjur. Detta kan representeras med en logisk implikation: Om något är en katt, då är det ett däggdjur.\n\n## Steg 3: Analysera det andra påståendet.\nDet andra påståendet säger att vissa däggdjur kan simma. Detta är ett exempel på ett delvis påstående som indikerar att vissa individer inom däggdjursgruppen har den egenskapen att kunna simma.\n\n## Steg 4: Dra en slutsats baserat på de givna påståendena.\nEftersom alla katter är däggdjur och vissa däggdjur kan simma, kan vi dra slutsatsen att vissa katter kan simma. Detta följer direkt från den logiska strukturen av de givna påståendena.\n\n## Steg 5: Bekräfta slutsatsen med en logisk inferens.\nOm vi antar att det finns katter som är däggdjur (vilket vi vet från det första påståendet) och vi vet att vissa däggdjur kan simma, kan vi använda transitiivitet för att dra slutsatsen att vissa katter kan simma. Detta beror på att om katter är en undergrupp av däggdjur och vissa däggdjur har en viss egenskap (att kunna simma), måste vissa katter också ha denna",
+      "sv_purity": 1.0,
+      "words": 215
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Sammanfatta följande text i en mening: \"Klimatförändringarna påverkar redan Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer. Forskare varnar för att vissa arter kan försvinna medan nya etablerar sig, vilket förändrar de svenska ekosystemen i grunden.\"",
+      "answer": "Klimatförändringarna har redan påverkat Sverige med mildare vintrar, ökad nederbörd och stigande havsnivåer, vilket leder till att vissa arter försvinner och nya etablerar sig, förändrande de svenska ekosystemen i grunden.",
+      "sv_purity": 1.0,
+      "words": 30
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Ge en kort sammanfattning (max tre meningar) av vad nyheten handlar om: \"Regeringen presenterade idag en ny satsning på järnvägsunderhåll. Satsningen omfattar tio miljarder kronor över fyra år och syftar till att minska förseningarna i tågtrafiken. Oppositionen menar att beloppet är otillräckligt.\"",
+      "answer": "Regeringen har presenterat en ny satsning på järnvägsunderhåll för att minska förseningar i tågtrafiken. Satsningen är 10 miljarder kronor över fyra år. Oppositionen menar dock att beloppet är otillräckligt.",
+      "sv_purity": 1.0,
+      "words": 29
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Rätta eventuella grammatik- och stavfel i meningen och förklara vad du ändrade: \"Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handlade något.\"",
+      "answer": "Rätt meningsformulering: \"Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handla något.\"\n\nFörklaring:\n\n* \"mjölk\" är skrivet med ett litet m i början, eftersom det är ett ord som inte börjar med ett stort bokstav i mitten av en mening.\n* \"handlade\" byts ut mot \"handla\" eftersom det ska vara samma verbform som \"köpa\" i \"för att köpa mjölk\". I det här fallet behöver vi det infinitiva formen av verbet, som är \"att handla\".\n* \"affären\" är skrivet med ett litet a i början, eftersom det är ett ord som inte börjar med ett stort bokstav i mitten av en mening.\n\nDetta är en korrekt meningsformulering som är grammatiskt korrekt och har rätt stavning.",
+      "sv_purity": 1.0,
+      "words": 124
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Är följande mening grammatiskt korrekt svenska? Om inte, skriv den korrekt: \"De hade redan ätit middag när vi kom fram till restaurangen.\"",
+      "answer": "Ja, meningen är grammatiskt korrekt svenska.",
+      "sv_purity": 1.0,
+      "words": 6
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Förklara skillnaden mellan \"de\" och \"dem\" och ge ett exempel på korrekt användning av vardera.",
+      "answer": "Skillnaden mellan \"de\" och \"dem\" är att \"de\" används som subjekt och \"dem\" används som objekt i ett stycke. Till exempel kan man säga: \"Jag pratade med dem\", där \"dem\" är objektet. Men om man säger \"De pratade med mig\", där \"de\" är subjektet.",
+      "sv_purity": 1.0,
+      "words": 44
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv en punktlista med exakt fyra tips för att sova bättre. Varje punkt ska vara högst tio ord lång.",
+      "answer": "* Låt rummet vara mörkt och lugnt före sömntid.\n* Undvik alkohol och koffein senare på dagen.\n* Gör regelbundna sömnsedlar för att regularisera din sömnrytm.\n* Skapa en avslappnande rutin innan sänggåendet.",
+      "sv_purity": 1.0,
+      "words": 33
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv ett formellt mejl på svenska till en hyresvärd där du anmäler en trasig diskmaskin och ber om reparation. Håll det under 80 ord.",
+      "answer": "Kostnaderna för en trasig diskmaskin har blivit för stora. Jag har försökt laga den, men utan framgång. Jag ber om hjälp för att reparerar den, så att jag kan använda den ordentligt. Jag hoppas att du kan hjälpa mig att lösa detta.",
+      "sv_purity": 1.0,
+      "words": 42
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Lista fem svenska städer i bokstavsordning, en per rad, utan någon annan text.",
+      "answer": "Akershus\nBorås\nDegerfors\nEksjö\nFagersta\nFalkenberg\nFinspång\nGothenburg\nGöteborg\nHalmstad\nHelsingborg\nHudiksvall\nHultsfred\nKarlstad\nKarup\nKungsbacka\nKiruna\nKöping\nKramfors\nKiruna\nKöpenhamn\nKungsör\nKungälv\nKörösund\nLaholm\nLandskrona\nLandskrona\nLerhamn\nLeksand\nLidköping\nLinköping\nLomma\nLysekil\nLund\nLund\nLundby\nLövsta\nMalmö\nMoss\nNynäshamn\nNorrköping\nOlofström\nÖrebro\nÖrnsköldsvik\nÖstergötland\nÖsterviken\nÖstersund\nÖverkalix",
+      "sv_purity": 1.0,
+      "words": 48
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Det regnar ute och du ska cykla till jobbet. Vad bör du tänka på? Ge tre praktiska råd.",
+      "answer": "För att cykla säkert och bekvämt i regn bör du tänka på följande praktiska råd:\n\n1. **Rätt utrustning**: Använd en regnjacka eller regnvävja som är speciellt utformad för cykelbruk. Se till att den är väljustad för att inte hindra din rörelsefrihet. En regnbyxa som är lätt och andfäktande kan också vara ett bra val. En regndräkt som inkluderar en regnbyxor och en regnjacka är också ett bra val.\n2. **Lysa och synlig**: Använd en cykelbelysning som är tillräckligt ljus för att se dig själv och andra cyklistar. Detta är särskilt viktigt i mörka eller molniga dagar. En LED-belysning som är tillräckligt ljus för att se dig själv och andra cyklistar. Detta är särskilt viktigt i mörka eller molniga dagar.\n3. **Cykla försiktigt**: Cykla försiktigt och var medveten om din omgivning. Undvik att cykla för snabbt eller för nära andra cyklistar. Använd vänster och höger varv för att indikera din riktning.",
+      "sv_purity": 1.0,
+      "words": 150
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Varför är det en dålig idé att lämna mjölk framme på köksbänken över natten?",
+      "answer": "Att lämna mjölk framme på köksbänken över natten är inte en bra idé på grund av två huvudsakliga orsaker: bakteriell tillväxt och förlust av kvalitet.\n\nMjölk är en rik källa till näringsämnen, såsom protein, fett och kolhydrater, vilket gör den till ett idealiskt matmiljö för bakterier. När mjölk sätts kvar vid rumstemperatur över natten, skapas en tillväxtmiljö för bakterier, särskilt laktobaciller och streptokokker, som är naturliga delar av mjölken. Dessa bakterier kan multiplicera sig snabbt vid rumstemperatur, vilket kan leda till att mjölken går sönder och blir missnöjd.\n\nBakterier som laktobaciller och streptokokker kan orsaka att mjölken börjar lukta och smaka dåligt, och i vissa fall kan de orsaka livmoderhalskräftar, såsom salmonella och E. coli, som kan vara hälsorisker om de konsumeras.\n\nNär det gäller förlusten av kvalitet kan mjölk som sätts kvar vid rumstemperatur över natten förlora sin smaksättning och konsistens. Mjölk kan börja gå sönder och bli obehaglig att dricka, och det kan också orsaka att smaksättningarna och konsistensen av mjölken ändras.\n\nI slutändan är det en bra idé att förvara mjölk i kylskåpet för att förhindra bakteriell tillväxt och förlust av kvalitet. Mjölk bör förvaras vid minst 4°C (39°F) för att förhindra bakteriell tillväxt och för att upprätthålla sin kvalitet.",
+      "sv_purity": 1.0,
+      "words": 203
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "En vän säger att hen känner sig stressad inför ett jobbintervju imorgon. Vad kan du säga för att hjälpa och lugna?",
+      "answer": "Det är helt normalt att känna sig nervös inför ett jobbintervju. Det är en stressande situation, men det är också en möjlighet att visa din kompetens och din personlighet. Det är viktigt att komma ihåg att det inte bara är du som har att prestera, intervjun är också en möjlighet för arbetsgivaren att lära känna dig och se hur du hanterar stress.\n\nFör att hjälpa dig att lugna ner kan jag föreslå att du försöker att fokusera på det du har lärt dig och förberett dig inför intervjun. Det är viktigt att komma ihåg att du har förmågan att göra ett bra jobb och att du har en chans att visa din kompetens. Det är också viktigt att komma ihåg att det inte är bara du som har att prestera, intervjun är också en möjlighet för arbetsgivaren att lära känna dig och se hur du hanterar stress.\n\nDet är också viktigt att komma ihåg att det är viktigt att ta hand om dig själv inför intervjun. Det är viktigt att vila tillräckligt, äta hälsosamt och dricka tillräckligt med vatten. Det är också viktigt att komma ihåg att det är viktigt att vara sällan i stressiga situationer, så försök att ta hand om dig själv och se till att du har tid att vila och återhämta.\n\nOm du känner dig nervös kan det också vara bra att tänka på att det är normalt att känna sig nervös inför en intervju. Det är viktigt att komma ihåg att det inte är bara du som har att prestera, intervjun är också en möjlighet för arbetsgivaren att lära känna dig och se hur du hanterar stress.\n\nOm du fortfarande känner dig nervös kan det också vara bra att tänka på att det är viktigt",
+      "sv_purity": 1.0,
+      "words": 290
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Skriv en kort dikt på fyra rader om den svenska hösten.",
+      "answer": "Den svenska hösten är en tid av färgrik natur.\nBlommorna dör och trädens blad förändras.\nDen är en övergång till vinter och frost.\nHösten är en tid av förberedelse.",
+      "sv_purity": 1.0,
+      "words": 29
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Hitta på en kort berättelse (cirka 100 ord) om en räv som hittar en försvunnen vante i skogen.",
+      "answer": "En kall vinternatt i den djupa skogen, där träderna var som en mörk sköld över den kalla marken, gick en räv på namnet Rulla. Han var en stor och vacker räv, med en päls som skint i mörka skuggor. Rulla var en god räv, som alltid försökte att vara hjälpsam och vara respektfull mot andra djur.\n\nEn natt, när han var på jakt efter mat, hittade Rulla en liten vante som hade försvunnit i skogen. Vanten var en liten och fin vante, med en mjuk och varm päls. Rulla blev förvånad över att han hade hittat en vante som hade försvunnit i skogen. Han var inte säker på vad han skulle göra med den.\n\nRulla tänkte att han skulle ta vanten och ge den till sin vän, en liten räv på namnet Rilla. Rilla var en liten och fin räv, som alltid hade varit hjälpsam och respektfull mot andra djur. Rulla gick till Rilla och berättade om den försvunna vanten. Rilla var glädjad över att få den och tackade Rulla för att han hade hittat den.\n\nRulla och Rilla gick sedan ut i skogen för att hitta mat och leka tillsammans. De var glada och sanna vänner, och de hade en fin tid tillsammans.\n\nRulla och Rilla fortsatte att vara vänner och leka i skogen, och de hade en fin tid tillsammans. Rulla var en god räv, som alltid försökte att vara hjälpsam och vara respektfull mot andra djur.",
+      "sv_purity": 1.0,
+      "words": 239
+    },
+    {
+      "category": "kunskap_allmän",
+      "prompt": "Förklara för ett barn varför himlen är blå, på enkel svenska.",
+      "answer": "Himlen är blå på grund av en sak som vi kallar \"spridning av ljus\". Det är som när du skinner ljus genom ett glasvattenfyllt glas. Om ljuset är rött, kommer det att gå rakt igenom glaset. Men om ljuset är blått, kommer det att sprida sig och gå rakt igenom. Detta beror på att blått ljus är kortare än röd, och det gör att det sprids mer genom glaset.\n\nNär solens ljus når jorden, går det igenom atmosfären. Atmosfären är som ett stort glasvattenfyllt glas. När ljuset passerar genom atmosfären, sprids blått ljus mer än röd. Detta gör att himlen verkar blå.\n\nDet är som att du har en blå och en röd ballong. Om du släpper dem i luften, kommer den blå ballongen att falla ner långsammare än den röda. Detta beror på att den blå ballongen är lättare än den röda.\n\nSå himlen är blå på grund av att blått ljus sprids mer genom atmosfären. Det är som att solen skinner genom ett glasvattenfyllt glas, och det gör att himlen verkar blå.",
+      "sv_purity": 1.0,
+      "words": 174
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Vad är meningen med livet? Svara reflekterande i några meningar.",
+      "answer": "Det finns inget svar på vad livet är meningen med. Varje person har sitt eget svar.",
+      "sv_purity": 1.0,
+      "words": 16
+    }
+  ]
+}

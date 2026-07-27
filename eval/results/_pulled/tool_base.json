@@ -1,0 +1,10 @@
+{
+  "model": "/scratch/project_465002530/users/bmoell/models/Qwen3.5-4B",
+  "n": 300,
+  "callable_n": 150,
+  "refusal_n": 150,
+  "format_valid": 0.993,
+  "name_acc": 0.993,
+  "args_exact": 0.873,
+  "abstain_acc": 0.807
+}

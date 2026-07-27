@@ -1,0 +1,10 @@
+{
+  "model": "/scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-sft-vnext",
+  "n": 300,
+  "callable_n": 150,
+  "refusal_n": 150,
+  "format_valid": 0.98,
+  "name_acc": 0.98,
+  "args_exact": 0.96,
+  "abstain_acc": 0.84
+}

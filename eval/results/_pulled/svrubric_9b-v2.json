@@ -1,0 +1,255 @@
+{
+  "model": "9b-v2",
+  "n": 24,
+  "summary": {
+    "sv_purity": 1.0,
+    "sprakkvalitet": null,
+    "korrekthet": null,
+    "instruktion": null,
+    "hjalpsamhet": null
+  },
+  "by_category": {
+    "instruktion": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kreativt": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_allmän": {
+      "n": 1,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_sverige": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "resonemang": {
+      "n": 4,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sammanfattning": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sentiment": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sprakriktighet": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "vardagskunskap": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    }
+  },
+  "results": [
+    {
+      "category": "sentiment",
+      "prompt": "Analysera känslan i följande recension och avgör om den är positiv, negativ eller neutral. Motivera kort. Recension: \"Maten var god men servicen var långsam och lokalen kändes sliten.\"",
+      "answer": "Känslan i recensionen är blandad. Den positiva aspekten är att maten var god, medan den negativa aspekten är att servicen var långsam och lokalen kändes sliten.",
+      "sv_purity": 1.0,
+      "words": 26
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Är följande kundkommentar positiv eller negativ? Förklara varför. \"Jag hade höga förväntningar men blev tyvärr besviken på kvaliteten.\"",
+      "answer": "Den här kundkommentaren är negativ. Kunderna uttrycker sina förväntningar och förklarar att de blev besvikna. Det tyder på att de inte var nöjda med produkten eller tjänsten.",
+      "sv_purity": 1.0,
+      "words": 27
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Vilken känsla uttrycker denna tweet, och hur säker är du? \"Äntligen fredag! Helgen kan inte komma snabbt nog.\"",
+      "answer": "Denna tweet uttrycker glädje och spänning över kommande helg. Språket är positivt och antyder en känsla av förväntan och upphetsning inför helgen. Jag är ganska säker på denna bedömning eftersom språket är tydligt och uttrycker en positiv känsla.",
+      "sv_purity": 1.0,
+      "words": 38
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vilka är Sveriges tre största sjöar till ytan, i storleksordning?",
+      "answer": "Vänern, Vättern och Mälaren.",
+      "sv_purity": 1.0,
+      "words": 4
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Förklara kortfattat hur det svenska riksdagsvalet fungerar och vad fyraprocentsspärren innebär.",
+      "answer": "Det svenska riksdagsvalet är ett allmänt, likvärdigt, hemligt och fritt val som avgörs vartannat år. I valet väljer vi våra riksdagsledamöter, som sedan väljer ut en statsminister. I riksdagen sitter det 349 ledamöter, och varje partistyrke representeras av minst en ledamot. \n\nFyraprocentsspärren innebär att ett parti måste ha minst 4 procent av rösterna för att få representation i riksdagen. Om ett parti inte når fyra procent av rösterna, får de inte någon plats i riksdagen. Det innebär att det är svårt för småpartier att komma in i riksdagen.",
+      "sv_purity": 1.0,
+      "words": 88
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vem var Selma Lagerlöf och varför är hon viktig i svensk litteraturhistoria?",
+      "answer": "Selma Lagerlöf var en svensk författare och skribent som var känd för sin novell \"Nils Holgerssons underbara resa genom Sverige\". Hon var den första kvinnan att vinna Nobelpriset i litteratur, vilket hon fick 1909. Lagerlöf var en viktig figure i svensk litteraturhistoria eftersom hon var en pionjär för kvinnors rättigheter och en förespråkare för social reform. Hennes verk, som \"Nils Holgerssons underbara resa genom Sverige\", är fortfarande populära och uppskattade idag.",
+      "sv_purity": 1.0,
+      "words": 71
+    },
+    {
+      "category": "resonemang",
+      "prompt": "En affär säljer äpplen för 12 kronor styck. Om du köper 7 äpplen och betalar med en hundralapp, hur mycket får du tillbaka? Visa uträkningen.",
+      "answer": "För att lösa detta problem behöver vi först räkna ut hur mycket de 7 äpplena kostar. Varje äpple kostar 12 kronor, så vi multiplicerar antalet äpplen med priset per äpple:\n\n7 äpplen * 12 kronor/äpple = 84 kronor\n\nDärefter behöver vi räkna ut hur mycket du får tillbaka när du betalar med en hundralapp. En hundralapp är 100 kronor, så vi subtraherar priset för de 7 äpplena från 100 kronor:\n\n100 kronor - 84 kronor = 16 kronor\n\nSå du får tillbaka 16 kronor.",
+      "sv_purity": 1.0,
+      "words": 84
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Anna är dubbelt så gammal som Erik. Om fem år är deras sammanlagda ålder 40 år. Hur gamla är de nu? Resonera steg för steg.",
+      "answer": "## Steg 1: Definiera variabler för annas och eriks ålder\nLåt A vara annas nuvarande ålder och E vara eriks nuvarande ålder.\n\n## Steg 2: Skapa en ekvation baserat på den första informationen\nEftersom Anna är dubbelt så gammal som Erik, kan vi skriva ekvationen A = 2E.\n\n## Steg 3: Skapa en ekvation baserat på den andra informationen\nOm fem år kommer deras sammanlagda ålder att vara 40. Detta kan skrivas som (A + 5) + (E + 5) = 40.\n\n## Steg 4: Förenkla den andra ekvationen\nFörenkla ekvationen från steg 3 till A + E + 10 = 40.\n\n## Steg 5: Lösa den förenklade ekvationen för A + E\nSubtrahera 10 från båda sidor för att få A + E = 30.\n\n## Steg 6: Ersätt A med 2E i ekvationen från steg 5\nErsätt A med 2E i ekvationen A + E = 30 för att få 2E + E = 30.\n\n## Steg 7: Lös för E\nFörenkla ekvationen från steg 6 till 3E = 30 och sedan lösa för E genom att dividera båda sidor med 3, vilket ger E = 10.\n\n## Steg 8: Lös för A med hjälp av värden på E\nErsätt E med 10 i ekvationen A = 2E för att få A = 2 * 10 = 20.\n\n## Steg",
+      "sv_purity": 1.0,
+      "words": 222
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma? Förklara logiken.",
+      "answer": "## Steg 1: Förstå de givna påståendena\nVi har två påståenden: \"Alla katter är däggdjur\" och \"Vissa däggdjur kan simma\".\n\n## Steg 2: Analysera logiken bakom påståendena\nDet första påståendet, \"Alla katter är däggdjur\", innebär att det inte finns några katter som inte är däggdjur. Det andra påståendet, \"Vissa däggdjur kan simma\", innebär att det finns minst ett däggdjur som kan simma.\n\n## Steg 3: Överväga möjligheten för katter att simma\nEftersom alla katter är däggdjur och vissa däggdjur kan simma, är det möjligt att vissa katter kan simma. Detta beror på att det finns en grupp däggdjur (katter) som är en undergrupp av en större grupp (däggdjur), och det finns minst ett exemplar av den större gruppen som kan simma.\n\n## Steg 4: Dra en slutsats\nBaserat på de givna påståendena kan vi dra slutsatsen att vissa katter kan simma. Detta följer av att alla katter är däggdjur och vissa däggdjur kan simma, vilket innebär att det finns en möjlighet att vissa katter också kan simma.\n\nSvar: Vissa katter kan simma.",
+      "sv_purity": 1.0,
+      "words": 172
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Sammanfatta följande text i en mening: \"Klimatförändringarna påverkar redan Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer. Forskare varnar för att vissa arter kan försvinna medan nya etablerar sig, vilket förändrar de svenska ekosystemen i grunden.\"",
+      "answer": "Klimatförändringarna påverkar Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer, vilket kan leda till att vissa arter försvinner och nya etablerar sig, vilket förändrar ekosystemen i grunden.",
+      "sv_purity": 1.0,
+      "words": 28
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Ge en kort sammanfattning (max tre meningar) av vad nyheten handlar om: \"Regeringen presenterade idag en ny satsning på järnvägsunderhåll. Satsningen omfattar tio miljarder kronor över fyra år och syftar till att minska förseningarna i tågtrafiken. Oppositionen menar att beloppet är otillräckligt.\"",
+      "answer": "Regeringen har satt av tio miljarder kronor för att minska förseningarna i tågtrafiken. Men oppositionen menar att det inte är tillräckligt.",
+      "sv_purity": 1.0,
+      "words": 21
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Rätta eventuella grammatik- och stavfel i meningen och förklara vad du ändrade: \"Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handlade något.\"",
+      "answer": "Meningen innehåller ett stavfel och ett grammatikfel. Det korrekta ordet är \"handla\" istället för \"handlade\". Meningsstrukturen är också något förvirrande. För att göra meningen tydligare och mer grammatiskt korrekt kan den skrivas så här: \"Han gick till affären för att köpa mjölk, men han glömde sin plånbok hemma, så han kunde inte handla något.\"",
+      "sv_purity": 1.0,
+      "words": 54
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Är följande mening grammatiskt korrekt svenska? Om inte, skriv den korrekt: \"De hade redan ätit middag när vi kom fram till restaurangen.\"",
+      "answer": "Ja, den är korrekt.",
+      "sv_purity": 1.0,
+      "words": 4
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Förklara skillnaden mellan \"de\" och \"dem\" och ge ett exempel på korrekt användning av vardera.",
+      "answer": "\"De\" och \"dem\" är två olika former av den pronomen \"de\", som används för att peka på plurala objekt eller personer. Skillnaden mellan dem är att \"de\" används för att peka på objekt eller personer som är subjekt i en fras, medan \"dem\" används för att peka på objekt eller personer som är objekt i en fras.\n\nEtt exempel på korrekt användning av \"de\" är: \"De människor som jag träffade i går var trevliga.\" Här pekar \"de\" på de människor som är subjekt i frasen.\n\nEtt exempel på korrekt användning av \"dem\" är: \"Jag träffade dem i går.\" Här pekar \"dem\" på de människor som är objekt i frasen.",
+      "sv_purity": 1.0,
+      "words": 109
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv en punktlista med exakt fyra tips för att sova bättre. Varje punkt ska vara högst tio ord lång.",
+      "answer": "- Se till att du har en bekväm säng och madrass.\n- Undvik att dricka alkohol och kaffe senare på dagen.\n- Gör en avslappnande aktivitet innan du lägger dig.\n- Se till att sovrummet är mörkt och tyst.",
+      "sv_purity": 1.0,
+      "words": 39
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv ett formellt mejl på svenska till en hyresvärd där du anmäler en trasig diskmaskin och ber om reparation. Håll det under 80 ord.",
+      "answer": "Kära [hyresvärdens namn],\n\nJag skriver för att anmäla att diskmaskinen i vårt lägenhet är trasig. Den fungerar inte längre och behöver repareras så snart som möjligt.\n\nVänligen be om reparation och håll mig informerad om när det kan ske.\n\nTack för er snabbt svar och hjälp.\n\nVänliga hälsningar,\n[Ditt namn]",
+      "sv_purity": 1.0,
+      "words": 50
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Lista fem svenska städer i bokstavsordning, en per rad, utan någon annan text.",
+      "answer": "Göteborg\nHalmstad\nJönköping\nKarlstad\nLund",
+      "sv_purity": 1.0,
+      "words": 5
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Det regnar ute och du ska cykla till jobbet. Vad bör du tänka på? Ge tre praktiska råd.",
+      "answer": "1. Se till att ha en regnjacka och regnbyxor på dig. Det är viktigt att hålla dig torr under regnet för att undvika att bli sjuk.\n2. Använd en regnjacka och regnbyxor som är skräddarsydda för cykling. Dessa typer av kläder är gjorda för att vara luftiga och tillåta luften att cirkulera, vilket hjälper till att hålla dig varm och torr.\n3. Se till att ha en regnjacka och regnbyxor som är gjorda av vattenavvisande material. Detta hjälper till att hålla dig torr under regnet och förhindrar att kläderna blir tunga och obehagliga.",
+      "sv_purity": 1.0,
+      "words": 93
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Varför är det en dålig idé att lämna mjölk framme på köksbänken över natten?",
+      "answer": "Det är en dålig idé att lämna mjölk framme på köksbänken över natten eftersom bakterier kan växa i mjölken och göra den oegentlig. Mjölk är ett mättat medium för bakteriell tillväxt, så om den inte lagras korrekt kan den snabbt bli osäker.",
+      "sv_purity": 1.0,
+      "words": 42
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "En vän säger att hen känner sig stressad inför ett jobbintervju imorgon. Vad kan du säga för att hjälpa och lugna?",
+      "answer": "Det är helt normalt att känna stress inför en viktig händelse som ett jobbintervju. Det är en naturlig reaktion som visar att du tar det seriöst. Här är några tips för att hjälpa och lugna din vän:\n\n1. **Uppmuntra till självkärlek**: Påminn din vän om att de är duktiga och har kompetens för jobbet. Lyft fram deras styrkor och uppnådda mål.\n\n2. **Fokusera på förberedelserna**: Hjälpa din vän att fokusera på förberedelserna snarare än på själva intervjun. Övning kan inkludera att gå igenom möjliga frågor, öva på att prata om sina erfarenheter och klä sig i kläder som de känner sig bekväma i.\n\n3. **Uppmuntra till andning och avslappning**: Övningar för djup andning och avslappning kan hjälpa till att minska stress och ångest. Hjälpa din vän att öva på dessa tekniker innan intervjun.\n\n4. **Fokusera på positiva tankar**: Hjälpa din vän att fokusera på positiva tankar och att de kommer att göra sitt bästa. Påminn dem om att det är viktigt att visa sin personlighet och att det är i ordningen att vara sig själv.\n\n5. **Tala om att det är en tvåvägs process**: Påminn din vän att intervjun är en tvåvägs process där både de och företaget bedöms. Det är inte bara om företaget bedömer dem, utan också om de bedömer företaget och om det är rätt plats för dem.\n\n6. **Uppmuntra till att ta det lugnt**: Påminn din vän om att det är i ordningen att känna nervös och att",
+      "sv_purity": 1.0,
+      "words": 242
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Skriv en kort dikt på fyra rader om den svenska hösten.",
+      "answer": "Guldröda löv i vinden\nSpelar sånger av den gamla skogen\nMellan dem skymtar röda äpplen\nDär de mognar i den svala skogen",
+      "sv_purity": 1.0,
+      "words": 22
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Hitta på en kort berättelse (cirka 100 ord) om en räv som hittar en försvunnen vante i skogen.",
+      "answer": "En kall kväll i skogen hittade en räv en försvunnen vante. Den var så stor att den tycktes kunna passa en hund. Råven såg på den och tänkte att det var en gåva från naturen. Den tog upp vanten och började leka med den, kastade den upp och ner, och snubblade över den. Till sist hittade råven en gammal vante som den hade förlorat tidigare. Den gläddes över att ha hittat sin vante igen, och försvann sedan snabbt tillbaka till skogen.",
+      "sv_purity": 1.0,
+      "words": 81
+    },
+    {
+      "category": "kunskap_allmän",
+      "prompt": "Förklara för ett barn varför himlen är blå, på enkel svenska.",
+      "answer": "Himlen ser blå ut på grund av ett fenomen som kallas Rayleighspridning. När solljus passerar genom atmosfären, sprids det av molekyler av luft. Ljus som är längre våglängd, som rött och gult, sprids mindre än ljus som är kortare våglängd, som blått. Detta beror på att blått ljus har en kortare våglängd än rött ljus, och sprids mer lätt av molekyler av luft.\n\nNär vi tittar upp mot himlen, ser vi det blå ljuset som är spritt av molekyler av luft. Detta gör att himlen ser blå ut för oss. Om vi skulle kunna se infrarött ljus, som har en längre våglängd än rött ljus, skulle vi se att himlen är svart.",
+      "sv_purity": 1.0,
+      "words": 112
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Vad är meningen med livet? Svara reflekterande i några meningar.",
+      "answer": "Meningen med livet är en fråga som människor har tänkt på i århundraden. Det finns många olika svar på denna fråga, beroende på den enskildes värderingar, erfarenheter och syn på världen. För vissa kan meningen med livet handla om att uppnå personlig tillfredsställelse och lycka, medan andra kan se livet som ett sätt att lära sig och växa som individ.\n\nFör vissa kan meningen med livet handla om att bidra till samhället och hjälpa andra, medan andra kan se livet som ett sätt att uppleva och njuta av det som finns. För vissa kan meningen med livet handla om att uppnå personlig utveckling och självförverkligande, medan andra kan se livet som ett sätt att upprätthålla en balans mellan arbete och fritid.\n\nDet finns ingen enstaka svar på frågan om meningen med livet, och det är viktigt att komma ihåg att varje person har sin egen unika mening med livet. Det som är viktigt är att vi försöker att leva våra liv på ett sätt som känns meningsfullt och som uppfyller våra behov och värderingar.",
+      "sv_purity": 1.0,
+      "words": 174
+    }
+  ]
+}

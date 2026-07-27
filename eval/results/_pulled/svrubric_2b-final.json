@@ -1,0 +1,255 @@
+{
+  "model": "2b-final",
+  "n": 24,
+  "summary": {
+    "sv_purity": 0.96,
+    "sprakkvalitet": null,
+    "korrekthet": null,
+    "instruktion": null,
+    "hjalpsamhet": null
+  },
+  "by_category": {
+    "instruktion": {
+      "n": 3,
+      "sv_purity": 0.67,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kreativt": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_allmän": {
+      "n": 1,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_sverige": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "resonemang": {
+      "n": 4,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sammanfattning": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sentiment": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sprakriktighet": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "vardagskunskap": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    }
+  },
+  "results": [
+    {
+      "category": "sentiment",
+      "prompt": "Analysera känslan i följande recension och avgör om den är positiv, negativ eller neutral. Motivera kort. Recension: \"Maten var god men servicen var långsam och lokalen kändes sliten.\"",
+      "answer": "Den här recensionen är negativ. Anledningen är att den nämner att servicen var långsam, vilket är en negativ känsla som kan påverka upplevelsen. Dock nämner recensionen också att maten var god, vilket kan vara en positiv känsla. Men den totala recensionen, med en negativ aspekt, kan anses som negativ.",
+      "sv_purity": 1.0,
+      "words": 49
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Är följande kundkommentar positiv eller negativ? Förklara varför. \"Jag hade höga förväntningar men blev tyvärr besviken på kvaliteten.\"",
+      "answer": "Kundkommenten är negativ.\n\nDenna kommentar anger att kund hade höga förväntningar på produkten eller tjänsten, men blev däremot besviken på den faktiska kvaliteten. Det är en tydlig uttryck för missnöje eller sorg över den förväntade produkten jämfört med den som tillverkats, vilket tyder på en negativ kundupplevelse.",
+      "sv_purity": 1.0,
+      "words": 47
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Vilken känsla uttrycker denna tweet, och hur säker är du? \"Äntligen fredag! Helgen kan inte komma snabbt nog.\"",
+      "answer": "Den här tweeten uttrycker en känsla av **försiktighet och väntan** på fredag.\n\nDet är en avslappnad och bekväm tone, vilket indikerar att tweetaren är i förberedelsestadie för fredagen, men ändå vill ha den här dagen att vänta. Dessutom uttrycks det en känsla av **uppmärksamhet och förberedelse**, eftersom tweetaren vill förmedla att fredagen är väntan och inte kommer att komma snabbt.\n\nOm du skulle behöva visa en känsla av denna tweet, skulle du kunna säga:\n\n* \"Förberedelse och väntan\"\n* \"Försiktighet och väntan\"\n* \"Uppmärksamhet och förberedelse\"\n* \"Försiktighet och väntan\"\n* \"Uppmärksamhet och förberedelse\"\n* \"Försiktighet och väntan\"\n\nDessa ord beskriver känslorna som tweetaren uttrycker, och du kan använda dem för att förmedla en liknande känsla.",
+      "sv_purity": 1.0,
+      "words": 116
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vilka är Sveriges tre största sjöar till ytan, i storleksordning?",
+      "answer": "Sveriges största sjöar till ytan, i storleksordning, är:\n\n* Vättern: Vättern är Sveriges största sjö och är en del av Göta älvsystemet. Den är 241 km lång och täcker cirka 3 000 km².\n* Vänern: Vänern är en annan stor sjö i Sveriges sydöstra del. Den är 100 km lång och täcker cirka 2 500 km².\n* Jämtland: Jämtland är en sjö i Östergötland som är 80 km lång och täcker cirka 2 000 km².\n\nDet är också värt att notera att det finns andra stora sjöar i Sverige, såsom Göta älv, Dalälven, Mälaren och Södra älv, som också är betydande sjöar i landet.",
+      "sv_purity": 1.0,
+      "words": 104
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Förklara kortfattat hur det svenska riksdagsvalet fungerar och vad fyraprocentsspärren innebär.",
+      "answer": "Det svenska riksdagsvalet är ett av de viktigaste valen i Sverige och avgör vilken röstning som ska fattas om vilken politisk partis framställning som ska få regeringssituationen i Sverige. Riksdagsvalet genomförs var fjärde år, nämligen en gång i femton år, och vid varje val av riksdag. Valen genomförs genom en systematiskt skapad röstrapport där de olika partiers kandidater presenteras.\n\nI det svenska riksdagsvalet finns fyraprocentsspärren, som innebär att varje partiprofil måste ha minst 4 procent av röster för att kunna få röst. Detta innebär att en kandidat måste ha minst 4 procent av röster för att kunna bli riksdagsledamot.\n\nValresultatet av riksdagsvalet bestäms genom att de flesta partier har en viss lista över kandidater. Kandidaterna röstar på partiet som de är mest intresserade av, och partiet med flest rösterna får röst.\n\nDet är viktigt att notera att fyraprocentsspärren inte är en form av socialdemokrati, utan snarare en metod för att bestämma valresultatet. Denna metod har dock kritiker som misslyckat att garantera socialdemokraternas seger i valresultatet.",
+      "sv_purity": 1.0,
+      "words": 165
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vem var Selma Lagerlöf och varför är hon viktig i svensk litteraturhistoria?",
+      "answer": "Selma Lagerlöf (1858-1940) var en svensk författare som är en av de mest betydelsefulla och oerhört intakta svenska barn- och ungdomsförfattarna. Hon är en av de mest kända svenska barn- och ungdomsförfattarna och är en av de mest betydelsefulla svenska barn- och ungdomsförfattarna. Hon skrev många klassiker som är en del av svenska barn- och ungdomsförfattarnas repertoar. En av hennes mest kända verk är \"Röda hjärnan\", en roman som var en inspirationskälla för Oscar Wiklund, författare till det berömda \"Lilla Hans\", som även var ett stort misslyckande.",
+      "sv_purity": 1.0,
+      "words": 87
+    },
+    {
+      "category": "resonemang",
+      "prompt": "En affär säljer äpplen för 12 kronor styck. Om du köper 7 äpplen och betalar med en hundralapp, hur mycket får du tillbaka? Visa uträkningen.",
+      "answer": "Om du köper 7 äpplen för 12 kronor styck, får du 7 × 12 = 84 kronor för 7 äpplen.\nOm du betalar med en hundralapp, får du tillbaka 10000 - 84 = 9916 kronor.\nAlltså får du 9916 kronor tillbaka.",
+      "sv_purity": 1.0,
+      "words": 41
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Anna är dubbelt så gammal som Erik. Om fem år är deras sammanlagda ålder 40 år. Hur gamla är de nu? Resonera steg för steg.",
+      "answer": "Ett steg: För att lösa problemet behöver vi först förstå sambandet mellan Anna och Erik. Vi vet att Anna är dubbelt så gammal som Erik.\nSteg 2: Vi vet också att om fem år är deras sammanlagda ålder 40 år. Detta innebär att Anna och Erik tillsammans är 40 år.\nSteg 3: Vi kan uttrycka Anna och Erik som åldersrelationer. Om Erik är x år, är Anna 2x år.\nSteg 4: Vi kan skriva ner sambandet mellan deras ålder och deras sammanlagda ålder. x + 2x = 40.\nSteg 5: Vi kan lösa ekvationen för x. 3x = 40, så x = 40/3 = 13,33.\nSteg 6: Eftersom ålder inte kan vara en fraction, måste vi runda av till närmaste heltal. Detta innebär att Erik är 13 år och Anna är 26 år nu.\nSteg 7: Om de är 13 år nu, kommer de att bli 18 år i fem år.\nSteg 8: När de blir 18 år, kommer deras sammanlagda ålder att bli 18 + 18 = 36 år.\nSteg 9: Vi vet dock att de kommer att bli 40 år i fem år. Detta innebär att de nu måste vara 10 år äldre än vad de är i dag.\nSteg 10: Vi kan nu lösa ekvationen för deras nuvarande ålder. 13,33 + 10 = 23,33.\nSteg 11: Eftersom ålder inte kan vara en fraction, måste vi",
+      "sv_purity": 1.0,
+      "words": 228
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma? Förklara logiken.",
+      "answer": "Ja, vi kan dra slutsatsen att vissa katter kan simma eftersom det är ett tillägg till katternas natur. Det är en klassisk logisk fallning. Om alla katter är däggdjur och vissa däggdjur kan simma, så måste det finnas katter som kan simma. Detta är ett exempel på en deduktiv logik där vi använder oss av generaliserade meningar för att dra slutsatser.",
+      "sv_purity": 1.0,
+      "words": 61
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Sammanfatta följande text i en mening: \"Klimatförändringarna påverkar redan Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer. Forskare varnar för att vissa arter kan försvinna medan nya etablerar sig, vilket förändrar de svenska ekosystemen i grunden.\"",
+      "answer": "Klimatförändringar påverkar Sverige bland annat med mildare vintrar, ökad nederbörd och högre havsnivåer, vilket kan leda till att vissa arter försvinner och andra etableras, och förändra de svenska ekosystemen.",
+      "sv_purity": 1.0,
+      "words": 29
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Ge en kort sammanfattning (max tre meningar) av vad nyheten handlar om: \"Regeringen presenterade idag en ny satsning på järnvägsunderhåll. Satsningen omfattar tio miljarder kronor över fyra år och syftar till att minska förseningarna i tågtrafiken. Oppositionen menar att beloppet är otillräckligt.\"",
+      "answer": "Regeringen har presenterat en satsning på tio miljarder kronor för att minska järnvägsförseningar. Oppositionen anser att detta belopp är för litet.",
+      "sv_purity": 1.0,
+      "words": 21
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Rätta eventuella grammatik- och stavfel i meningen och förklara vad du ändrade: \"Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handlade något.\"",
+      "answer": "Rätt mening blir: \"Han gick till affären för att köpa mjölk, men han glömde sin plånbok hemma, så han kunde inte handla något.\"\n\nFörändringen av mening sker genom att man har separerat två olika handlingar som skett i olika ord. Det första ordet \"men\" fungerar som en motsatsord, vilket indikerar att det följer en motstridighet till det föregående. När man separerar handlingarna, kan man använda ett nytt ord som \"så\" för att koppla ihop de två handlingarna och visa att det var den andra handlingen som orsakade den första.\n\nDet är viktigt att notera att man inte kan använda samma ord som motsatsord i båda delarna av en mening. I detta fall kan man ha använt \"så\" i stället för \"men\", men detta var inte nödvändigt i denna mening.\n\nI den ursprungliga meningen var \"men\" en motsatsord som indikerade att det var en motstridighet till det föregående. När man har separerat handlingarna, kan man använda ett nytt ord som \"så\" för att koppla ihop de två handlingarna och visa att det var den andra handlingen som orsakade den första.",
+      "sv_purity": 1.0,
+      "words": 179
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Är följande mening grammatiskt korrekt svenska? Om inte, skriv den korrekt: \"De hade redan ätit middag när vi kom fram till restaurangen.\"",
+      "answer": "Meningen är grammatiskt korrekt i svenska. Den beskriver en situation där två händelser har inträffat i en följd, där en händelse inträffade först och sedan en annan.",
+      "sv_purity": 1.0,
+      "words": 27
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Förklara skillnaden mellan \"de\" och \"dem\" och ge ett exempel på korrekt användning av vardera.",
+      "answer": "Skillnaden mellan \"de\" och \"dem\" är att \"de\" är en pluralform av ett ord som innebär \"de\", medan \"dem\" är en pluralform av ett ord som innebär \"dem\". \"De\" används för att skriva om ord som är ett ord, medan \"dem\" används för att skriva om ord som är ett ord. Till exempel, \"de\" används för att skriva om ord som är ett ord, medan \"dem\" används för att skriva om ord som är ett ord.\n\nEtt exempel på korrekt användning av vardera är att skriva \"de\" för att skriva om ord som är ett ord, medan \"dem\" används för att skriva om ord som är ett ord. Till exempel, \"de\" används för att skriva om ord som är ett ord, medan \"dem\" används för att skriva om ord som är ett ord.\n\nExempel: \"De\" används för att skriva om ord som är ett ord, medan \"dem\" används för att skriva om ord som är ett ord. Till exempel, \"de\" används för att skriva om ord som är ett ord, medan \"dem\" används för att skriva om ord som är ett ord.",
+      "sv_purity": 1.0,
+      "words": 182
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv en punktlista med exakt fyra tips för att sova bättre. Varje punkt ska vara högst tio ord lång.",
+      "answer": "1. **Välj rätt mat**: Välj mat som har låg kalorit och hög proteinhalt, såsom gräs och grönsaker, för att hjälpa till att hålla vikten.\n2. **Använd en ljusstämpel**: Använd en ljusstämpel för att minska stress och förbättra sömn, eftersom ljus påverkar melatoninproduktionen.\n3. **Känn dig trött**: När du känner dig trött, sova snarare. Det hjälper till att minska stress och förbättra sömnen.\n4. **Använd en kall bad**: Ta ett kall bad för att minska stress och förbättra sömn, eftersom kallt vatten kan stimulera sömn.",
+      "sv_purity": 1.0,
+      "words": 84
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv ett formellt mejl på svenska till en hyresvärd där du anmäler en trasig diskmaskin och ber om reparation. Håll det under 80 ord.",
+      "answer": "Är hej,\n\nVilket stunder jag är glad att anmäla min diskmaskin, som är trasig. Jag behöver hjälp för att få den reparerad.\n\nVilken är din telefonnummer?\n\nTack och hälsningar.",
+      "sv_purity": 1.0,
+      "words": 29
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Lista fem svenska städer i bokstavsordning, en per rad, utan någon annan text.",
+      "answer": "Amsterdam\nAlmeby\nArhus\nGothenburg\nHelsingfors\nHelsingborg\nHalmstad\nHelsinki\nHull\nKarlstad\nKronoberg\nKårgå\nKronoberg\nKronstads\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg\nKronoberg",
+      "sv_purity": 0.0,
+      "words": 83
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Det regnar ute och du ska cykla till jobbet. Vad bör du tänka på? Ge tre praktiska råd.",
+      "answer": "1. Se till att cykla försiktigt: Det är viktigt att cykla försiktigt när det regnar för att undvika olyckor. Detta kan innebära att cykla långsammare, vara extra uppmärksam på vattenflödet och använda en cykel med hög gripvinkel.\n\n2. Se till att ha tillräckligt med vatten: Det är viktigt att ha tillräckligt med vatten i cykeln och på sig för att undvika att vattnet kommer att skrika ut och göra cyklingen svårare. Detta kan innebära att ha en stor behållare på cykeln och att ha ett tjockt, vattentät på sig.\n\n3. Se till att ha tillräckligt med skydd: Det är viktigt att ha tillräckligt med skydd på cykeln och på sig för att undvika att det regniga vattnet kommer att smälta bort och göra cyklingen svårare. Detta kan innebära att ha en stor skydd på cykeln och på sig, och att ha en tjock, vattentät på sig.",
+      "sv_purity": 1.0,
+      "words": 146
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Varför är det en dålig idé att lämna mjölk framme på köksbänken över natten?",
+      "answer": "Mjölk är en av de mest livsnödvändiga livsmedlen för barn, men den innehåller en bakterie som kan orsaka sjukdomar om den inte sprids till andra livsmedel. Om mjölk finns kvar på köksbänken över natten kan bakterien sprida sig till andra livsmedel, vilket kan orsaka sjukdomar som kallas melk.\n\nMjölken innehåller en bakterie som kallas melk, som kan orsaka sjukdomar som kallas melk. Om mjölk finns kvar på köksbänken över natten kan bakterien sprida sig till andra livsmedel, vilket kan orsaka sjukdomar som kallas melk.\n\nFör att undvika detta bör mjölk alltid tas bort från köksbänken innan den lämnas kvar över natten. Det är också viktigt att ha en säkert lagringsutrymme för mjölk, som är kylt och skyddat mot solljus och luft.\n\nOm mjölk finns kvar på köksbänken över natten kan bakterien sprida sig till andra livsmedel, vilket kan orsaka sjukdomar som kallas melk. För att undvika detta bör mjölk alltid tas bort från köksbänken innan den lämnas kvar över natten. Det är också viktigt att ha en säkert lagringsutrymme för mjölk, som är kylt och skyddat mot solljus och luft.",
+      "sv_purity": 1.0,
+      "words": 180
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "En vän säger att hen känner sig stressad inför ett jobbintervju imorgon. Vad kan du säga för att hjälpa och lugna?",
+      "answer": "Det är en klassisk stressfaktor för många att förbereda sig inför ett jobbintervju. Om du känner dig stressad kan det hjälpa om du lyssnar på mig och försöker lugna ner. \n\nDet första som kan vara bra att göra är att komma in i en känslomässig och fysisk balans. Det kan hjälpa om du lyssnar på mig och försöker lugna ner. \n\nDet är också viktigt att komma ihåg att det inte är en bra idé att tänka på allt som kan hända under intervjun. Det är bättre att fokusera på vad du tror att arbetsgivaren vill fråga dig om. \n\nDessutom kan det vara bra att tänka på att det inte är bra att se till allt som kan hända under intervjun. Det är bättre att fokusera på vad du tror att arbetsgivaren vill fråga dig om. \n\nDet är också viktigt att komma ihåg att det inte är en bra idé att tänka på allt som kan hända under intervjun. Det är bättre att fokusera på vad du tror att arbetsgivaren vill fråga dig om. \n\nDet är också viktigt att komma ihåg att det inte är en bra idé att tänka på allt som kan hända under intervjun. Det är bättre att fokusera på vad du tror att arbetsgivaren vill fråga dig om. \n\nDet är också viktigt att komma ihåg att det inte är en bra idé att tänka på allt som kan hända under intervjun. Det är bättre att fokusera på vad du tror att arbetsgivaren vill fråga dig om. \n\nDet är också viktigt att komma ihåg att det inte är en bra idé att tänka på allt som kan hända under intervjun. Det är bättre att fokusera på vad du tror att arbetsgivaren vill fråga dig om. \n\nDet är också viktigt att komma ih",
+      "sv_purity": 1.0,
+      "words": 294
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Skriv en kort dikt på fyra rader om den svenska hösten.",
+      "answer": "Djupta träd och de höga grenarna,\nblir grönare än i vår.\nSå har det varit ända tills nu,\nså kommer det att bli vår.",
+      "sv_purity": 1.0,
+      "words": 24
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Hitta på en kort berättelse (cirka 100 ord) om en räv som hittar en försvunnen vante i skogen.",
+      "answer": "Räverna var vacker och livlig familj som bodde i en skog. Den ena räven hade en vante som hunnits en dag i skogen. Hon hade inte hittat några andra vantar, så det var mycket att vänta.\n\nEn dag hittade den ena räven en försvunnen vante. Hon steg ut och skickade den andra räven till en annan skog för att få hjälp. Den andra räven blev tillräckligt rädd och hittade en vante.\n\nRäven fick en vante som hunnits i skogen. Hon skickade den andra räven för att få hjälp och så hände det. Den andra räven hittade en vante som hunnits och skickade den första räven för att få hjälp.\n\nDe två räven hittade en vante som hunnits i skogen. De skickade den andra räven för att få hjälp och så hände det. Den andra räven hittade en vante som hunnits och skickade den första räven för att få hjälp.\n\nDe två räven hittade en vante som hunnits i skogen. De skickade den andra räven för att få hjälp och så hände det. Den andra räven hittade en vante som hunnits och skickade den första räven för att få hjälp.\n\nDe två räven hittade en vante som hunnits i skogen. De skickade den andra räven för att få hjälp och så hände det. Den andra räven hittade en vante som hunnits och skickade den första räven för att få hjälp.\n\nDe två räven hittade en vante som hunnits i skogen. De skickade den",
+      "sv_purity": 1.0,
+      "words": 242
+    },
+    {
+      "category": "kunskap_allmän",
+      "prompt": "Förklara för ett barn varför himlen är blå, på enkel svenska.",
+      "answer": "Det finns många olika förklaringar till varför himlen är blå. Den mest vanliga förklaringen är att ljuset från solen bryts när det passerar genom luftmolekylerna. Detta beror på att luftmolekylerna är olika stor, men på grund av den mikroskopiska storleken på molekyler är de så små att de inte kan ses med det mänskliga ögat. När ljuset passerar genom dessa molekyler bryts det till olika färgerna, och vår öga skickar in ljuset i ögonen.\n\nDetta resulterar i att himlen ser blå ut. Detta fenomen kallas för Rayleigh-fenomenet, och det var den brittiska fysikern Lord Rayleigh som först förklarade varför himlen är blå. Rayleigh beskrev fenomenet i 1800-talet, och han visade att ljuset från solen består av flera färger, men att vår öga bara ser blått ut eftersom det är det enda färgen som passerar igenom atmosfären.\n\nDet finns även andra förklaringar till varför himlen är blå, men Rayleigh-fenomenet är den mest vanliga och välkända förklaringen.",
+      "sv_purity": 1.0,
+      "words": 155
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Vad är meningen med livet? Svara reflekterande i några meningar.",
+      "answer": "Vad är meningen med livet? Det är en fråga som har gett människor, filosofer, teologer, filosofiska tänkare och forskare mycket att säga och skriva om. Det finns många olika svar och synsätt på hur livet ska leda. Det finns många olika metoder för att hitta svaret på vad meningen med livet är. Den sista frågan är: Hur vet du att du har hittat rätt svar? Det finns många olika sätt att svara på frågan vad är meningen med livet. Många tror att det är en upplevelse som är helig. En annan syn är att livet är en resa. En annan syn är att livet är en uppgift. En annan syn är att livet är en upptäckt. Allt detta är värt att tänka på.",
+      "sv_purity": 1.0,
+      "words": 123
+    }
+  ]
+}

@@ -20,3 +20,10 @@ __pycache__/
 *.pyc
 .venv/
 .env
+# staged HF datasets (live on Hugging Face, not in git)
+data/defect_repair/
+data/exam_mcq/
+data/eval_holdouts/
+data/medical/
+data/*/data/*.jsonl
+data/*/metadata/*.jsonl
