@@ -1,0 +1,29 @@
+# One-step validation of rank-0/meta loading and Gemma-templated preference processing.
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-sft-smoke
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/exam-dpo-parquet/train.parquet}
+    split: "train[:128]"
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-simpo-smoke
+loss_type: simpo
+cpo_alpha: 0.0
+simpo_gamma: 0.5
+beta: 2.0
+max_length: 512
+max_prompt_length: 384
+max_steps: 1
+dataset_num_proc: 4
+ddp_timeout: 3600
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 1
+learning_rate: 5.0e-7
+lr_scheduler_type: constant
+warmup_ratio: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 1
+save_steps: 1
+save_total_limit: 1
+report_to: none

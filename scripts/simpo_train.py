@@ -11,8 +11,11 @@ schema (ModelConfig + DatasetMixtureConfig + CPOConfig), same {prompt,chosen,rej
 """
 from __future__ import annotations
 
+import os
+
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from accelerate import PartialState
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from trl import (
     CPOConfig,
     CPOTrainer,
@@ -29,15 +32,29 @@ def main(script_args, training_args, model_args, dataset_args):
     dtype_str = getattr(model_args, "dtype", None) or getattr(model_args, "torch_dtype", None)
     dtype = dtype_str if dtype_str in (None, "auto") else getattr(torch, dtype_str)
 
-    # ONE model only — no reference. This is the whole point.
-    model = AutoModelForCausalLM.from_pretrained(
-        model_args.model_name_or_path,
-        revision=model_args.model_revision,
-        attn_implementation=model_args.attn_implementation,
-        dtype=dtype,
-        trust_remote_code=model_args.trust_remote_code,
-        low_cpu_mem_usage=True,
-    )
+    # ONE model only — no reference. For 9B+, load its weights only on global rank 0;
+    # the other ranks build a zero-storage meta model and FSDP syncs the parameters.
+    state = PartialState()
+    if os.environ.get("RANK0_META_LOAD") == "1" and not state.is_main_process:
+        cfg = AutoConfig.from_pretrained(
+            model_args.model_name_or_path, trust_remote_code=model_args.trust_remote_code
+        )
+        with torch.device("meta"):
+            model = AutoModelForCausalLM.from_config(
+                cfg,
+                dtype=dtype,
+                attn_implementation=model_args.attn_implementation,
+                trust_remote_code=model_args.trust_remote_code,
+            )
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            revision=model_args.model_revision,
+            attn_implementation=model_args.attn_implementation,
+            dtype=dtype,
+            trust_remote_code=model_args.trust_remote_code,
+            low_cpu_mem_usage=True,
+        )
 
     # Drop phantom vision/audio classes so FSDP TRANSFORMER_BASED_WRAP can wrap the text model.
     names = getattr(model, "_no_split_modules", None)
@@ -52,6 +69,30 @@ def main(script_args, training_args, model_args, dataset_args):
         tokenizer.pad_token = tokenizer.eos_token
 
     dataset = get_dataset(dataset_args)
+    if os.environ.get("WRAP_PREFERENCE_STRINGS") == "1":
+        # The exam preference parquet stores bare strings. Convert them to conversational
+        # records so TRL applies this model's chat template instead of training raw prompt text.
+        def as_conversation(example):
+            if not all(isinstance(example.get(key), str) for key in ("prompt", "chosen", "rejected")):
+                return example
+            return {
+                "prompt": [{"role": "user", "content": example["prompt"]}],
+                "chosen": [{"role": "assistant", "content": example["chosen"]}],
+                "rejected": [{"role": "assistant", "content": example["rejected"]}],
+            }
+
+        dataset = dataset.map(as_conversation, num_proc=training_args.dataset_num_proc)
+        if state.is_main_process:
+            preview_row = dataset[script_args.dataset_train_split][0]
+            preview = tokenizer.apply_chat_template(
+                preview_row["prompt"] + preview_row["chosen"],
+                tokenize=False,
+                add_generation_prompt=False,
+            )
+            if "<start_of_turn>" in (tokenizer.chat_template or ""):
+                if "<start_of_turn>user" not in preview or "<start_of_turn>model" not in preview:
+                    raise ValueError("Gemma-style preference chat-template validation failed")
+            print(f"[simpo] preference template preview: {preview[:240]!r}", flush=True)
 
     trainer = CPOTrainer(
         model,

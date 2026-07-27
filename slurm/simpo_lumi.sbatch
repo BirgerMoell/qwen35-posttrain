@@ -16,6 +16,8 @@ if [ -z ${SLURM_JOB_ID+x} ]; then mkdir -p logs; sbatch "$0" "$@"; exit; fi
 set -euo pipefail; module purge
 ln -sf "${SLURM_JOB_NAME}-${SLURM_JOBID}.out" logs/latest.out 2>/dev/null || true
 : "${STAGE_LOAD:?set by orchestrator}"; : "${STAGE_SAVE:?}"; : "${CFG:=configs/dpo_2b_smoke.yaml}"
+: "${RANK0_META_LOAD:=0}"   # 1 = only global rank 0 reads weights; other ranks initialize on meta
+: "${WRAP_PREFERENCE_STRINGS:=0}"  # 1 = turn bare prompt/chosen/rejected strings into chat messages
 CONTAINER=/scratch/project_462000963/containers/laif-rocm-6.4.4-pytorch-2.9.1-te-2.4.0-fa-2.8.0-triton-3.2.0.sif
 BIND=/pfs,/scratch,/flash,/project,/projappl,/appl,/opt/cray,/var/spool/slurmd
 export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST"|head -n1)
@@ -28,13 +30,14 @@ PYLIBS_OVERLAY=/scratch/project_465002530/users/bmoell/pylibs-overlay
 # HF caches MUST live on scratch — default ~/.cache fills the small LUMI home quota.
 HF_CACHE=/scratch/project_465002530/users/bmoell/hf_cache
 # Multi-node aware (see sft_lumi.sbatch): same file runs on 1 node or `sbatch --nodes=N`.
-GPUS_PER_NODE=8
+GPUS_PER_NODE=${GPUS_PER_NODE:-${SLURM_GPUS_ON_NODE:-8}}
 NUM_PROC=$(( GPUS_PER_NODE * SLURM_NNODES ))
 echo "Launching SimPO on $SLURM_NNODES node(s), $NUM_PROC GPU workers total"
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   export PYTHONPATH=$PYLIBS_OVERLAY:\${PYTHONPATH:-} &&
   export HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
-  export ACCELERATE_USE_FSDP=true FSDP_CPU_RAM_EFFICIENT_LOADING=1 &&
+  export ACCELERATE_USE_FSDP=true FSDP_CPU_RAM_EFFICIENT_LOADING=1 RANK0_META_LOAD=$RANK0_META_LOAD &&
+  export WRAP_PREFERENCE_STRINGS=$WRAP_PREFERENCE_STRINGS &&
   cd $SLURM_SUBMIT_DIR &&
   accelerate launch \
     --config_file configs/accelerate_fsdp.yaml \

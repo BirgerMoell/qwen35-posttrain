@@ -166,7 +166,7 @@ set `STAGE_LOAD` to the last `checkpoint-*` dir (see `sft_qwen35_4b_eu_v3_finish
 
 ```bash
 SIMPO=$(sbatch --nodes=2 --gpus-per-node=8 --time=0-10:00:00 --dependency=afterok:$SFT \
-  --export=ALL,STAGE_LOAD=$O/oellm9b-256k-sft,STAGE_SAVE=$O/oellm9b-256k-simpo,CFG=configs/simpo_oellm9b_256k.yaml \
+  --export=ALL,RANK0_META_LOAD=1,WRAP_PREFERENCE_STRINGS=1,STAGE_LOAD=$O/oellm9b-256k-sft,STAGE_SAVE=$O/oellm9b-256k-simpo,CFG=configs/simpo_oellm9b_256k.yaml \
   slurm/simpo_lumi.sbatch | awk '{print $NF}')
 echo "SimPO job $SIMPO (afterok:$SFT)"
 ```
@@ -197,13 +197,16 @@ hjälpsamhet) — an LLM judge or manual. This is where you sanity-check the mod
 instructions coherently.
 
 **C. Long context — needle-in-a-haystack (the headline for THIS model):**
-There is **no long-context eval script in the repo yet — build one** (`scripts/eval_niah.py`, transformers,
-device_map="auto"): embed a unique "needle" fact at controlled depths (0%/25%/50%/75%/100%) inside filler
-context at several lengths (**8K / 32K / 128K / 256K**), ask the instruction-tuned model to retrieve it,
-score exact-match. Report a depth×length grid. This directly answers "does the 256K context survive SFT?"
-Keep `rope_theta=64M`; generate with the chat template; use `max_new_tokens` small (the answer is short).
-Compare, if useful, against the base model (but note base can't follow the retrieval instruction well —
-that's exactly why SFT was needed).
+`scripts/eval_niah.py` embeds a deterministic unique passkey at 0%/25%/50%/75%/100% depth at
+**8K / 32K / 128K / 256K**, validates theta 64M and the Gemma chat template, and writes a strict
+exact-match grid after every cell. It resumes the same output file by default:
+```bash
+python scripts/eval_niah.py --model $O/oellm9b-256k-simpo \
+  --out eval/results/oellm9b_256k_niah.json
+```
+Run it on one full 8-GPU node so `device_map="auto"` can distribute the model and long-context KV cache.
+Compare, if useful, against the staged base (`$MODEL`, which has the same chat template), but note that
+the base is expected to follow the retrieval instruction less reliably — that is why SFT was needed.
 
 ## 7. Publish (only on a confirmed win)
 
@@ -219,13 +222,16 @@ long context (NIAH grid). If good:
 ## 8. Known gotchas (from prior runs on this cluster)
 
 - **Gemma tokenizer** — wrong chat template = silent garbage. Validate (step 2) before every fresh run.
+- **The exam preference parquet contains bare strings.** Keep `WRAP_PREFERENCE_STRINGS=1` for SimPO so
+  TRL receives conversational records and renders the Gemma-style template; otherwise it trains on raw
+  prompt/answer concatenation with no turn markers.
 - **`SLURM_GPUS_ON_NODE`** reports physical GCD count (8) even if you ask for fewer — the sbatch already
   handles `GPUS_PER_NODE`; for a big model needing fewer ranks/node, pass `--gpus-per-node=N` AND
   `--export=...,GPUS_PER_NODE=N`.
 - **`--save_only_model`** → no optimizer-resume; warm-start from the consolidated checkpoint instead.
 - **Rank-0-only loading is mandatory here.** A one-node smoke with the default per-rank load reached
   508 GB RSS and was OOM-killed (job `20288313`). `RANK0_META_LOAD=1` completed the same smoke with a
-  260 GB transient peak (job `20288700`). Keep it enabled for the 4-node run.
+  260 GB transient peak (job `20288700`). Keep it enabled for both SFT and SimPO.
 - **Packed SFT requires FlashAttention 2.** Without `attn_implementation: flash_attention_2`, TRL 0.28
   warns that flattened packed samples can cross-attend and contaminate one another. The exact staged-model
   path completed a five-step packed FA2 smoke in job `20289762` (loss 1.245 → 1.268, all finite) and saved
