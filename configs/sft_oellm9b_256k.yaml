@@ -1,0 +1,31 @@
+# SFT — OELLM-9B-256K (Qwen3 dense + Gemma tokenizer). Standard EU instruction mix;
+# 4 nodes x 8 GPU. Submit with RANK0_META_LOAD=1.
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/oellm-9b-256k-chat
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: train                   # full general EU set (~1.08M), no-think
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet}
+    split: "train[:250000]"        # ~20% reasoning (think-format)
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-sft
+eos_token: <end_of_turn>
+max_length: 4096                   # short SFT retention at 256K is measured after training
+packing: true
+dataset_num_proc: 6
+ddp_timeout: 18000
+max_steps: 3000
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 4     # global batch 128 on 32 processes
+learning_rate: 6.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 1000
+save_total_limit: 3
+report_to: none

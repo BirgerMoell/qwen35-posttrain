@@ -18,7 +18,8 @@ Model card: https://huggingface.co/openeurollm/oellm-9b-256k-theta64m-prelude
   (unlike the Qwen3.5 hybrid models this repo mostly targets). `max_position_embeddings: 262144`,
   `rope_theta: 64_000_000` — **never change rope_theta**, it's what makes 256K work.
 - **⚠️ Tokenizer is GEMMA-style, not Qwen.** Chat markers are `<start_of_turn>` / `<end_of_turn>`
-  (NOT `<|im_start|>`), eos is `<eos>`, pad `<pad>`, vocab 262144. `<|im_start|>` etc. map to unk.
+  (NOT `<|im_start|>`), eos is `<eos>`, and pad is `<pad>`. The tokenizer has 262,145 entries while
+  the model embedding shape is 263,168; preserve both. `<|im_start|>` etc. map to unk.
   This is the single most important gotcha — the wrong template silently trains garbage.
 - **It's a BASE model** — no chat template, not instruction-tuned. SFT is what makes it usable *and*
   unlocks the ability to evaluate long-context instruction-following.
@@ -59,7 +60,8 @@ from transformers import AutoTokenizer
 D="/scratch/project_465002530/users/bmoell/models/oellm-9b-256k-chat"
 t=AutoTokenizer.from_pretrained(D, trust_remote_code=True)
 assert t.chat_template, "NO CHAT TEMPLATE — fix the staged dir"
-rows=pq.read_table("/scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet").slice(0,3).to_pylist()
+parquet=pq.ParquetFile("/scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet")
+rows=next(parquet.iter_batches(batch_size=3, columns=["messages"])).to_pylist()
 for r in rows:
     print(t.apply_chat_template(r["messages"], tokenize=False)[:300], "\n---")
 PY'
@@ -74,6 +76,7 @@ The pipeline is data-driven via YAML (same schema as the Qwen3.5 configs). Creat
 # SFT — OELLM-9B-256K (Qwen3 dense + Gemma tokenizer). Standard EU instruction mix; 4 nodes x 8 GPU.
 model_name_or_path: /scratch/project_465002530/users/bmoell/models/oellm-9b-256k-chat   # overridden by STAGE_LOAD
 torch_dtype: bfloat16
+attn_implementation: flash_attention_2  # required for boundary-safe packed training
 datasets:
   - path: parquet
     data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
@@ -82,6 +85,7 @@ datasets:
     data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet}
     split: "train[:250000]"        # ~20% reasoning (think-format)
 output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-sft
+eos_token: <end_of_turn>
 max_length: 4096                   # standard. NOTE: short SFT may or may not degrade 256K — that's what we measure.
 packing: true
 dataset_num_proc: 6
@@ -105,6 +109,7 @@ report_to: none
 # SimPO — OELLM-9B-256K. Reference-free preference on EU exam pairs. STAGE_LOAD overrides to the SFT ckpt.
 model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-sft
 torch_dtype: bfloat16
+attn_implementation: flash_attention_2
 datasets:
   - path: parquet
     data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/exam-dpo-parquet/train.parquet}
@@ -144,7 +149,7 @@ workers. **Point STAGE_LOAD at the staged chat dir**, not the raw base.
 cd /scratch/project_465002530/users/bmoell/qwen35-posttrain
 O=/scratch/project_465002530/users/bmoell/qwen35-posttrain/output
 SFT=$(sbatch --nodes=4 --gpus-per-node=8 --time=0-20:00:00 \
-  --export=ALL,STAGE_LOAD=/scratch/project_465002530/users/bmoell/models/oellm-9b-256k-chat,STAGE_SAVE=$O/oellm9b-256k-sft,CFG=configs/sft_oellm9b_256k.yaml \
+  --export=ALL,RANK0_META_LOAD=1,STAGE_LOAD=/scratch/project_465002530/users/bmoell/models/oellm-9b-256k-chat,STAGE_SAVE=$O/oellm9b-256k-sft,CFG=configs/sft_oellm9b_256k.yaml \
   slurm/sft_lumi.sbatch | awk '{print $NF}')
 echo "SFT job $SFT"
 ```
@@ -218,8 +223,16 @@ long context (NIAH grid). If good:
   handles `GPUS_PER_NODE`; for a big model needing fewer ranks/node, pass `--gpus-per-node=N` AND
   `--export=...,GPUS_PER_NODE=N`.
 - **`--save_only_model`** → no optimizer-resume; warm-start from the consolidated checkpoint instead.
-- **transformers 5.x** dropped env-based FSDP rank-0 loading — 9B is fine (18GB/rank), don't worry unless
-  you scale past ~13B.
+- **Rank-0-only loading is mandatory here.** A one-node smoke with the default per-rank load reached
+  508 GB RSS and was OOM-killed (job `20288313`). `RANK0_META_LOAD=1` completed the same smoke with a
+  260 GB transient peak (job `20288700`). Keep it enabled for the 4-node run.
+- **Packed SFT requires FlashAttention 2.** Without `attn_implementation: flash_attention_2`, TRL 0.28
+  warns that flattened packed samples can cross-attend and contaminate one another. The exact staged-model
+  path completed a five-step packed FA2 smoke in job `20289762` (loss 1.245 → 1.268, all finite) and saved
+  the chat template plus the unchanged 262,144-token / theta-64M model metadata.
+- **Consolidated FSDP saves are FP32.** Even with bf16 training, this stack writes a ~36.4 GB FP32 model
+  (and records `dtype: float32`). This is expected and reloads into bf16 when `torch_dtype: bfloat16` is
+  explicit. Run the recast step in section 7 before publishing.
 - **LUMI login nodes flap / maintenance** — compute jobs survive, but multi-node distributed jobs die on
   TCPStore drops; just resubmit.
 - **eos for generation:** base uses `<eos>`; for a Gemma-style chat model set generation eos to
