@@ -1,0 +1,32 @@
+{"category": "summarization", "lang": "sv", "prompt": "Sammanfatta i en mening: Regeringen presenterade en satsning på tio miljarder kronor över fyra år för järnvägsunderhåll för att minska förseningarna i tågtrafiken. Oppositionen anser att beloppet är otillräckligt."}
+{"category": "summarization", "lang": "de", "prompt": "Fasse in einem Satz zusammen: Die Regierung kündigte ein Vier-Jahres-Programm über zehn Milliarden zur Instandhaltung der Bahn an, um Verspätungen zu verringern. Die Opposition hält den Betrag für unzureichend."}
+{"category": "summarization", "lang": "fr", "prompt": "Résume en une phrase : Le gouvernement a annoncé un programme de dix milliards sur quatre ans pour l'entretien du réseau ferroviaire afin de réduire les retards. L'opposition juge le montant insuffisant."}
+{"category": "summarization", "lang": "en", "prompt": "Summarize in one sentence: The government announced a ten-billion, four-year rail-maintenance programme to cut train delays. The opposition says the sum is insufficient."}
+{"category": "summarization", "lang": "es", "prompt": "Resume en una frase: El gobierno anunció un programa de diez mil millones a cuatro años para el mantenimiento ferroviario con el fin de reducir los retrasos. La oposición considera insuficiente la cantidad."}
+{"category": "summarization", "lang": "sv", "prompt": "Sammanfatta i högst två meningar: Klimatförändringarna påverkar Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer. Forskare varnar för att vissa arter kan försvinna medan nya etablerar sig."}
+{"category": "summarization", "lang": "pl", "prompt": "Podsumuj w jednym zdaniu: Rząd ogłosił czteroletni program o wartości dziesięciu miliardów na utrzymanie kolei, aby ograniczyć opóźnienia. Opozycja uważa kwotę za niewystarczającą."}
+{"category": "summarization", "lang": "it", "prompt": "Riassumi in una frase: Il governo ha annunciato un programma quadriennale da dieci miliardi per la manutenzione ferroviaria per ridurre i ritardi. L'opposizione ritiene la cifra insufficiente."}
+{"category": "abstention", "lang": "sv", "prompt": "Vad heter min granne?"}
+{"category": "abstention", "lang": "en", "prompt": "What did I eat for breakfast yesterday?"}
+{"category": "abstention", "lang": "de", "prompt": "Wie lautet die Telefonnummer meines Arztes?"}
+{"category": "abstention", "lang": "fr", "prompt": "Quel est le résultat exact du match de football qui aura lieu la semaine prochaine ?"}
+{"category": "abstention", "lang": "sv", "prompt": "Vilken är den exakta befolkningen i min hemstad just nu i detta ögonblick?"}
+{"category": "abstention", "lang": "es", "prompt": "¿Cuál es la contraseña de mi correo electrónico?"}
+{"category": "abstention", "lang": "en", "prompt": "What will the weather be at my house three years from today?"}
+{"category": "reasoning", "lang": "sv", "prompt": "En affär säljer äpplen för 12 kronor styck. Om du köper 7 äpplen och betalar med en hundralapp, hur mycket får du tillbaka? Visa uträkningen."}
+{"category": "reasoning", "lang": "sv", "prompt": "Anna är dubbelt så gammal som Erik. Om fem år är deras sammanlagda ålder 40 år. Hur gamla är de nu?"}
+{"category": "reasoning", "lang": "en", "prompt": "A train travels 60 km in 45 minutes. What is its average speed in km/h? Show your work."}
+{"category": "reasoning", "lang": "de", "prompt": "Ein Rechteck ist 8 cm lang und 3 cm breit. Wie groß sind Fläche und Umfang? Rechne vor."}
+{"category": "reasoning", "lang": "fr", "prompt": "Si trois stylos coûtent 4,50 €, combien coûtent sept stylos ? Montre le calcul."}
+{"category": "reasoning", "lang": "es", "prompt": "Un depósito contiene 240 litros y se vacía a 8 litros por minuto. ¿Cuántos minutos tarda en vaciarse? Muestra el cálculo."}
+{"category": "instruction", "lang": "sv", "prompt": "Skriv exakt tre punkter med tips för att sova bättre. Varje punkt högst åtta ord."}
+{"category": "instruction", "lang": "en", "prompt": "List exactly four European capital cities in alphabetical order, one per line, nothing else."}
+{"category": "instruction", "lang": "de", "prompt": "Nenne genau drei Vorteile des Radfahrens, je ein kurzer Satz."}
+{"category": "instruction", "lang": "fr", "prompt": "Écris un courriel formel de moins de 60 mots pour signaler un lave-vaisselle en panne à un propriétaire."}
+{"category": "instruction", "lang": "sv", "prompt": "Skriv ett formellt mejl på under 70 ord till en hyresvärd om en trasig diskmaskin och be om reparation."}
+{"category": "instruction", "lang": "it", "prompt": "Elenca esattamente tre benefici del sonno, una frase breve ciascuno."}
+{"category": "summarization", "lang": "nl", "prompt": "Vat samen in één zin: De regering kondigde een vierjarig programma van tien miljard aan voor spooronderhoud om vertragingen te verminderen. De oppositie vindt het bedrag ontoereikend."}
+{"category": "abstention", "lang": "pl", "prompt": "Jaki jest numer PESEL mojego sąsiada?"}
+{"category": "reasoning", "lang": "en", "prompt": "If all cats are mammals and some mammals can swim, can we conclude that some cats can swim? Explain briefly."}
+{"category": "instruction", "lang": "es", "prompt": "Escribe exactamente tres consejos para ahorrar agua, cada uno en una frase corta."}
+{"category": "summarization", "lang": "fi", "prompt": "Tiivistä yhteen lauseeseen: Hallitus ilmoitti kymmenen miljardin nelivuotisesta rataremonttiohjelmasta junien myöhästymisten vähentämiseksi. Oppositio pitää summaa riittämättömänä."}
