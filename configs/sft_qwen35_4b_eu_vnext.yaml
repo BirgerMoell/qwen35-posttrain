@@ -1,0 +1,45 @@
+# SFT v-next — Qwen3.5-4B-EU, mobile mix + TOOL-USE fold-in. Builds on the v3 recipe (general +
+# reasoning + defect-repair x3) and adds the tool-use slice at ~10% so the model learns Qwen3.5's
+# native <tool_call> format without crowding out EU-language instruction data. Prove agentic gains
+# here (4B) via BFCL before folding into the 2B (2B overfit risk from the v2 finding).
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-4B
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: "train[:500000]"        # general EU (no-think)
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet}
+    split: "train[:90000]"         # reasoning slice (think-format)
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-tooluse-parquet/train.parquet}
+    split: train                   # tool-use (~60k, ≈10% of mix): xLAM + ToolACE + Hermes
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-sft-vnext
+max_length: 4096                   # tool schemas are long; 4096 keeps most multi-tool prompts intact
+packing: true
+dataset_num_proc: 12
+ddp_timeout: 14400
+max_steps: 3200
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 8.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 800
+save_total_limit: 4
+report_to: none
