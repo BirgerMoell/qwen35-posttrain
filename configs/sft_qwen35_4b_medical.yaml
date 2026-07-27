@@ -1,0 +1,41 @@
+# SFT — Qwen3.5-4B-EU-Medical (SWEDISH medical domain track). Continues from the 4B-EU model
+# (already 77.8% medical MCQ, strong Swedish) and specialises on medical: the open-answer clinical
+# explanations (the differentiated signal) + answer-only MCQ, OVERSAMPLED x3 since the set is
+# small, with general/Swedish replay to avoid catastrophic forgetting. STAGE_LOAD overrides to the
+# 4B-EU ckpt. RESEARCH/INTERNAL ONLY (medical education, not clinical deployment) — source license
+# review pending per the dataset's own manifest.
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-grpo
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/medical-sft-parquet/train.parquet}
+    split: train                   # medical (open-answer + MCQ) x3 (oversampled)
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/medical-sft-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/medical-sft-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: "train[:120000]"        # general/Swedish EU replay (anti-forgetting)
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-medical-sft
+max_length: 4096
+packing: true
+dataset_num_proc: 8
+ddp_timeout: 14400
+max_steps: 800
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 6.0e-6              # gentle — the base is already good; specialise, don't overwrite
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 400
+save_total_limit: 2
+report_to: none

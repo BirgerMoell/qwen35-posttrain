@@ -1,0 +1,35 @@
+# SFT — Qwen3.5-4B on the EU multilingual mix, mobile lineup (Qwen3.5-4B-EU).
+# Same recipe as the 2B (85% no-think general EU + 15% think reasoning slice), slightly lower
+# LR for the larger model. Full FT, 1 node x 8 GPUs (4B ~= 8 GB/rank -> 64 GB CPU, fits 480 GB).
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-4B
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet
+    split: "train[:340000]"        # ~85% general EU, no-think
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet
+    split: "train[:60000]"         # ~15% reasoning (think-format)
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-sft
+max_length: 4096
+packing: true
+dataset_num_proc: 8
+ddp_timeout: 10800
+max_steps: 600
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8     # global batch 64 on 1 node
+learning_rate: 8.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 10
+save_steps: 200
+save_total_limit: 2
+report_to: none

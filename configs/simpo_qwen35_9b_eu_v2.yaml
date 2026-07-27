@@ -1,0 +1,33 @@
+# SimPO v2 — Qwen3.5-9B-EU. Extended preference optimisation on EU exam pairs. STAGE_LOAD
+# overrides to the 9B v2 SFT ckpt. Tuned for 2 nodes x 8 GPUs = 16 GPUs (2*4*16 = 128 global).
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-eu-sft-v2
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/exam-dpo-parquet/train.parquet
+    split: train
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-eu-simpo-v2
+loss_type: simpo
+cpo_alpha: 0.0
+simpo_gamma: 0.5
+beta: 2.0
+max_length: 1024
+max_prompt_length: 768
+max_steps: 1500
+dataset_num_proc: 8
+ddp_timeout: 18000
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 4
+learning_rate: 5.0e-7
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 500
+save_total_limit: 3
+report_to: none

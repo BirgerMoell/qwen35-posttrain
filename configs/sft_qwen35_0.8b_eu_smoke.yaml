@@ -1,0 +1,34 @@
+# SFT smoke — Qwen3.5-0.8B (SMALLEST) — fast end-to-end test of the mobile pipeline
+# (SFT -> export GGUF/MLX -> quantize -> run) before committing the 2B/4B real runs.
+# Tiny data slices + few steps: validates wiring, not quality.
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-0.8B
+torch_dtype: bfloat16
+
+# 85/15 no-think general EU + think reasoning slice (small, just to exercise both formats)
+datasets:
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet
+    split: "train[:8500]"
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet
+    split: "train[:1500]"
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-0.8b-eu-smoke
+max_length: 4096
+packing: true
+dataset_num_proc: 8
+max_steps: 30
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-5
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 1
+save_steps: 30
+save_only_model: true
+report_to: none

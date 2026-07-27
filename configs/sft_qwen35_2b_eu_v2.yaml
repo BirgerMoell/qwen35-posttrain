@@ -1,0 +1,35 @@
+# SFT v2 — Qwen3.5-2B-EU, LONGER + MORE DATA. v1 trained only 0.26 epoch of a 400k slice;
+# v2 uses the FULL general set (1.08M) + a bigger reasoning slice (190k, keeps ~85/15 no-think/
+# think), and ~5x the steps. Fresh full FT from base (not continuing v1).
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-2B
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet
+    split: train                   # full general EU set (~1.08M), no-think
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet
+    split: "train[:190000]"        # ~15% reasoning (think-format)
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-2b-eu-sft-v2
+max_length: 4096
+packing: true
+dataset_num_proc: 16
+ddp_timeout: 14400
+max_steps: 3000                    # ~5x v1; ~0.4 epoch of the larger mix (overnight on 1 node)
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-5
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 1000
+save_total_limit: 3
+report_to: none

@@ -1,0 +1,43 @@
+# SFT v3 — Qwen3.5-2B-EU, DEFECT-REPAIR run. Folds in birgermoell/oellm-eu-defect-repair-sft-v1
+# (native text for the 15 languages the rubric judge found broken: is/ga/mt/et floor + da/hr/hu/
+# lt/lv/sk/sl loops + bg anti-Russian-leak). The defect set is small vs the 1M general set, so it's
+# OVERSAMPLED x3 (listed 3x -> ~35% of the mix) to give the weak langs real exposure; general is
+# kept LIGHT (v1-style ~300k) because the 2B overfits on more general data (see v2 regression).
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-2B
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: "train[:300000]"        # general EU (no-think), light
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet}
+    split: "train[:40000]"         # small reasoning slice (think-format)
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train                   # defect-repair x3 (oversampled for the weak languages)
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-2b-eu-sft-v3
+max_length: 4096
+packing: true
+dataset_num_proc: 12
+ddp_timeout: 14400
+max_steps: 2800                    # ~defect data seen ~3x; general ~1 epoch of the 300k slice
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-5
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 700
+save_total_limit: 4
+report_to: none

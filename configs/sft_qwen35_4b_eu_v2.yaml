@@ -1,0 +1,35 @@
+# SFT v2 — Qwen3.5-4B-EU, LONGER + MORE DATA. Same recipe as 2B v2 (full general 1.08M + 190k
+# reasoning, ~85/15), slightly lower LR. The 4B base is already strong (49.9%) so it's more prone
+# to overfitting — fewer steps than the 2B + intermediate checkpoints saved to eval/pick the best.
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-4B
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet
+    split: train                   # full general EU set (~1.08M), no-think
+  - path: parquet
+    data_files:
+      train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet
+    split: "train[:190000]"        # ~15% reasoning (think-format)
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-sft-v2
+max_length: 4096
+packing: true
+dataset_num_proc: 16
+ddp_timeout: 14400
+max_steps: 1500                    # ~2.5x v1; 4B is slower + overfits easier -> keep moderate
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 8.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 500
+save_total_limit: 3
+report_to: none

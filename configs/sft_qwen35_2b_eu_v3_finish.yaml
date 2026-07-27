@@ -1,0 +1,42 @@
+# SFT v3 FINISH — Qwen3.5-2B-EU defect-repair, warm-start continue. The original v3 run reached
+# step 2100/2800 then timed out; FSDP + save_only_model can't optimizer-resume (no fsdp shard),
+# so we warm-start from the consolidated checkpoint-2100 weights (via STAGE_LOAD) and train the
+# remaining ~700 steps at a LOW CONSTANT LR — finishes the recipe without a disruptive cosine
+# restart. STAGE_LOAD = .../qwen35-2b-eu-sft-v3/checkpoint-2100 ; STAGE_SAVE = a fresh -final dir.
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-2B  # overridden by STAGE_LOAD
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: "train[:300000]"
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet}
+    split: "train[:40000]"
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-2b-eu-sft-v3-final
+max_length: 4096
+packing: true
+dataset_num_proc: 12
+ddp_timeout: 14400
+max_steps: 700                     # remaining 2100 -> 2800
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 2.0e-6              # low constant top-up (was 1e-5 cosine; already annealed at 2100)
+lr_scheduler_type: constant_with_warmup
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 350
+save_total_limit: 2
+report_to: none

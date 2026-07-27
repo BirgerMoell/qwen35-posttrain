@@ -1,0 +1,41 @@
+# SFT v3 — Qwen3.5-4B-EU, DEFECT-REPAIR run. Same defect-repair fold-in (x3 oversample), but the
+# 4B benefits from MORE general data (v2 won), so keep a larger general slice. Targets the 4B's
+# specific rubric defects: bg->Russian leak, and the is/ga/mt/et floor.
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-4B
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: "train[:500000]"        # general EU (no-think), larger than the 2B (4B absorbs it)
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet}
+    split: "train[:90000]"         # reasoning slice (think-format)
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-sft-v3
+max_length: 4096
+packing: true
+dataset_num_proc: 12
+ddp_timeout: 14400
+max_steps: 3000
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 8.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 750
+save_total_limit: 4
+report_to: none

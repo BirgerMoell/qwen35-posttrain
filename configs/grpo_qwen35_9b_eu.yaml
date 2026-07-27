@@ -1,0 +1,29 @@
+# GRPO / RLVR — Qwen3.5-9B-EU, the final stage of the ambitious v2 chain. Verifiable exam-MCQ
+# letter reward (mcq_letter_exact), beta=0 (no reference model). STAGE_LOAD overrides to the 9B
+# v2 SimPO ckpt. GRPO lifted the original 9B +3.4 over SFT — applied here on top of v2 SFT+SimPO.
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-eu-simpo-v2
+torch_dtype: bfloat16
+
+dataset_name: /scratch/project_465002530/users/bmoell/qwen35-posttrain/data/exam_mcq/oellm-eu-exam-mcq-v1/grpo/train.jsonl
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-9b-eu-grpo
+num_generations: 8
+max_prompt_length: 1024
+max_completion_length: 64
+temperature: 0.9
+beta: 0.0
+use_vllm: false
+max_steps: 600
+ddp_timeout: 18000
+per_device_train_batch_size: 8
+gradient_accumulation_steps: 2
+learning_rate: 1.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 5
+save_steps: 200
+save_total_limit: 2
+report_to: none

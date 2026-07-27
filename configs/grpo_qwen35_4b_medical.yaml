@@ -1,0 +1,29 @@
+# GRPO / RLVR — Qwen3.5-4B-EU-Medical. Verifiable Swedish medical MCQ (mcq_letter_exact reward,
+# beta=0). Pushes the medical-exam accuracy on top of the medical SFT. STAGE_LOAD overrides to the
+# medical SFT ckpt. Data: the staged medical GRPO train jsonl (prompt + gold answer letter).
+
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-medical-sft
+torch_dtype: bfloat16
+
+dataset_name: /scratch/project_465002530/users/bmoell/qwen35-posttrain/data/medical/grpo_train.jsonl
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-medical-grpo
+num_generations: 8
+max_prompt_length: 1024
+max_completion_length: 64
+temperature: 0.9
+beta: 0.0
+use_vllm: false
+max_steps: 400
+ddp_timeout: 14400
+per_device_train_batch_size: 8
+gradient_accumulation_steps: 2
+learning_rate: 1.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+logging_steps: 5
+save_steps: 200
+save_total_limit: 2
+report_to: none

@@ -1,0 +1,40 @@
+# SFT v3 FINISH — Qwen3.5-4B-EU defect-repair, warm-start continue (same rationale as the 2B finish
+# config). Original v3 reached step 1500/3000; warm-start from consolidated checkpoint-1500 weights
+# and train the remaining ~1500 steps at a low constant LR. STAGE_LOAD = .../checkpoint-1500.
+model_name_or_path: /scratch/project_465002530/users/bmoell/models/Qwen3.5-4B  # overridden by STAGE_LOAD
+torch_dtype: bfloat16
+
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: "train[:500000]"
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-reasoning-sft-parquet/train.parquet}
+    split: "train[:90000]"
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/eu-defect-repair-parquet/train.parquet}
+    split: train
+
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/qwen35-4b-eu-sft-v3-final
+max_length: 4096
+packing: true
+dataset_num_proc: 12
+ddp_timeout: 14400
+max_steps: 1500                    # remaining 1500 -> 3000
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 3.0e-6              # low constant top-up (was 8e-6 cosine)
+lr_scheduler_type: constant_with_warmup
+warmup_ratio: 0.02
+bf16: true
+gradient_checkpointing: true
+logging_steps: 20
+save_steps: 500
+save_total_limit: 2
+report_to: none
