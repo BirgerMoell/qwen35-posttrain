@@ -22,7 +22,9 @@ set -euo pipefail; module purge
 : "${MODEL:?}"; : "${TAG:=ckpt}"; : "${LANGUAGES:=sv}"
 CONTAINER=/scratch/project_462000963/containers/laif-rocm-6.4.4-pytorch-2.9.1-te-2.4.0-fa-2.8.0-triton-3.2.0.sif
 BIND=/pfs,/scratch,/flash,/project,/projappl,/appl,/opt/cray,/var/spool/slurmd
-OVERLAY=/scratch/project_465002530/users/bmoell/pylibs-overlay
+# Dedicated EuroEval overlay (CUDA-torch/vLLM deps EuroEval[generative] pulls in). Kept
+# SEPARATE from the training overlay so EuroEval never pollutes it (it did once — broke 27B SFT).
+OVERLAY=/scratch/project_465002530/users/bmoell/pylibs-euroeval
 HF_CACHE=/scratch/project_465002530/users/bmoell/hf_cache
 RESULTS=$SLURM_SUBMIT_DIR/eval/results/euroeval/$TAG
 mkdir -p "$RESULTS"
