@@ -1,0 +1,24 @@
+{"category": "sentiment", "prompt": "Analysera känslan i följande recension och avgör om den är positiv, negativ eller neutral. Motivera kort. Recension: \"Maten var god men servicen var långsam och lokalen kändes sliten.\""}
+{"category": "sentiment", "prompt": "Är följande kundkommentar positiv eller negativ? Förklara varför. \"Jag hade höga förväntningar men blev tyvärr besviken på kvaliteten.\""}
+{"category": "sentiment", "prompt": "Vilken känsla uttrycker denna tweet, och hur säker är du? \"Äntligen fredag! Helgen kan inte komma snabbt nog.\""}
+{"category": "kunskap_sverige", "prompt": "Vilka är Sveriges tre största sjöar till ytan, i storleksordning?"}
+{"category": "kunskap_sverige", "prompt": "Förklara kortfattat hur det svenska riksdagsvalet fungerar och vad fyraprocentsspärren innebär."}
+{"category": "kunskap_sverige", "prompt": "Vem var Selma Lagerlöf och varför är hon viktig i svensk litteraturhistoria?"}
+{"category": "resonemang", "prompt": "En affär säljer äpplen för 12 kronor styck. Om du köper 7 äpplen och betalar med en hundralapp, hur mycket får du tillbaka? Visa uträkningen."}
+{"category": "resonemang", "prompt": "Anna är dubbelt så gammal som Erik. Om fem år är deras sammanlagda ålder 40 år. Hur gamla är de nu? Resonera steg för steg."}
+{"category": "resonemang", "prompt": "Om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma? Förklara logiken."}
+{"category": "sammanfattning", "prompt": "Sammanfatta följande text i en mening: \"Klimatförändringarna påverkar redan Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer. Forskare varnar för att vissa arter kan försvinna medan nya etablerar sig, vilket förändrar de svenska ekosystemen i grunden.\""}
+{"category": "sammanfattning", "prompt": "Ge en kort sammanfattning (max tre meningar) av vad nyheten handlar om: \"Regeringen presenterade idag en ny satsning på järnvägsunderhåll. Satsningen omfattar tio miljarder kronor över fyra år och syftar till att minska förseningarna i tågtrafiken. Oppositionen menar att beloppet är otillräckligt.\""}
+{"category": "sprakriktighet", "prompt": "Rätta eventuella grammatik- och stavfel i meningen och förklara vad du ändrade: \"Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handlade något.\""}
+{"category": "sprakriktighet", "prompt": "Är följande mening grammatiskt korrekt svenska? Om inte, skriv den korrekt: \"De hade redan ätit middag när vi kom fram till restaurangen.\""}
+{"category": "sprakriktighet", "prompt": "Förklara skillnaden mellan \"de\" och \"dem\" och ge ett exempel på korrekt användning av vardera."}
+{"category": "instruktion", "prompt": "Skriv en punktlista med exakt fyra tips för att sova bättre. Varje punkt ska vara högst tio ord lång."}
+{"category": "instruktion", "prompt": "Skriv ett formellt mejl på svenska till en hyresvärd där du anmäler en trasig diskmaskin och ber om reparation. Håll det under 80 ord."}
+{"category": "instruktion", "prompt": "Lista fem svenska städer i bokstavsordning, en per rad, utan någon annan text."}
+{"category": "vardagskunskap", "prompt": "Det regnar ute och du ska cykla till jobbet. Vad bör du tänka på? Ge tre praktiska råd."}
+{"category": "vardagskunskap", "prompt": "Varför är det en dålig idé att lämna mjölk framme på köksbänken över natten?"}
+{"category": "vardagskunskap", "prompt": "En vän säger att hen känner sig stressad inför ett jobbintervju imorgon. Vad kan du säga för att hjälpa och lugna?"}
+{"category": "kreativt", "prompt": "Skriv en kort dikt på fyra rader om den svenska hösten."}
+{"category": "kreativt", "prompt": "Hitta på en kort berättelse (cirka 100 ord) om en räv som hittar en försvunnen vante i skogen."}
+{"category": "kunskap_allmän", "prompt": "Förklara för ett barn varför himlen är blå, på enkel svenska."}
+{"category": "resonemang", "prompt": "Vad är meningen med livet? Svara reflekterande i några meningar."}
