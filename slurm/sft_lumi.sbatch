@@ -16,6 +16,12 @@ if [ -z ${SLURM_JOB_ID+x} ]; then mkdir -p logs; sbatch "$0" "$@"; exit; fi
 set -euo pipefail; module purge
 ln -sf "${SLURM_JOB_NAME}-${SLURM_JOBID}.out" logs/latest.out 2>/dev/null || true
 : "${STAGE_LOAD:?set by orchestrator}"; : "${STAGE_SAVE:?}"; : "${CFG:=configs/sft_2b_smoke.yaml}"
+: "${RANK0_META_LOAD:=0}"   # 1 = only global rank 0 loads weights (others on meta) — for big models
+: "${RESUME_FROM_CHECKPOINT:=0}"  # 1 = resume from latest checkpoint-* in STAGE_SAVE (or a path).
+# NOTE: needs a FULL FSDP checkpoint (pytorch_model_fsdp.bin + optimizer). Our runs use
+# --save_only_model true (consolidated model.safetensors only), which CANNOT optimizer-resume —
+# FileNotFoundError on pytorch_model_fsdp.bin. To continue such a run, WARM-START instead: point
+# STAGE_LOAD at the checkpoint dir with a low-constant-LR finish config (see *_v3_finish.yaml).
 CONTAINER=/scratch/project_462000963/containers/laif-rocm-6.4.4-pytorch-2.9.1-te-2.4.0-fa-2.8.0-triton-3.2.0.sif
 BIND=/pfs,/scratch,/flash,/project,/projappl,/appl,/opt/cray,/var/spool/slurmd
 export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST"|head -n1)
@@ -34,13 +40,21 @@ HF_CACHE=/scratch/project_465002530/users/bmoell/hf_cache
 # Multi-node aware: derive world size from the allocation. Same file works on 1 node (default)
 # or N nodes via `sbatch --nodes=N`. srun runs one task/node (ntasks-per-node=1) so each node's
 # task carries SLURM_PROCID = its machine_rank; accelerate spawns 8 GPU workers per node.
-GPUS_PER_NODE=8
+# Auto-detect GPUs/node from the allocation (was hardcoded 8). Lets us run FEWER ranks/node
+# for big models: transformers 5.x dropped the env-based FSDP cpu_ram_efficient (rank-0-only)
+# loading, so EVERY rank materializes a full CPU copy. A 27B is 54 GB/rank → 8/node OOMs the
+# node RAM; submit `--gpus-per-node=4 --mem=480G` so only 4×54=216 GB loads per node.
+# Honor an explicit GPUS_PER_NODE override first: SLURM_GPUS_ON_NODE reports the node's PHYSICAL
+# GCD count (8) even when --gpus-per-node is smaller, which would over-spawn ranks and OOM CPU RAM
+# at 27B. So for big models pass `--export=...,GPUS_PER_NODE=4 --gpus-per-node=4`.
+GPUS_PER_NODE=${GPUS_PER_NODE:-${SLURM_GPUS_ON_NODE:-8}}
 NUM_PROC=$(( GPUS_PER_NODE * SLURM_NNODES ))
 echo "Launching on $SLURM_NNODES node(s), $NUM_PROC GPU workers total"
 srun --label singularity exec -B "$BIND" "$CONTAINER" bash -lc "
   export PYTHONPATH=$PYLIBS_OVERLAY:\${PYTHONPATH:-} &&
   export HF_HOME=$HF_CACHE HF_DATASETS_CACHE=$HF_CACHE/datasets &&
-  export ACCELERATE_USE_FSDP=true FSDP_CPU_RAM_EFFICIENT_LOADING=1 &&
+  export ACCELERATE_USE_FSDP=true FSDP_CPU_RAM_EFFICIENT_LOADING=1 RANK0_META_LOAD=$RANK0_META_LOAD &&
+  export RESUME_FROM_CHECKPOINT=$RESUME_FROM_CHECKPOINT &&
   cd $SLURM_SUBMIT_DIR &&
   accelerate launch \
     --config_file configs/accelerate_fsdp.yaml \

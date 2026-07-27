@@ -13,8 +13,10 @@ TRL's config dataclasses + dataset mixture loader, so the same YAML configs work
 """
 from __future__ import annotations
 
+import os
+
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from trl import (
     DatasetMixtureConfig,
     ModelConfig,
@@ -40,14 +42,35 @@ def main(script_args, training_args, model_args, dataset_args):
     dtype_str = getattr(model_args, "dtype", None) or getattr(model_args, "torch_dtype", None)
     dtype = dtype_str if dtype_str in (None, "auto") else getattr(torch, dtype_str)
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_args.model_name_or_path,
-        revision=model_args.model_revision,
-        attn_implementation=model_args.attn_implementation,
-        dtype=dtype,
-        trust_remote_code=model_args.trust_remote_code,
-        low_cpu_mem_usage=True,
-    )
+    # Initialize the distributed process group before loading so we know our rank.
+    from accelerate import PartialState
+    state = PartialState()
+
+    # transformers 5.x REMOVED the env-based FSDP rank-0 (cpu_ram_efficient) loading, so by default
+    # every rank reads the full checkpoint into CPU RAM (~120 GB/rank peak at 27B incl. the FSDP
+    # shard transient) and OOMs the node. Opt in with RANK0_META_LOAD=1 for large models: only
+    # global rank 0 reads weights; other ranks build the model on `meta` (no CPU/GPU memory) and
+    # FSDP `sync_module_states=True` broadcasts rank-0's weights at wrap time. This decouples CPU
+    # load from ranks/node (load is ~54 GB on ONE node), so we can use all 8 GPUs/node again.
+    # Default (unset) keeps the prior per-rank load — unchanged for the 2B/4B/9B single-node runs.
+    if os.environ.get("RANK0_META_LOAD") == "1" and not state.is_main_process:
+        cfg = AutoConfig.from_pretrained(
+            model_args.model_name_or_path, trust_remote_code=model_args.trust_remote_code
+        )
+        with torch.device("meta"):
+            model = AutoModelForCausalLM.from_config(
+                cfg, dtype=dtype, attn_implementation=model_args.attn_implementation,
+                trust_remote_code=model_args.trust_remote_code,
+            )
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            revision=model_args.model_revision,
+            attn_implementation=model_args.attn_implementation,
+            dtype=dtype,
+            trust_remote_code=model_args.trust_remote_code,
+            low_cpu_mem_usage=True,
+        )
     _prune_no_split_modules(model)
 
     tokenizer = AutoTokenizer.from_pretrained(
@@ -72,7 +95,17 @@ def main(script_args, training_args, model_args, dataset_args):
         peft_config=get_peft_config(model_args),
     )
 
-    trainer.train()
+    # Resume from a saved checkpoint if requested (RESUME_FROM_CHECKPOINT=1 -> auto-find the latest
+    # checkpoint-* in output_dir; or set it to an explicit checkpoint path). Restores model +
+    # optimizer + step, so a run cut short by a wall-clock timeout continues instead of restarting.
+    _resume = os.environ.get("RESUME_FROM_CHECKPOINT", "").strip()
+    if _resume in ("", "0"):
+        resume = None          # disabled (default) — note "0" is a truthy string, must map to None
+    elif _resume == "1":
+        resume = True          # auto-find the latest checkpoint-* in output_dir
+    else:
+        resume = _resume       # explicit checkpoint path
+    trainer.train(resume_from_checkpoint=resume)
     trainer.accelerator.print("✅ Training completed.")
     trainer.save_model(training_args.output_dir)
     trainer.accelerator.print(f"💾 Model saved to {training_args.output_dir}.")
