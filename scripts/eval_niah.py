@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Needle-in-a-haystack retrieval grid for the OELLM-9B 256K chat checkpoint.
+"""Needle-in-a-haystack retrieval grid for OELLM chat checkpoints.
 
 The evaluator inserts one deterministic passkey at controlled depths in a long
 background document, asks for only that passkey, and reports strict exact match.
-It validates the 64M RoPE theta and Gemma-style turn markers before loading the
-model. Results are written after every cell so interrupted 128K/256K runs resume.
+It records the configured RoPE theta and validates the checkpoint's own chat
+template before loading the model. Results are written after every cell so
+interrupted long-context runs resume.
 
 Example (inside the LUMI training container):
   python scripts/eval_niah.py \
@@ -21,7 +22,7 @@ import re
 import time
 
 import torch
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
 
 FILLER_BLOCK = (
@@ -34,6 +35,12 @@ FILLER_BLOCK = (
 INTRO = (
     "Read the following archive carefully. One important record is hidden among routine "
     "background material. Remember that record and answer the question at the end.\n\n"
+)
+SECRET_WORDS = (
+    "amber", "anchor", "birch", "cedar", "coral", "dawn", "ember", "falcon",
+    "fjord", "forest", "harbor", "hazel", "island", "juniper", "lantern", "meadow",
+    "mist", "north", "ocean", "otter", "pearl", "pine", "raven", "river",
+    "silver", "spruce", "stone", "sunrise", "violet", "willow", "winter", "wren",
 )
 
 
@@ -52,37 +59,93 @@ def extract_rope_theta(config) -> float | None:
     return None
 
 
-def render_ids(tokenizer, content: str) -> list[int]:
-    ids = tokenizer.apply_chat_template(
-        [{"role": "user", "content": content}],
-        tokenize=True,
-        add_generation_prompt=True,
-    )
+def as_token_ids(value) -> list[int]:
+    if value is None:
+        return []
+    if isinstance(value, int):
+        return [value]
+    return [int(token_id) for token_id in value]
+
+
+def generation_eos_ids(tokenizer, template: str, generation_config) -> list[int]:
+    """Resolve EOS IDs from the checkpoint without imposing a foreign prompt format."""
+    ids = []
+    ids.extend(as_token_ids(getattr(generation_config, "eos_token_id", None)))
+    ids.extend(as_token_ids(tokenizer.eos_token_id))
+    for marker in ("<|im_end|>", "<end_of_turn>"):
+        if marker not in template:
+            continue
+        token_id = tokenizer.convert_tokens_to_ids(marker)
+        if token_id is not None and token_id != tokenizer.unk_token_id:
+            ids.append(int(token_id))
+    return list(dict.fromkeys(ids))
+
+
+def render_ids(tokenizer, content: str, prompt_format: str = "chat") -> list[int]:
+    # Render first, then tokenize explicitly. Some Transformers/tokenizer
+    # combinations return the rendered string even when tokenize=True, which
+    # otherwise fails later with the opaque error "'str' object cannot be
+    # interpreted as an integer" when constructing the input tensor.
+    if prompt_format == "chat":
+        rendered = tokenizer.apply_chat_template(
+            [{"role": "user", "content": content}],
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        ids = tokenizer(rendered, add_special_tokens=False)["input_ids"]
+    elif prompt_format == "completion":
+        ids = tokenizer(content, add_special_tokens=True)["input_ids"]
+    else:
+        raise ValueError(f"Unknown prompt format: {prompt_format}")
     if isinstance(ids, torch.Tensor):
         ids = ids.squeeze(0).tolist()
     if ids and isinstance(ids[0], list):
         ids = ids[0]
+    if not isinstance(ids, list) or any(not isinstance(token_id, int) for token_id in ids):
+        raise TypeError(f"Expected a list of integer token IDs, got {type(ids).__name__}")
     return ids
 
 
-def make_secret(model: str, requested_length: int, depth: int) -> tuple[str, str]:
+def make_secret(
+    model: str, requested_length: int, depth: int, secret_style: str = "hex"
+) -> tuple[str, str]:
     digest = hashlib.sha256(f"{model}|{requested_length}|{depth}".encode()).hexdigest().upper()
-    return f"record-{digest[:8].lower()}", f"NIAH-{digest[8:20]}"
+    record_id = f"record-{digest[:8].lower()}"
+    if secret_style == "words":
+        indexes = [int(digest[offset:offset + 2], 16) % len(SECRET_WORDS) for offset in (8, 10, 12)]
+        return record_id, "-".join(SECRET_WORDS[index] for index in indexes)
+    if secret_style != "hex":
+        raise ValueError(f"Unknown secret style: {secret_style}")
+    return record_id, f"NIAH-{digest[8:20]}"
 
 
-def build_case(tokenizer, model_name: str, requested_length: int, target_length: int, depth: int):
-    record_id, secret = make_secret(model_name, requested_length, depth)
+def build_case(
+    tokenizer,
+    model_name: str,
+    requested_length: int,
+    target_length: int,
+    depth: int,
+    secret_style: str = "hex",
+    prompt_format: str = "chat",
+):
+    record_id, secret = make_secret(model_name, requested_length, depth, secret_style)
     needle = f"IMPORTANT RECORD: The passkey for {record_id} is {secret}.\n"
-    question = (
-        f"\nQuestion: What is the passkey for {record_id}? "
-        "Answer with only the exact passkey and no other words."
-    )
+    if prompt_format == "chat":
+        question = (
+            f"\nQuestion: What is the passkey for {record_id}? "
+            "Answer with only the exact passkey and no other words."
+        )
+    else:
+        question = (
+            f"\nQuestion: What is the passkey for {record_id}?\n"
+            f"Answer: The passkey for {record_id} is"
+        )
 
     def content_for(repeats: int) -> str:
         before = round(repeats * depth / 100)
         return INTRO + FILLER_BLOCK * before + needle + FILLER_BLOCK * (repeats - before) + question
 
-    base_length = len(render_ids(tokenizer, content_for(0)))
+    base_length = len(render_ids(tokenizer, content_for(0), prompt_format))
     block_length = max(1, len(tokenizer(FILLER_BLOCK, add_special_tokens=False)["input_ids"]))
     if target_length < base_length:
         raise ValueError(f"Target {target_length} is smaller than prompt overhead {base_length}")
@@ -94,7 +157,7 @@ def build_case(tokenizer, model_name: str, requested_length: int, target_length:
     # corrections normally place the input within one filler block of the target.
     for _ in range(5):
         content = content_for(repeats)
-        ids = render_ids(tokenizer, content)
+        ids = render_ids(tokenizer, content, prompt_format)
         delta = target_length - len(ids)
         if 0 <= delta < block_length:
             break
@@ -106,7 +169,7 @@ def build_case(tokenizer, model_name: str, requested_length: int, target_length:
     while len(ids) > target_length and repeats > 0:
         repeats -= 1
         content = content_for(repeats)
-        ids = render_ids(tokenizer, content)
+        ids = render_ids(tokenizer, content, prompt_format)
 
     secret_candidates = [
         tokenizer(" " + secret, add_special_tokens=False)["input_ids"],
@@ -164,6 +227,8 @@ def main():
     parser.add_argument("--max-new-tokens", type=int, default=24)
     parser.add_argument("--attn-implementation", default="flash_attention_2")
     parser.add_argument("--device-map", default="auto")
+    parser.add_argument("--secret-style", choices=("hex", "words"), default="hex")
+    parser.add_argument("--prompt-format", choices=("chat", "completion"), default="chat")
     parser.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--allow-nonstandard-theta", action="store_true")
     args = parser.parse_args()
@@ -185,19 +250,29 @@ def main():
 
     tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
     template = tokenizer.chat_template or ""
-    if "<start_of_turn>" not in template or "<end_of_turn>" not in template:
-        raise SystemExit("Expected the staged Gemma-style <start_of_turn>/<end_of_turn> chat template")
-    eot_id = tokenizer.convert_tokens_to_ids("<end_of_turn>")
-    if eot_id == tokenizer.unk_token_id:
-        raise SystemExit("<end_of_turn> maps to the unknown token")
+    if args.prompt_format == "chat" and not template:
+        raise SystemExit("Checkpoint has no chat template")
+    if args.prompt_format == "chat":
+        try:
+            render_ids(tokenizer, "Reply with the single word OK.", "chat")
+        except Exception as error:
+            raise SystemExit(f"Checkpoint chat template cannot be rendered: {error}") from error
+    generation_config = GenerationConfig.from_pretrained(args.model)
+    eos_ids = generation_eos_ids(tokenizer, template, generation_config)
+    if not eos_ids:
+        raise SystemExit("Could not resolve any generation EOS token IDs from the checkpoint")
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
 
     output = pathlib.Path(args.out)
     if args.resume and output.exists():
         report = json.loads(output.read_text())
-        if report.get("model") != args.model:
-            raise SystemExit(f"Refusing to resume {output}: model differs")
+        if (
+            report.get("model") != args.model
+            or report.get("secret_style", "hex") != args.secret_style
+            or report.get("prompt_format", "chat") != args.prompt_format
+        ):
+            raise SystemExit(f"Refusing to resume {output}: model, secret style, or prompt format differs")
     else:
         report = {
             "model": args.model,
@@ -206,6 +281,9 @@ def main():
             "requested_lengths": lengths,
             "depths_percent": depths,
             "max_new_tokens": args.max_new_tokens,
+            "secret_style": args.secret_style,
+            "prompt_format": args.prompt_format,
+            "generation_eos_token_ids": eos_ids,
             "results": [],
         }
     completed = {(r["requested_length"], r["depth_percent"]) for r in report["results"]}
@@ -220,8 +298,6 @@ def main():
         low_cpu_mem_usage=True,
     ).eval()
     input_device = model.get_input_embeddings().weight.device
-    eos_ids = list(dict.fromkeys([eot_id, tokenizer.eos_token_id]))
-
     for requested_length in lengths:
         target_length = min(requested_length, model_limit - args.max_new_tokens)
         for depth in depths:
@@ -232,7 +308,15 @@ def main():
 
             started = time.time()
             try:
-                case = build_case(tokenizer, args.model, requested_length, target_length, depth)
+                case = build_case(
+                    tokenizer,
+                    args.model,
+                    requested_length,
+                    target_length,
+                    depth,
+                    args.secret_style,
+                    args.prompt_format,
+                )
                 input_ids = torch.tensor([case.pop("input_ids")], dtype=torch.long, device=input_device)
                 attention_mask = torch.ones_like(input_ids)
                 prompt_tokens = input_ids.shape[1]
