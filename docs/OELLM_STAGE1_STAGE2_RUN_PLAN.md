@@ -67,6 +67,13 @@ prompts dropped; Japanese excluded. Deterministic per-source sampling (pool, not
 | Nemotron chat | 60% | en |
 | SmolTalk2 multilingual8 think, multi-turn IF think, s1k, Aya think, table, everyday | 100% | mixed |
 
+Built (job 61558735): **432,715 train / 396 validation rows, 3.17B rendered tokens**
+(2.73B of them reasoning). By source (rows, tokens): Nemotron de/es/fr/it ≈60K and ≈420M
+each; OpenThoughts3 84K / 1.11B; Nemotron chat 43K / 156M; SmolTalk multilingual8 59K / 150M;
+LongAlign think 2.9K / 49M (902 over 32K rejected); small sets (IF multi-turn, s1k, Aya,
+table) ≈4.5K rows. Rejections are `<image>` prompts and traces without a final answer.
+The pool is larger than one Stage-2 epoch should be; select by token budget per source.
+
 Observed in the source: every trace is English, including those under German/Spanish
 prompts ("English trace, localized answer"). Translated Dolci-Think is the candidate for
 native-language traces; compare both before committing.
