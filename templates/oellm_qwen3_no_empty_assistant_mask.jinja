@@ -1,0 +1,30 @@
+{# Two-stage text-only SFT for the OpenEuroLLM/Qwen3 ChatML token protocol.
+   No empty think block is ever synthesized. Tool trajectories are a separate
+   stage and deliberately fail closed here. #}
+{%- if tools %}
+    {{- raise_exception('This two-stage SFT template does not support tools') }}
+{%- endif %}
+{%- for message in messages %}
+    {%- if message.role not in ['system', 'user', 'assistant'] %}
+        {{- raise_exception('Unsupported role in two-stage SFT template: ' + message.role) }}
+    {%- endif %}
+    {%- if message.content is not string %}
+        {{- raise_exception('Two-stage SFT requires text-only message content') }}
+    {%- endif %}
+    {{- '<|im_start|>' + message.role + '\n' }}
+    {%- if message.role == 'assistant' %}
+        {%- if message.reasoning_content is defined and message.reasoning_content is string and message.reasoning_content|trim %}
+            {%- if '<think>' in message.content or '</think>' in message.content %}
+                {{- raise_exception('Reasoning is duplicated in reasoning_content and content') }}
+            {%- endif %}
+            {% generation %}{{- '<think>\n' + (message.reasoning_content|trim) + '\n</think>\n\n' + message.content + '<|im_end|>\n' -}}{% endgeneration %}
+        {%- else %}
+            {% generation %}{{- message.content + '<|im_end|>\n' -}}{% endgeneration %}
+        {%- endif %}
+    {%- else %}
+        {{- message.content + '<|im_end|>\n' }}
+    {%- endif %}
+{%- endfor %}
+{%- if add_generation_prompt %}
+    {{- '<|im_start|>assistant\n' }}
+{%- endif %}

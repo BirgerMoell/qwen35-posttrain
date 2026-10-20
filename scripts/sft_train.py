@@ -13,9 +13,13 @@ TRL's config dataclasses + dataset mixture loader, so the same YAML configs work
 """
 from __future__ import annotations
 
+import copy
+import glob
 import os
+from pathlib import Path
 
 import torch
+from datasets import DatasetDict, interleave_datasets, load_dataset
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from trl import (
     DatasetMixtureConfig,
@@ -27,6 +31,182 @@ from trl import (
     get_dataset,
     get_peft_config,
 )
+
+
+def _parse_mix_probabilities(value: str, dataset_count: int) -> list[float]:
+    """Parse an opt-in row-sampling mixture from the environment.
+
+    DatasetMixtureConfig concatenates sources by default. Long-context repair needs
+    deliberate sampling because one 64K row carries far more tokens than a normal
+    instruction row. Keep the legacy behavior unless DATASET_MIX_PROBABILITIES is
+    explicitly set. A colon separator is supported because Slurm --export uses
+    commas as delimiters.
+    """
+    raw = value.replace(",", ":").split(":")
+    try:
+        probabilities = [float(item.strip()) for item in raw if item.strip()]
+    except ValueError as exc:
+        raise ValueError(
+            "DATASET_MIX_PROBABILITIES must contain numbers separated by ':'"
+        ) from exc
+    if len(probabilities) != dataset_count:
+        raise ValueError(
+            "DATASET_MIX_PROBABILITIES has "
+            f"{len(probabilities)} values for {dataset_count} configured datasets"
+        )
+    if any(value < 0 for value in probabilities) or sum(probabilities) <= 0:
+        raise ValueError("dataset mixture probabilities must be non-negative and sum above zero")
+    total = sum(probabilities)
+    return [value / total for value in probabilities]
+
+
+def _get_dataset(dataset_args):
+    """Load the normal TRL mixture, or reproducibly interleave its sources.
+
+    The environment-controlled branch is intentionally generic and opt-in so all
+    existing configs preserve their exact behavior. Only the columns required by
+    SFT are retained before interleaving; project datasets carry heterogeneous
+    provenance columns that otherwise make Arrow feature alignment fail.
+    """
+    explicit_train = os.environ.get("SFT_TRAIN_DATA_GLOB", "").strip()
+    explicit_eval = os.environ.get("SFT_EVAL_DATA_GLOB", "").strip()
+    if bool(explicit_train) != bool(explicit_eval):
+        raise ValueError("SFT_TRAIN_DATA_GLOB and SFT_EVAL_DATA_GLOB must be set together")
+    if explicit_train:
+        train_files = [path for path in sorted(glob.glob(explicit_train)) if os.path.getsize(path)]
+        eval_files = [path for path in sorted(glob.glob(explicit_eval)) if os.path.getsize(path)]
+        if not train_files or not eval_files:
+            raise FileNotFoundError("Explicit train/eval JSONL glob matched no files")
+        # Pre-tokenized builds (input_ids + assistant_masks) are Parquet; TRL then skips
+        # its own tokenization and trains on exactly the audited tokens.
+        builder = "parquet" if all(p.endswith(".parquet") for p in train_files + eval_files) else "json"
+        dataset = load_dataset(
+            builder, data_files={"train": train_files, "test": eval_files}
+        )
+        eval_limit = int(os.environ.get("SFT_EVAL_MAX_ROWS", "0"))
+        if eval_limit < 0:
+            raise ValueError("SFT_EVAL_MAX_ROWS must be nonnegative")
+        if eval_limit:
+            eval_seed = int(os.environ.get("SFT_EVAL_SEED", "42"))
+            dataset["test"] = dataset["test"].shuffle(seed=eval_seed).select(
+                range(min(eval_limit, len(dataset["test"])))
+            )
+        print(
+            f"[dataset] explicit split: {len(dataset['train'])} train rows "
+            f"from {len(train_files)} files; {len(dataset['test'])} eval rows "
+            f"from {len(eval_files)} files",
+            flush=True,
+        )
+        return dataset
+
+    mix_value = os.environ.get("DATASET_MIX_PROBABILITIES", "").strip()
+    if not mix_value:
+        return get_dataset(dataset_args)
+
+    specs = list(dataset_args.datasets)
+    probabilities = _parse_mix_probabilities(mix_value, len(specs))
+    seed = int(os.environ.get("DATASET_MIX_SEED", "20260817"))
+    stopping_strategy = os.environ.get("DATASET_MIX_STOPPING_STRATEGY", "all_exhausted")
+    if stopping_strategy not in {"first_exhausted", "all_exhausted"}:
+        raise ValueError(
+            "DATASET_MIX_STOPPING_STRATEGY must be first_exhausted or all_exhausted"
+        )
+
+    loaded = []
+    for spec in specs:
+        one = copy.deepcopy(dataset_args)
+        one.datasets = [spec]
+        loaded.append(get_dataset(one))
+
+    split_names = set.intersection(*(set(part.keys()) for part in loaded))
+    if not split_names:
+        raise ValueError("configured datasets do not share a train/eval split")
+
+    mixed = {}
+    for split in sorted(split_names):
+        parts = []
+        for part in loaded:
+            current = part[split]
+            if "messages" not in current.column_names:
+                raise ValueError(f"dataset split {split!r} is missing the required messages column")
+            parts.append(current.select_columns(["messages"]))
+        mixed[split] = interleave_datasets(
+            parts,
+            probabilities=probabilities,
+            seed=seed,
+            stopping_strategy=stopping_strategy,
+        )
+
+    print(
+        "[dataset-mix] interleaving "
+        f"{len(specs)} sources with row probabilities={probabilities}, "
+        f"seed={seed}, stopping_strategy={stopping_strategy}",
+        flush=True,
+    )
+    return DatasetDict(mixed)
+
+
+def _load_chat_template_override(tokenizer) -> None:
+    """Install an optional assistant-mask-aware template for this training run."""
+    template_path = os.environ.get("CHAT_TEMPLATE_FILE", "").strip()
+    if not template_path:
+        return
+    path = Path(template_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"CHAT_TEMPLATE_FILE does not exist: {path}")
+    tokenizer.chat_template = path.read_text(encoding="utf-8")
+    print(f"[chat-template] loaded override from {path}", flush=True)
+
+
+def _validate_assistant_mask(tokenizer, training_args) -> None:
+    """Fail closed if assistant-only loss was requested with an unmaskable template."""
+    if not getattr(training_args, "assistant_only_loss", False):
+        return
+    messages = [
+        {"role": "user", "content": "Read record alpha."},
+        {"role": "assistant", "content": "Record alpha is valid."},
+    ]
+    rendered = tokenizer.apply_chat_template(
+        messages,
+        tokenize=True,
+        add_generation_prompt=False,
+        return_dict=True,
+        return_assistant_tokens_mask=True,
+    )
+    mask = rendered.get("assistant_masks") or rendered.get("assistant_tokens_mask")
+    if mask is None or not any(mask) or all(mask):
+        raise RuntimeError(
+            "assistant_only_loss=True but the chat template did not return a valid "
+            "assistant token mask; use CHAT_TEMPLATE_FILE with {% generation %} blocks"
+        )
+    masked_ids = [token for token, active in zip(rendered["input_ids"], mask) if active]
+    if any(token in (17, 18) for token in masked_ids):
+        raise RuntimeError("Direct-answer assistant labels contain <think> or </think> token IDs")
+    generation_prompt = tokenizer.apply_chat_template(
+        messages[:1], tokenize=False, add_generation_prompt=True,
+    )
+    if "<think>" in generation_prompt or "</think>" in generation_prompt:
+        raise RuntimeError("Generation prompt injects thinking delimiters")
+    print(
+        f"[chat-template] assistant mask validated ({sum(mask)}/{len(mask)} target tokens)",
+        flush=True,
+    )
+
+
+class _NoThinkLabelsCollator:
+    """Abort before an optimizer step if Stage-1 labels contain think tokens."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    def __call__(self, features):
+        batch = self.inner(features)
+        labels = batch["labels"]
+        if not (labels == -100).any().item():
+            raise RuntimeError("Stage-1 batch has no masked labels; assistant-only loss is not applied")
+        if ((labels == 17) | (labels == 18)).any().item():
+            raise RuntimeError("Stage-1 batch contains supervised <think> or </think> tokens")
+        return batch
 
 
 def _prune_no_split_modules(m):
@@ -72,15 +252,48 @@ def main(script_args, training_args, model_args, dataset_args):
             low_cpu_mem_usage=True,
         )
     _prune_no_split_modules(model)
+    actual_dtype = next(model.parameters()).dtype
+    required_dtype = os.environ.get("REQUIRED_MODEL_DTYPE", "").strip()
+    if required_dtype and actual_dtype != getattr(torch, required_dtype):
+        raise ValueError(
+            f"Loaded model dtype {actual_dtype} does not match REQUIRED_MODEL_DTYPE={required_dtype}"
+        )
+    if state.is_main_process:
+        print(f"[model] loaded parameter dtype {actual_dtype}", flush=True)
 
+    tokenizer_path = os.environ.get("TOKENIZER_NAME_OR_PATH", "").strip() or model_args.model_name_or_path
     tokenizer = AutoTokenizer.from_pretrained(
-        model_args.model_name_or_path,
+        tokenizer_path,
         trust_remote_code=model_args.trust_remote_code,
     )
+    if model.get_input_embeddings().num_embeddings < len(tokenizer):
+        raise ValueError(
+            f"Tokenizer has {len(tokenizer)} IDs but model has only "
+            f"{model.get_input_embeddings().num_embeddings} embedding rows"
+        )
+    if tokenizer_path != model_args.model_name_or_path:
+        print(f"[tokenizer] loaded explicit tokenizer from {tokenizer_path}", flush=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    if os.environ.get("TOKENIZER_NAME_OR_PATH", "").strip():
+        model.config.eos_token_id = tokenizer.eos_token_id
+        model.config.pad_token_id = tokenizer.pad_token_id
+        if getattr(model, "generation_config", None) is not None:
+            model.generation_config.eos_token_id = tokenizer.eos_token_id
+            model.generation_config.pad_token_id = tokenizer.pad_token_id
+    _load_chat_template_override(tokenizer)
+    _validate_assistant_mask(tokenizer, training_args)
 
-    dataset = get_dataset(dataset_args)
+    dataset = _get_dataset(dataset_args)
+    assistant_only = training_args.assistant_only_loss
+    train_columns = dataset[script_args.dataset_train_split].column_names
+    if assistant_only and "input_ids" in train_columns:
+        # Pre-tokenized data: TRL only accepts assistant_only_loss for conversational rows,
+        # but its collator applies a precomputed `assistant_masks` column unconditionally.
+        if "assistant_masks" not in train_columns:
+            raise ValueError("pre-tokenized data with assistant_only_loss needs an assistant_masks column")
+        training_args.assistant_only_loss = False
+        print("[dataset] pre-tokenized; loss masked by the precomputed assistant_masks", flush=True)
 
     trainer = SFTTrainer(
         model=model,
@@ -94,6 +307,11 @@ def main(script_args, training_args, model_args, dataset_args):
         processing_class=tokenizer,
         peft_config=get_peft_config(model_args),
     )
+    if os.environ.get("SFT_FORBID_THINK_LABELS") == "1":
+        if not assistant_only:
+            raise ValueError("SFT_FORBID_THINK_LABELS requires assistant_only_loss=True")
+        trainer.data_collator = _NoThinkLabelsCollator(trainer.data_collator)
+        print("[safety] aborting on supervised think tokens in every batch", flush=True)
 
     # Resume from a saved checkpoint if requested (RESUME_FROM_CHECKPOINT=1 -> auto-find the latest
     # checkpoint-* in output_dir; or set it to an explicit checkpoint path). Restores model +

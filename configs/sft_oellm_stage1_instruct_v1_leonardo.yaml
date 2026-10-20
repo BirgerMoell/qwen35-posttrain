@@ -1,0 +1,48 @@
+# Stage-1 Instruct SFT (direct answers only) on the 256K anneal300b base, 8x4 A100.
+# Data: pre-tokenized stage1-mix-v1 (Excellent direct + translated Dolci + Aya + identity),
+# selected by SFT_TRAIN_DATA_GLOB/SFT_EVAL_DATA_GLOB in the Slurm launcher.
+# Docs are <=4096 tokens; BFD packing into 16K padding-free bins (no cross-doc attention).
+# Global batch: 32 GPUs x 16K = ~0.5M tokens/step; one epoch is ~4-5K steps.
+model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/base-256k-anneal300b
+dtype: bfloat16
+attn_implementation: flash_attention_2
+datasets:
+  - path: parquet
+    data_files:
+      train: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/data/stage1-mix-v1/train-*.parquet
+    split: train
+output_dir: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/stage1-instruct-v1
+eos_token: <|im_end|>
+assistant_only_loss: true
+max_length: 16384
+packing: true
+packing_strategy: bfd
+padding_free: true
+use_liger_kernel: true
+dataset_num_proc: 16
+num_train_epochs: 1
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 1
+learning_rate: 8.0e-6
+lr_scheduler_type: cosine_with_min_lr
+lr_scheduler_kwargs:
+  min_lr_rate: 0.1
+warmup_ratio: 0.03
+weight_decay: 0.0
+max_grad_norm: 1.0
+bf16: true
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+seed: 42
+data_seed: 42
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 250
+save_strategy: steps
+save_steps: 750                 # full ckpt with optimizer is ~135 GB and ~4 min to write
+save_total_limit: 1
+dataloader_num_workers: 2
+ddp_timeout: 7200
+report_to: none
