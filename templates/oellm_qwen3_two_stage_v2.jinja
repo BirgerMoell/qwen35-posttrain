@@ -1,0 +1,38 @@
+{# Two-stage text-only SFT for the OpenEuroLLM/Qwen3 ChatML token protocol (v2).
+   Think mode is a hard template switch, never a model decision:
+   - enable_thinking false (default): '<|im_start|>assistant\n', identical to v1.
+   - enable_thinking true: '<|im_start|>assistant\n<think>\n'. The opening <think>
+     is prompt-side in training too, so the model never learns to emit it.
+   No empty think block is ever synthesized. Inline think tags in content must be
+   normalized into reasoning_content upstream. Tools fail closed. #}
+{%- if tools %}
+    {{- raise_exception('This two-stage SFT template does not support tools') }}
+{%- endif %}
+{%- for message in messages %}
+    {%- if message.role not in ['system', 'user', 'assistant'] %}
+        {{- raise_exception('Unsupported role in two-stage SFT template: ' + message.role) }}
+    {%- endif %}
+    {%- if message.content is not string %}
+        {{- raise_exception('Two-stage SFT requires text-only message content') }}
+    {%- endif %}
+    {{- '<|im_start|>' + message.role + '\n' }}
+    {%- if message.role == 'assistant' %}
+        {%- if '<think>' in message.content or '</think>' in message.content %}
+            {{- raise_exception('Think tags in content; move reasoning to reasoning_content') }}
+        {%- endif %}
+        {%- if message.reasoning_content is defined and message.reasoning_content is string and message.reasoning_content|trim %}
+            {{- '<think>\n' -}}
+            {% generation %}{{- (message.reasoning_content|trim) + '\n</think>\n\n' + message.content + '<|im_end|>\n' -}}{% endgeneration %}
+        {%- else %}
+            {% generation %}{{- message.content + '<|im_end|>\n' -}}{% endgeneration %}
+        {%- endif %}
+    {%- else %}
+        {{- message.content + '<|im_end|>\n' }}
+    {%- endif %}
+{%- endfor %}
+{%- if add_generation_prompt %}
+    {{- '<|im_start|>assistant\n' }}
+    {%- if enable_thinking is defined and enable_thinking is true %}
+        {{- '<think>\n' }}
+    {%- endif %}
+{%- endif %}
