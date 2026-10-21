@@ -105,6 +105,9 @@ a stage's data build must fail if the template or `tokenizer.json` sha256 differ
 
 ## Stage 5 — RLVR (`oellm-rlvr`)
 
+**Detailed plan: [`OELLM_STAGE5_RL_PLAN.md`](OELLM_STAGE5_RL_PLAN.md)** (data pools, difficulty windows, rewards, gates).
+PrismMath is used here as an RL problem pool, not in the reasoning SFT data.
+
 - Backend: TMAX/Open-Instruct DAPO for math/IF/reasoning (qualified on OELLM 9B on LUMI); SkyRL + Harbor for
   agentic/tool tasks (backend qualified; OELLM checkpoint not yet). CUDA profile exists for Leonardo.
 - Chat-template contract: the model's v2.1 template, thinking mode on for reasoning domains; reward parsers must
