@@ -48,6 +48,8 @@ def main():
     ap.add_argument("--repo", required=True, help="e.g. birgermoell/Qwen3.5-9B-EU-SFT")
     ap.add_argument("--card", required=True, help="model card markdown -> uploaded as README.md")
     ap.add_argument("--private", action="store_true")
+    ap.add_argument("--commit-message", default=None,
+                    help="Hub commit message (defaults to a generic model upload message)")
     ap.add_argument("--recast-bf16", action="store_true",
                     help="re-save the model in bf16 (~half size) instead of copying raw weights")
     a = ap.parse_args()
@@ -71,8 +73,9 @@ def main():
         print(f"[upload] staging {len(staged)} files: {staged}")
 
         create_repo(a.repo, repo_type="model", private=a.private, exist_ok=True)
+        commit_message = a.commit_message or f"Upload {a.repo.rsplit('/', 1)[-1]} model export"
         upload_folder(folder_path=str(staging), repo_id=a.repo, repo_type="model",
-                      commit_message="Upload Qwen3.5-9B EU-SFT (weights + tokenizer + model card)")
+                      commit_message=commit_message)
     print(f"[upload] done -> https://huggingface.co/{a.repo}")
 
 

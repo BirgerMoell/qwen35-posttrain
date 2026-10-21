@@ -1,0 +1,255 @@
+{
+  "model": "birgermoell/oellm-9b-256k-sft",
+  "n": 24,
+  "summary": {
+    "sv_purity": 0.96,
+    "sprakkvalitet": null,
+    "korrekthet": null,
+    "instruktion": null,
+    "hjalpsamhet": null
+  },
+  "by_category": {
+    "instruktion": {
+      "n": 3,
+      "sv_purity": 0.67,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kreativt": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_allmän": {
+      "n": 1,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_sverige": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "resonemang": {
+      "n": 4,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sammanfattning": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sentiment": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sprakriktighet": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "vardagskunskap": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    }
+  },
+  "results": [
+    {
+      "category": "sentiment",
+      "prompt": "Analysera känslan i följande recension och avgör om den är positiv, negativ eller neutral. Motivera kort. Recension: \"Maten var god men servicen var långsam och lokalen kändes sliten.\"",
+      "answer": "Känslan i recensionen är neutral. Recensionen beskriver maten som god, men nämner att servicen var långsam och lokalen kändes sliten. Detta indikerar att recensenten var nöjd med maten, men var mindre nöjd med servicen och lokalens tillstånd.",
+      "sv_purity": 1.0,
+      "words": 37
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Är följande kundkommentar positiv eller negativ? Förklara varför. \"Jag hade höga förväntningar men blev tyvärr besviken på kvaliteten.\"",
+      "answer": "Kundkommentaren är negativ. Detta beror på att kundens förväntningar var höga, men de blev besvikna på kvaliteten. Kundens förväntningar var höga, vilket innebär att de hade höga förväntningar på produkten eller tjänsten de köpte. Men deras förväntningar blev inte uppfyllda, vilket ledde till besvikelse. Kundens förväntningar var höga, men produkten eller tjänsten var inte av god kvalitet, vilket ledde till besvikelse. Kundkommentaren är negativ eftersom den uttrycker en negativ känsla och förväntningar som inte uppfylldes.",
+      "sv_purity": 1.0,
+      "words": 75
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Vilken känsla uttrycker denna tweet, och hur säker är du? \"Äntligen fredag! Helgen kan inte komma snabbt nog.\"",
+      "answer": "Känslan som uttrycks i tweetet är en positiv känsla av förväntan och förväntan. Jag är 99% säker på detta.",
+      "sv_purity": 1.0,
+      "words": 19
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vilka är Sveriges tre största sjöar till ytan, i storleksordning?",
+      "answer": "De tre största sjöarna till ytan i Sverige är Vänern, Vättern och Mälaren. Vänern är den största sjö som finns i Sverige, med en yta på 25 650 km², följt av Vättern med en yta på 12 388 km² och Mälaren med en yta på 10 907 km².",
+      "sv_purity": 1.0,
+      "words": 48
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Förklara kortfattat hur det svenska riksdagsvalet fungerar och vad fyraprocentsspärren innebär.",
+      "answer": "Det svenska riksdagsvalet är ett direktval där medborgarna röstar på kandidater från olika partier. Valet sker vart fjärde år och är ett av de mest jämna valen i världen. I valet röstar medborgarna på de kandidater som de vill se väljas till riksdagen.\n\nFyraprocentsspärren innebär att en politisk part måste ha minst fyra procent av rösterna för att få in en riksdagskandidat i riksdagen. Detta är en form av valsystem som syftar till att minska antalet partier i riksdagen och att skapa en mer stabil politisk ordning.",
+      "sv_purity": 1.0,
+      "words": 87
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vem var Selma Lagerlöf och varför är hon viktig i svensk litteraturhistoria?",
+      "answer": "Selma Lagerlöf var en svensk författare som skrev bl.a. romanen \"Göran och Gösta\" och \"Trollkarlen från Österrike\". Hon är viktig i svensk litteraturhistoria eftersom hon var en av de mest populära författarna under 1800- och 1900-talen och har skrivit mer än 30 böcker. Dessutom var hon den första kvinnliga författaren i Sverige som vann Nobelpriset i litteratur, en ära som hon fick 1909.",
+      "sv_purity": 1.0,
+      "words": 63
+    },
+    {
+      "category": "resonemang",
+      "prompt": "En affär säljer äpplen för 12 kronor styck. Om du köper 7 äpplen och betalar med en hundralapp, hur mycket får du tillbaka? Visa uträkningen.",
+      "answer": "För att beräkna hur mycket du får tillbaka när du köper 7 äpplen för 12 kronor styck och betalar med en hundralapp, kan du följa dessa steg:\n\n1. Beräkna kostnaden för äpplena:\n   \\[\n   7 \\text{ äpplen} \\times 12 \\text{ kr/äpple} = 84 \\text{ kr}\n   \\]\n\n2. Beräkna hur mycket du betalar:\n   \\[\n   84 \\text{ kr}\n   \\]\n\n3. Beräkna hur mycket du får tillbaka:\n   \\[\n   84 \\text{ kr} - 100 \\text{ kr} = -16 \\text{ kr}\n   \\]\n\nDetta innebär att du får tillbaka 16 kronor.",
+      "sv_purity": 1.0,
+      "words": 84
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Anna är dubbelt så gammal som Erik. Om fem år är deras sammanlagda ålder 40 år. Hur gamla är de nu? Resonera steg för steg.",
+      "answer": "För att lösa problemet behöver vi först bestämma hur gamla Anna och Erik är nu.\n\nVi vet att Anna är dubbelt så gammal som Erik. Detta innebär att Anna är 2 * Erik.\n\nOm fem år kommer deras sammanlagda ålder att vara 40 år. Så vi kan skriva en ekvation för att representera detta:\n\nAnna + Erik = 40\n\nMed tanke på att Anna är 2 * Erik, ersätter vi Erik med 2 * Erik:\n\n2 * Erik + Erik = 40\n\nDetta förenklas till:\n\n3 * Erik = 40\n\nFör att lösa för Erik delar vi båda sidor av ekvationen med 3:\n\nErik = 40 / 3\n\nDärför är Erik 13 år gammal nu.\n\nDärför är Anna 2 * Erik = 2 * 13 = 26 år gammal nu.\n\nSammanfattningsvis är Anna och Erik båda 26 år gamla nu.",
+      "sv_purity": 1.0,
+      "words": 140
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma? Förklara logiken.",
+      "answer": "## Steg 1: Förstå hypotesen\nHypotesen är att om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma.\n\n## Steg 2: Identifiera det hypotetiska fallet\nHypotetiskt fall är att vissa katter kan simma.\n\n## Steg 3: Analysera logiken\nFör att dra slutsatsen att vissa katter kan simma från hypotesen att alla katter är däggdjur och vissa däggdjur kan simma, måste vi identifiera den logiska relationen mellan hypotesen och det hypotetiska fallet.\n\n## Steg 4: Identifiera den logiska relationen\nFör att dra slutsatsen att vissa katter kan simma måste vi identifiera att vissa katter kan simma är en logisk konsekvens av hypotesen.\n\n## Steg 5: Tillhandahålla logiken\nDen logiska relationen kan beskrivas som \"Om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma.\" Detta kan också skrivas som",
+      "sv_purity": 1.0,
+      "words": 147
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Sammanfatta följande text i en mening: \"Klimatförändringarna påverkar redan Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer. Forskare varnar för att vissa arter kan försvinna medan nya etablerar sig, vilket förändrar de svenska ekosystemen i grunden.\"",
+      "answer": "Klimatförändringarna påverkar Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer.",
+      "sv_purity": 1.0,
+      "words": 11
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Ge en kort sammanfattning (max tre meningar) av vad nyheten handlar om: \"Regeringen presenterade idag en ny satsning på järnvägsunderhåll. Satsningen omfattar tio miljarder kronor över fyra år och syftar till att minska förseningarna i tågtrafiken. Oppositionen menar att beloppet är otillräckligt.\"",
+      "answer": "Regeringen presenterade idag en ny satsning på järnvägsunderhåll, som omfattar tio miljarder kronor över fyra år. Satsningen syftar till att minska förseningarna i tågtrafiken. Oppositionen menar att beloppet är otillräckligt.",
+      "sv_purity": 1.0,
+      "words": 30
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Rätta eventuella grammatik- och stavfel i meningen och förklara vad du ändrade: \"Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handlade något.\"",
+      "answer": "Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handlade något.\n\nFörst och främst, jag bytte ut ordet \"handlade\" mot \"handlade\". Det är ett korrekt verb, men \"handlade\" är ett intransitivesverb som inte kräver ett objekt (det vill säga, ett substantiv eller pronomen). Därför är det felaktigt att använda det som ett transitivesverb som kräver ett objekt. Jag valde att ändra det till \"handlade\" eftersom det är ett mer korrekt verb i sammanhanget.\n\nSedan, jag ändrade \"glömde\" till \"glömde\". Det är ett enkelt förflutet particip som används för att beskriva en handling som är fullbordad i förflutet. Men jag ville använda ett verb som var mer formellt och korrekt, så jag valde \"glömde\" istället.\n\nSlutligen, jag ändrade \"han kunde inte handlade\" till \"han kunde inte handlade\". Jag ändrade detta uttryck till \"han kunde inte handlade\" eftersom \"handlade\" redan är ett verb som används för att beskriva en handling, så det är redundant att använda \"handlade\"",
+      "sv_purity": 1.0,
+      "words": 164
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Är följande mening grammatiskt korrekt svenska? Om inte, skriv den korrekt: \"De hade redan ätit middag när vi kom fram till restaurangen.\"",
+      "answer": "Meningarna är grammatiskt korrekta.",
+      "sv_purity": 1.0,
+      "words": 4
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Förklara skillnaden mellan \"de\" och \"dem\" och ge ett exempel på korrekt användning av vardera.",
+      "answer": "\"De\" och \"dem\" är två olika pronomen som används för att hänvisa till olika objekt eller personer. \"De\" används för att hänvisa till en grupp personer, medan \"dem\" används för att hänvisa till en specifik grupp personer.\n\nHär är ett exempel på korrekt användning av vardera:\n\n* \"De\" används för att hänvisa till en grupp personer som är okända eller som inte har specificerats. Till exempel: \"De kom till festen igår kväll.\"\n\n* \"Dem\" används för att hänvisa till en specifik grupp personer som har specificerats tidigare. Till exempel: \"Dem sa att de skulle komma till festen igår kväll.\"\n\nDet är viktigt att notera att \"de\" och \"dem\" används för att hänvisa till olika objekt eller personer, och att de har olika betydelser.",
+      "sv_purity": 1.0,
+      "words": 123
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv en punktlista med exakt fyra tips för att sova bättre. Varje punkt ska vara högst tio ord lång.",
+      "answer": "- Håll en regelbunden sömnrutin.\n- Skapa en avslappnande sovmiljö.\n- Undvik koffein på kvällen.\n- Använd en varm dusch för att lugna kroppen.",
+      "sv_purity": 1.0,
+      "words": 24
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv ett formellt mejl på svenska till en hyresvärd där du anmäler en trasig diskmaskin och ber om reparation. Håll det under 80 ord.",
+      "answer": "Kära hyresvärd,\n\nJag vill informera om att diskmaskinen i lägenheten [lägenhetsnummer] är trasig. Jag ber om att få en reparation snarast.\n\nMed vänliga hälsningar,\n[Ditt namn]",
+      "sv_purity": 1.0,
+      "words": 26
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Lista fem svenska städer i bokstavsordning, en per rad, utan någon annan text.",
+      "answer": "A-s-t-a-n\nA-r-e-s-t-a-\nB-y-s-t-a-\nC-h-a-n-\nD-e-l-f-o-\nE-m-m-a-\nF-r-o-",
+      "sv_purity": 0.0,
+      "words": 7
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Det regnar ute och du ska cykla till jobbet. Vad bör du tänka på? Ge tre praktiska råd.",
+      "answer": "När du ska cykla i regn kan det vara svårt att se var du ska cykla, så det är viktigt att tänka på säkerhet och hålla dig torr. Det är bra att ha en reflex på cykeln, så att du syns när du cyklar i mörker och dimma. Det är också bra att ha ett bra par cykelhandskar som skyddar dig mot regn och kyla.\n\nFör att hålla dig torr och varm kan du också ha en vattentät jacka och vantar. Det är också bra att ha ett bra par cykelhandskar som skyddar dig mot regn och kyla. Det är också bra att ha ett bra par cykelhandskar som skyddar dig mot regn och kyla.",
+      "sv_purity": 1.0,
+      "words": 115
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Varför är det en dålig idé att lämna mjölk framme på köksbänken över natten?",
+      "answer": "Att lämna mjölk framme på köksbänken över natten kan leda till att bakterier börjar växa i mjölken. Mjölk är en bra växtplats för bakterier eftersom den innehåller protein, socker, vatten och näringsämnen som bakterierna behöver för att växa. När mjölk lämnas framme på köksbänken kan bakterierna komma in i mjölken och börja föröka sig. Detta kan leda till att mjölken blir dålig och kan orsaka magbesvär eller andra hälsoproblem. Det är därför viktigt att alltid kyla mjölk och andra mjölkprodukter efter användning och att inte lämna dem framme på köksbänken över natten.",
+      "sv_purity": 1.0,
+      "words": 92
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "En vän säger att hen känner sig stressad inför ett jobbintervju imorgon. Vad kan du säga för att hjälpa och lugna?",
+      "answer": "Jag kan förstå hur stressande det kan vara inför en jobbintervju. Det är viktigt att du tar hand om dig själv och tar det lugnt. Här är några saker du kan göra:\n\n1. Sova tillräckligt: Se till att du får tillräckligt med sömn kvällen innan intervjun.\n2. Ät en hälsosam kost: Se till att du äter en balanserad kost och att du dricker tillräckligt med vatten.\n3. Ta det lugnt: Kom ihåg att du kan inte kontrollera allt och att det är okej att vara nervös.\n4. Sätt realistiska förväntningar: Sätt realistiska förväntningar på dig själv och försök att fokusera på det positiva.\n5. Var positiv: Försök att tänka positivt och se intervjun som en möjlighet att visa vad du kan.\n6. Ta en paus: Om du känner dig stressad, ta en kort paus för att andas djupt och lugna ner dig.\n7. Ta med en kram: Om du känner dig nervös, ta med en kram som du kan använda när du behöver en extra boost av lugn.\n\nKom ihåg att du är redo för intervjun och att du har",
+      "sv_purity": 1.0,
+      "words": 180
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Skriv en kort dikt på fyra rader om den svenska hösten.",
+      "answer": "En varm höst vind blåser genom trädgården.\nFrukten hänger så där så fint på ett gren.\nSolnedgången går ned i blåsten så fint.\nHösten är en härlig tid i Sverige.",
+      "sv_purity": 1.0,
+      "words": 30
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Hitta på en kort berättelse (cirka 100 ord) om en räv som hittar en försvunnen vante i skogen.",
+      "answer": "En vante låg gömd bland buskar och grenar. Rävens nos luktade på den och den var täckt av snö. Hon hade hittat en försvunnen vante. Hon tittade runt och kunde inte se någon annan. Hon kunde inte förstå varför någon hade tappat bort en sådan sak. Hon kunde inte låta bli att fnissa lite åt den. Hon försökte få bort snön från vantens vrist och såg att den var stor. Hon började springa iväg med den i munnen.",
+      "sv_purity": 1.0,
+      "words": 78
+    },
+    {
+      "category": "kunskap_allmän",
+      "prompt": "Förklara för ett barn varför himlen är blå, på enkel svenska.",
+      "answer": "Himlen är blå på grund av hur ljuset från solen studsar av små partiklar i luften. Partiklarna är som små pärlor som sprider ljuset och gör det blå. När vi tittar upp mot himlen ser vi alla dessa pärlor, som gör att himlen ser blå ut. Och eftersom himlen är blå, så är den också ganska fin att titta på!",
+      "sv_purity": 1.0,
+      "words": 60
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Vad är meningen med livet? Svara reflekterande i några meningar.",
+      "answer": "Det finns ingen exakt definition på vad \"meningen med livet\" är. Men många människor har olika synpunkter på vad som kan vara meningen med livet. Det kan vara att leva ett meningsfullt och rikt liv, att bidra till samhället och att vara en god och rättvis människa. Andra kan se det som att leva efter en viss tro eller lära, som att följa en religiös väg eller att leva enligt en viss moralisk kod. Vad som är meningen med livet kan också variera beroende på individens personliga värderingar, erfarenheter och perspektiv.",
+      "sv_purity": 1.0,
+      "words": 91
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "model": "birgermoell/oellm-9b-256k-simpo",
+  "n": 24,
+  "summary": {
+    "sv_purity": 0.96,
+    "sprakkvalitet": null,
+    "korrekthet": null,
+    "instruktion": null,
+    "hjalpsamhet": null
+  },
+  "by_category": {
+    "instruktion": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kreativt": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_allmän": {
+      "n": 1,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "kunskap_sverige": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "resonemang": {
+      "n": 4,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sammanfattning": {
+      "n": 2,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sentiment": {
+      "n": 3,
+      "sv_purity": 0.67,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "sprakriktighet": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    },
+    "vardagskunskap": {
+      "n": 3,
+      "sv_purity": 1.0,
+      "sprakkvalitet": null,
+      "korrekthet": null,
+      "instruktion": null,
+      "hjalpsamhet": null
+    }
+  },
+  "results": [
+    {
+      "category": "sentiment",
+      "prompt": "Analysera känslan i följande recension och avgör om den är positiv, negativ eller neutral. Motivera kort. Recension: \"Maten var god men servicen var långsam och lokalen kändes sliten.\"",
+      "answer": "Neutral",
+      "sv_purity": 0.0,
+      "words": 1
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Är följande kundkommentar positiv eller negativ? Förklara varför. \"Jag hade höga förväntningar men blev tyvärr besviken på kvaliteten.\"",
+      "answer": "Den här kommentaren är negativ. Kunden förväntade sig en hög kvalitet men blev besviken på produktens prestanda.",
+      "sv_purity": 1.0,
+      "words": 17
+    },
+    {
+      "category": "sentiment",
+      "prompt": "Vilken känsla uttrycker denna tweet, och hur säker är du? \"Äntligen fredag! Helgen kan inte komma snabbt nog.\"",
+      "answer": "Känslan i den här tweeten är en önskan om att helg ska komma så fort som möjligt, vilket indikerar en känsla av lättnad eller avslappning.\n\nKänslan är positiv eftersom tweeten uttrycker en önskan om att få ledigt från arbetet eller skolan och njuta av fritiden.\n\nSäkerheten för att detta är en önskan och inte en verklig känsla är hög eftersom det inte finns några tecken på att tweeten är en sarkastisk eller ironisk kommentar. Dessutom är uttrycket \"helgen kan inte komma snabbt nog\" ett vanligt sätt att uttrycka en önskan om helg på.",
+      "sv_purity": 1.0,
+      "words": 93
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vilka är Sveriges tre största sjöar till ytan, i storleksordning?",
+      "answer": "Vänern (5558 km²) är den största, efterfulld av Mälaren (252 km²) och Storsjön (167 km²).",
+      "sv_purity": 1.0,
+      "words": 15
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Förklara kortfattat hur det svenska riksdagsvalet fungerar och vad fyraprocentsspärren innebär.",
+      "answer": "Det svenska riksdagsvalet fungerar på så sätt att väljarna väljer representanter till riksdagen. Valet sker vart fjärde år. För att få en plats i riksdagen krävs det att partiet eller den enskilde kandidaten får minst fyra procent av rösterna i hela landet eller i den region som partiet eller kandidaten tillhör.",
+      "sv_purity": 1.0,
+      "words": 51
+    },
+    {
+      "category": "kunskap_sverige",
+      "prompt": "Vem var Selma Lagerlöf och varför är hon viktig i svensk litteraturhistoria?",
+      "answer": "Selma Lagerlöf var en svensk författare som anses vara en av de viktigaste i svensk litteraturhistoria. Hon var den första kvinnliga mottagaren av Nobelpriset i litteratur, som hon fick 1909. Lagerlöf var också en av de mest populära författarna i Sverige under 1900-talet, med flera av hennes verk som klassiker i den svenska litteraturen.\n\nLagerlöfs verk, som inkluderar romanen \"Göran i Botten\" och novellsamlingen \"Röde Rum\", handlar ofta om kvinnors situation i samhället och hennes skildring av kvinnors liv och erfarenheter har haft stor betydelse för den svenska litteraturen. Hon var också en av de första författarna att skildra kvinnor som aktiva och självständiga individer, något som var ovanligt vid den tiden.",
+      "sv_purity": 1.0,
+      "words": 112
+    },
+    {
+      "category": "resonemang",
+      "prompt": "En affär säljer äpplen för 12 kronor styck. Om du köper 7 äpplen och betalar med en hundralapp, hur mycket får du tillbaka? Visa uträkningen.",
+      "answer": "För att hitta ut hur mycket pengar du får tillbaka när du köper 7 äpplen för 12 kronor styck och betalar med en hundralapp, kan du följa dessa steg:\n\n1. Räkna ut det totala priset för 7 äpplen:\n   7 äpplen x 12 kronor/äpple = 84 kronor\n\n2. Subtrahera det totala priset från det belopp du betalade:\n   1 hundralapp - 84 kronor = -84 kronor\n\n3. Men eftersom du inte kan ha en negativ summa pengar, är det bättre att se på det som en överskott.\n\nNär du betalar med en hundralapp och köper 7 äpplen för 84 kronor, betalar du mer än du behöver. Du får alltså tillbaka:\n   1 hundralapp - 84 kronor = 156 kronor - 84 kronor = 72 kronor\n\nSå du får tillbaka 72 kronor när du köper 7 äpplen för 84 kronor med en hundralapp.",
+      "sv_purity": 1.0,
+      "words": 139
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Anna är dubbelt så gammal som Erik. Om fem år är deras sammanlagda ålder 40 år. Hur gamla är de nu? Resonera steg för steg.",
+      "answer": "Anna är dubbelt så gammal som Erik. Därför är Anna 2x Erik.\nOm fem år kommer Anna att vara 2x + 5 år och Erik kommer att vara 2x + 5 år.\nDeras sammanlagda ålder blir 2x + 5 + 2x + 5 = 4x + 10 år.\nOm fem år kommer de att vara 4x + 10 år.\nMen enligt problemet är deras sammanlagda ålder 40 år.\n4x + 10 = 40\n4x = 30\nx = 7,5\nAnna är 2x = 2*7,5 = 15 år.\nErik är 2x = 15 år.\nAnna är 15 år, Erik är 15 år.",
+      "sv_purity": 1.0,
+      "words": 101
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma? Förklara logiken.",
+      "answer": "Ja, det kan man dra slutsatsen av. Om alla katter är däggdjur och vissa däggdjur kan simma, kan man då dra slutsatsen att vissa katter kan simma. Detta är en logisk generalisering som bygger på antagandet att om alla katter är däggdjur, och om vissa däggdjur kan simma, så kan man dra slutsatsen att vissa katter kan simma.",
+      "sv_purity": 1.0,
+      "words": 58
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Sammanfatta följande text i en mening: \"Klimatförändringarna påverkar redan Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer. Forskare varnar för att vissa arter kan försvinna medan nya etablerar sig, vilket förändrar de svenska ekosystemen i grunden.\"",
+      "answer": "Klimatförändringarna kommer att påverka Sverige genom mildare vintrar, ökad nederbörd och stigande havsnivåer.",
+      "sv_purity": 1.0,
+      "words": 13
+    },
+    {
+      "category": "sammanfattning",
+      "prompt": "Ge en kort sammanfattning (max tre meningar) av vad nyheten handlar om: \"Regeringen presenterade idag en ny satsning på järnvägsunderhåll. Satsningen omfattar tio miljarder kronor över fyra år och syftar till att minska förseningarna i tågtrafiken. Oppositionen menar att beloppet är otillräckligt.\"",
+      "answer": "Regeringen presenterade idag en ny satsning på järnvägsunderhåll. Satsningen omfattar tio miljarder kronor över fyra år och syftar till att minska förseningarna i tågtrafiken. Oppositionen menar att beloppet är otillräckligt.",
+      "sv_purity": 1.0,
+      "words": 30
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Rätta eventuella grammatik- och stavfel i meningen och förklara vad du ändrade: \"Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handlade något.\"",
+      "answer": "Han gick till affären för att köpa mjölk men han glömde sin plånbok hemma så han kunde inte handlade något.",
+      "sv_purity": 1.0,
+      "words": 20
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Är följande mening grammatiskt korrekt svenska? Om inte, skriv den korrekt: \"De hade redan ätit middag när vi kom fram till restaurangen.\"",
+      "answer": "\"De hade redan ätit middag när vi kom fram till restaurangen.\"",
+      "sv_purity": 1.0,
+      "words": 11
+    },
+    {
+      "category": "sprakriktighet",
+      "prompt": "Förklara skillnaden mellan \"de\" och \"dem\" och ge ett exempel på korrekt användning av vardera.",
+      "answer": "\"De\" används för att hänvisa till en grupp människor som består av mer än två personer, och \"dem\" används för att hänvisa till en grupp människor som består av två eller fler personer. Exempel på korrekt användning: \"De vill ha en ny bil\", och \"Dem vill ha en ny bil\".",
+      "sv_purity": 1.0,
+      "words": 50
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv en punktlista med exakt fyra tips för att sova bättre. Varje punkt ska vara högst tio ord lång.",
+      "answer": "1. Avslappna i 10 min. 2. Lägg dig kl 23.30. 3. Undvik kaffe/te. 4. Använd mörka glasögon.",
+      "sv_purity": 1.0,
+      "words": 17
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Skriv ett formellt mejl på svenska till en hyresvärd där du anmäler en trasig diskmaskin och ber om reparation. Håll det under 80 ord.",
+      "answer": "Kära hyresvärd,\n\nJag beklagar att diskmaskinen är trasig och ber om omedelbar reparation. Jag vill också informera om att jag har försökt kontakta er tidigare men inte fått svar. Jag hoppas att ni kan åtgärda problemet snarast.\n\nTack för er hjälp.\n\nMed vänliga hälsningar,\n\n[Ditt namn]",
+      "sv_purity": 1.0,
+      "words": 46
+    },
+    {
+      "category": "instruktion",
+      "prompt": "Lista fem svenska städer i bokstavsordning, en per rad, utan någon annan text.",
+      "answer": "ABBA Arvika\nABBA Boden\nABBA Bollnäs\nABBA Borlänge",
+      "sv_purity": 1.0,
+      "words": 8
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Det regnar ute och du ska cykla till jobbet. Vad bör du tänka på? Ge tre praktiska råd.",
+      "answer": "1. Kontrollera cykeln innan du cyklar. Se till att bromsarna och kedjan fungerar, och att däcken inte är för låga.\n2. Använd reflexer och belysning. Kör med reflexer och belysning på cykeln, särskilt om det är mörkt eller om du cyklar i trafikerad trafik.\n3. Var försiktig med vatten och is. Om det regnar, kan det vara svårt att se ojämnheter och gropar i vägen. Se också till att vara extra försiktig om det är isigt.",
+      "sv_purity": 1.0,
+      "words": 76
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "Varför är det en dålig idé att lämna mjölk framme på köksbänken över natten?",
+      "answer": "För att mjölkens konsistens förändras när den utsätts för luft och temperaturförändringar, vilket kan påverka dess smak och konsistens. När mjölk utsätts för luft och värme, kan dess proteiner och fett brytas ner, vilket kan leda till en förändring i dess smak och konsistens. Dessutom kan bakterier växa i mjölk som har lämnats framme över natten, vilket kan orsaka matsmältningsproblem och andra hälsoproblem.",
+      "sv_purity": 1.0,
+      "words": 63
+    },
+    {
+      "category": "vardagskunskap",
+      "prompt": "En vän säger att hen känner sig stressad inför ett jobbintervju imorgon. Vad kan du säga för att hjälpa och lugna?",
+      "answer": "Här är några förslag på hur du kan hjälpa och lugna din vän:\n\n1. \"Låt oss prata om hur du kan förbereda dig för intervjun.\"\n2. \"Försök att hålla dig lugn och fokusera på det du har lärt dig.\"\n3. \"Tänk på hur du kan förklara dina färdigheter och erfarenheter på ett tydligt sätt.\"\n4. \"Kom ihåg att du har gjort ett bra jobb med att förbereda dig.\"\n5. \"Om intervjun inte går som du hoppas, kan du alltid försöka igen.\"",
+      "sv_purity": 1.0,
+      "words": 81
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Skriv en kort dikt på fyra rader om den svenska hösten.",
+      "answer": "Den svenska hösten är en tid för skönhet och färg,\nmed sina röda och gula löv som täcker marken.\nI luften kan man höra fåglarnas sång och vinden i träden,\noch solen sjunger en sång om tillväxt och avmattning.",
+      "sv_purity": 1.0,
+      "words": 39
+    },
+    {
+      "category": "kreativt",
+      "prompt": "Hitta på en kort berättelse (cirka 100 ord) om en räv som hittar en försvunnen vante i skogen.",
+      "answer": "Räven, som var ute på jakt efter mat, hittade en försvunnen vante i skogen. Den var varm och mjuk och doftade av äpplen. Räven bestämde sig för att ta med vantet till sin grotta och sätta det i en byrå. Senare på kvällen satt den i sin grotta och tittade på vantet. Det var vackert och mysigt och det gav den en varm känsla.",
+      "sv_purity": 1.0,
+      "words": 64
+    },
+    {
+      "category": "kunskap_allmän",
+      "prompt": "Förklara för ett barn varför himlen är blå, på enkel svenska.",
+      "answer": "Himlen är blå för att ljuset från solen är uppdelat i olika färger när det passerar genom jordens atmosfär. När ljuset kommer in i atmosfären, träffar det små vattendroppar som finns i luften. Dessa droppar sprider ljuset på olika sätt, och det blå ljuset, som är det kortaste våglängden, sprids mest. Detta gör att vi ser himlen som blå.",
+      "sv_purity": 1.0,
+      "words": 59
+    },
+    {
+      "category": "resonemang",
+      "prompt": "Vad är meningen med livet? Svara reflekterande i några meningar.",
+      "answer": "Meningen med livet är ett komplext och subjektivt ämne som kan tolkas på olika sätt beroende på ens personliga värderingar, erfarenheter och trosuppfattningar. I en allmän mening kan meningen med livet ses som en fråga om syfte, mål och mening. Många människor söker en känsla av mening och syfte i sina liv, oavsett om det är genom att bidra till samhället, att hitta kärlek och relationer, att uppnå personlig tillväxt och utveckling, eller att njuta av nöjen och upplevelser.\n\nReflekterande, livet kan också ses som en möjlighet att lära, växa och utvecklas som individ. Genom att möta utmaningar, hantera motgångar och fira framgångar, kan vi dra nytta av våra erfarenheter och bli mer medvetna om oss själva och vår plats i världen. Dessutom kan vi lära oss att vara mer empatiska, medkännande och medkännande mot andra, vilket kan hjälpa oss att bygga mer meningsfulla och positiva relationer.\n\nI slutändan är meningen med livet en personlig och subjektiv upplevelse som varierar från person till person. Men oavsett hur vi definierar det, är det viktigt att söka efter en känsla av syfte och mening i våra liv, eftersom det kan hjälpa oss att leva mer autentiskt, med syfte och med en känsla av syfte.",
+      "sv_purity": 1.0,
+      "words": 202
+    }
+  ]
+}

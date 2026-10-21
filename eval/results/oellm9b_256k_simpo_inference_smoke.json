@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "timestamp_utc": "2026-08-12T06:54:56.760550+00:00",
+  "model": "/pfs/lustrep3/scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-simpo-v2-bf16",
+  "device": "cuda:0",
+  "dtype": "torch.bfloat16",
+  "max_position_embeddings": 262144,
+  "rope_theta": 64000000,
+  "chat_template": "gemma_start_end_of_turn",
+  "generations": [
+    {
+      "prompt": "Svara på svenska med exakt en kort mening: Vad är Sveriges huvudstad?",
+      "response": "Stockholm",
+      "generated_tokens": 3,
+      "ended_with_eot": true
+    },
+    {
+      "prompt": "Reply with only the result: 17 + 25 = ?",
+      "response": "42",
+      "generated_tokens": 3,
+      "ended_with_eot": true
+    },
+    {
+      "prompt": "Antworte auf Deutsch in einem kurzen Satz: Was ist Photosynthese?",
+      "response": "Photosynthese ist der Prozess, durch den Pflanzen und andere Organismen Sonnenlicht in chemische Energie umwandeln.",
+      "generated_tokens": 23,
+      "ended_with_eot": true
+    }
+  ]
+}
