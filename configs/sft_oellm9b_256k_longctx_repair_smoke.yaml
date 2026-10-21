@@ -1,0 +1,34 @@
+# One-node stack/data/template smoke for the 64K repair experiment.
+# Uses the first 8K-target rows and must be launched with the same assistant-mask
+# template and row-mixture environment as production.
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-sft
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: "train[:4096]"
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/oellm9b-longctx-sft-v1-64k/train.parquet}
+    split: "train[:128]"
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-longctx-sft-smoke
+eos_token: <end_of_turn>
+max_length: 8192
+packing: true
+assistant_only_loss: true
+dataset_num_proc: 2
+ddp_timeout: 3600
+max_steps: 3
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 1
+learning_rate: 1.5e-6
+lr_scheduler_type: constant_with_warmup
+warmup_steps: 1
+weight_decay: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 1
+save_steps: 3
+save_total_limit: 1
+eval_strategy: "no"
+report_to: none

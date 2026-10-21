@@ -1,0 +1,102 @@
+{
+  "model": "/scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-sft-bf16",
+  "rope_theta": 64000000.0,
+  "max_position_embeddings": 262144,
+  "requested_lengths": [
+    4096
+  ],
+  "depths_percent": [
+    0,
+    25,
+    50,
+    75,
+    100
+  ],
+  "max_new_tokens": 64,
+  "results": [
+    {
+      "requested_length": 4096,
+      "target_input_length": 4096,
+      "actual_input_tokens": 4059,
+      "depth_percent": 0,
+      "record_id": "record-df7da1cd",
+      "secret": "NIAH-FCB226751FE6",
+      "filler_blocks": 60,
+      "needle_token_index": 49,
+      "needle_prompt_fraction": 0.012072,
+      "answer": "NIAH-FCB226751FE6",
+      "strict_exact_match": true,
+      "contains_match": true,
+      "elapsed_seconds": 4.621
+    },
+    {
+      "requested_length": 4096,
+      "target_input_length": 4096,
+      "actual_input_tokens": 4066,
+      "depth_percent": 25,
+      "record_id": "record-70851b4f",
+      "secret": "NIAH-7D0D2E0AF7B5",
+      "filler_blocks": 60,
+      "needle_token_index": 1042,
+      "needle_prompt_fraction": 0.256272,
+      "answer": "N/A",
+      "strict_exact_match": false,
+      "contains_match": false,
+      "elapsed_seconds": 0.857
+    },
+    {
+      "requested_length": 4096,
+      "target_input_length": 4096,
+      "actual_input_tokens": 4064,
+      "depth_percent": 50,
+      "record_id": "record-95f06486",
+      "secret": "NIAH-25FFE58F63EB",
+      "filler_blocks": 60,
+      "needle_token_index": 2032,
+      "needle_prompt_fraction": 0.5,
+      "answer": "N/A",
+      "strict_exact_match": false,
+      "contains_match": false,
+      "elapsed_seconds": 0.857
+    },
+    {
+      "requested_length": 4096,
+      "target_input_length": 4096,
+      "actual_input_tokens": 4065,
+      "depth_percent": 75,
+      "record_id": "record-8e985cf2",
+      "secret": "NIAH-620A863A5A7C",
+      "filler_blocks": 60,
+      "needle_token_index": 3021,
+      "needle_prompt_fraction": 0.743173,
+      "answer": "NIAH-620A863A5A7C",
+      "strict_exact_match": true,
+      "contains_match": true,
+      "elapsed_seconds": 1.439
+    },
+    {
+      "requested_length": 4096,
+      "target_input_length": 4096,
+      "actual_input_tokens": 4064,
+      "depth_percent": 100,
+      "record_id": "record-95b61ff2",
+      "secret": "NIAH-82AD3E235192",
+      "filler_blocks": 60,
+      "needle_token_index": 4011,
+      "needle_prompt_fraction": 0.986959,
+      "answer": "NIAH-82AD3E235192",
+      "strict_exact_match": true,
+      "contains_match": true,
+      "elapsed_seconds": 1.39
+    }
+  ],
+  "strict_exact_match_grid": {
+    "4096": {
+      "0": true,
+      "25": false,
+      "50": false,
+      "75": true,
+      "100": true
+    }
+  }
+}

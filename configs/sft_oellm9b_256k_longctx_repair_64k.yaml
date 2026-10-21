@@ -1,0 +1,43 @@
+# Long-context SFT repair for birgermoell/oellm-9b-256k-sft.
+#
+# This is deliberately a 64K diagnostic stage, not a claim that 64K is the final
+# target. RULER first collapses badly at 16K-64K, and the current FSDP stack does
+# not sequence-shard 128K/256K activations. Gate this stage before spending on a
+# 128K continuation.
+#
+# Required launch environment:
+#   CHAT_TEMPLATE_FILE=templates/oellm_gemma_assistant_mask.jinja
+#   DATASET_MIX_PROBABILITIES=0.90:0.10
+# The probabilities are BY ROW. With ~1-2K replay rows and ~20-30K long rows,
+# they produce roughly 30-40% short replay tokens and 60-70% long-task tokens.
+model_name_or_path: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-sft
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+datasets:
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/qwen35-9b-sft-parquet/train.parquet}
+    split: train
+  - path: parquet
+    data_files: {train: /scratch/project_465002530/users/bmoell/posttrain-data/oellm9b-longctx-sft-v1-64k/train.parquet}
+    split: train
+output_dir: /scratch/project_465002530/users/bmoell/qwen35-posttrain/output/oellm9b-256k-longctx-sft-64k
+eos_token: <end_of_turn>
+max_length: 65536
+packing: true
+assistant_only_loss: true
+dataset_num_proc: 2
+ddp_timeout: 18000
+max_steps: 250
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 1  # global batch 32 on 4x8 GPUs; ~2.1M tokens/update when packed
+learning_rate: 1.5e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+weight_decay: 0.0
+bf16: true
+gradient_checkpointing: true
+logging_steps: 5
+save_steps: 50
+save_total_limit: 5
+eval_strategy: "no"
+report_to: none
