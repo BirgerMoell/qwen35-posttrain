@@ -38,6 +38,13 @@ class Units(unittest.TestCase):
         self.assertEqual(p["properties"]["c"]["items"], {"type": "number"})
         self.assertEqual(p["required"], ["a"])  # "optional" wins over the source's required list
 
+    def test_flat_schema_under_arguments(self):
+        t = normalize_tool({"type": "function", "function": {"name": "g", "arguments": {
+            "category": {"type": "str", "default": ""}, "limit": {"type": "int", "default": ""}}}})
+        p = t["function"]["parameters"]
+        self.assertEqual(sorted(p["properties"]), ["category", "limit"])
+        self.assertNotIn("required", p)  # defaults make them optional
+
     def test_pythonic_calls(self):
         calls = _parse_pythonic_calls('[Market Trends API(trend_type="MARKET_INDEXES", country="us"), f(x=[1, 2], y="a)b")]')
         self.assertEqual([c["function"]["name"] for c in calls], ["Market Trends API", "f"])

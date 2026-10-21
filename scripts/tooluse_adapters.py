@@ -71,8 +71,14 @@ def normalize_tool(tool) -> dict:
     fn = tool.get("function", tool) if isinstance(tool, dict) else None
     if not isinstance(fn, dict) or not isinstance(fn.get("name"), str) or not fn["name"].strip():
         raise ValueError("tool without a name")
+    params = fn.get("parameters")
+    if params is None and isinstance(fn.get("arguments"), dict):
+        params = fn["arguments"]  # some sources (ToolMind/When2Call) use "arguments" for the schema
+    if isinstance(params, dict) and "properties" not in params and "type" not in params and \
+            all(isinstance(v, dict) for v in params.values()):
+        params = {"type": "object", "properties": params}  # flat property map
     out = {"name": fn["name"].strip(), "description": str(fn.get("description") or "").strip(),
-           "parameters": normalize_parameters(fn.get("parameters"))}
+           "parameters": normalize_parameters(params)}
     return {"type": "function", "function": out}
 
 
@@ -126,7 +132,11 @@ def adapt_eu_tooluse(row: dict) -> dict:
     blocks = [b for b in _TOOLS_BLOCK.findall(system) if b.strip()]
     if not blocks:
         raise ValueError("no <tools> block")
-    tools = [normalize_tool(json.loads(line)) for line in blocks[-1].splitlines() if line.strip()]
+    tools = []
+    for line in blocks[-1].splitlines():
+        if line.strip():
+            value = json.loads(line)  # one tool per line, or the whole list on one line
+            tools.extend(normalize_tool(t) for t in (value if isinstance(value, list) else [value]))
     preamble = system.split("# Tools", 1)[0].strip()
     out = [{"role": "system", "content": preamble}] if preamble else []
     for m in msgs[1:]:
@@ -295,6 +305,31 @@ def adapt_toolace(row: dict) -> dict:
 
 ADAPTERS = {"eu_tooluse": adapt_eu_tooluse, "when2call": adapt_when2call, "nemotron_agentic": adapt_nemotron_agentic,
             "toolmind": adapt_toolmind, "toucan": adapt_toucan, "toolace": adapt_toolace}
+
+SPECIAL_TEXT = ("<tool_call>", "</tool_call>", "<tools>", "</tools>", "<tool_response>", "</tool_response>",
+                "<think>", "</think>", "<|im_start|>", "<|im_end|>")
+
+
+def trim_trailing_user(row: dict) -> dict:
+    """Drop trailing user turns (e.g. a closing "thanks") so the row ends on an assistant turn.
+    Trailing tool results are never trimmed: that would orphan the calls they answer."""
+    msgs = row["messages"]
+    while msgs and msgs[-1]["role"] == "user" and any(m["role"] == "assistant" for m in msgs[:-1]):
+        msgs.pop()
+    return row
+
+
+def check_special_text(row: dict) -> None:
+    """Literal tag text would be tokenized as our special tag tokens and corrupt the structure."""
+    texts = [json.dumps(row["tools"], ensure_ascii=False)]
+    for m in row["messages"]:
+        texts += [m.get("content") or "", m.get("reasoning_content") or ""]
+        texts += [json.dumps(c["function"]["arguments"], ensure_ascii=False) for c in m.get("tool_calls") or []]
+    for text in texts:
+        for tag in SPECIAL_TEXT:
+            if tag in text:
+                raise ValueError(f"literal {tag} in content")
+
 
 # ---------------------------------------------------------------- validation
 
