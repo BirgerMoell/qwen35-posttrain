@@ -10,7 +10,7 @@ paired evals pass the retention gates below; otherwise the next stage starts fro
 | 1 Instruct SFT ✅ | 256K anneal300b base | direct answers, 19+ languages | stage1-mix-v1 (3.1M rows) | ~395 GPU-h (done) |
 | 2 Reasoning SFT ⏳ | Stage 1 | opt-in thinking mode, keep default mode | openeurollm-reasoning-instruct-v1 | ~450–500 GPU-h |
 | 3 Tool-use SFT | Stage 2 selected | function calling in both modes, *when* to call | tool mix + 40–50 % replay | ~100–150 GPU-h |
-| 4 DPO | Stage 3 selected | safety, format discipline, multilingual preference | multilingual DPO pairs | ~50–100 GPU-h |
+| 4 DPO | Stage 3 selected | safety, format discipline, multilingual preference | threeway sources (subsampled) + multilingual + targeted pairs | ~250–350 GPU-h |
 | 5 RLVR | Stage 4 selected | verifiable math / IF / tool-call accuracy | oellm-rlvr task pools | campaign-gated |
 
 ## Baseline facts that shape the plan
@@ -67,16 +67,44 @@ no tool call emitted when no tools are declared.
 
 ## Stage 4 — DPO
 
-- **Data**: [`jonasaise/dpo-*-interpreted`](https://huggingface.co/jonasaise) (sv, da, no, is, fi, de, fr, es, it, pl;
-  MIT; UltraFeedback-derived, Kimi-K3 adapted), `allenai/Dolci-Instruct-DPO` / `Dolci-Think-DPO`-style pairs,
-  When2Call preference split, plus **targeted synthetic pairs from our own failures**:
+**Reference recipe**: [`birgermoell/oellm-9b-threeway-dpo-full-v1`](https://huggingface.co/birgermoell/oellm-9b-threeway-dpo-full-v1)
+(from the Neonkraft SFT): TRL DPO, sigmoid loss, β 0.1, LR 5e-7 cosine, 3 % warmup, global batch 128, max length 2,048
+(truncated pairs dropped), 1 epoch = 11,263 steps on 1.44M pairs, ~1,387 MI250X GCD-h. Result: EUROPA Eval 76.2 % → 84.0 %,
+EUROPA Alignment 0.893, held-out preference accuracy 0.878.
+
+| Source (threeway run) | Train pairs | Share | License |
+|---|---:|---:|---|
+| [openeurollm/Dolci-Instruct-DPO-translated](https://huggingface.co/datasets/openeurollm/Dolci-Instruct-DPO-translated) | 1,352,763 | 93.8 % | Apache-2.0 |
+| [argilla/ultrafeedback-binarized-preferences-cleaned](https://huggingface.co/datasets/argilla/ultrafeedback-binarized-preferences-cleaned) | 59,889 | 4.2 % | MIT |
+| [nvidia/HelpSteer3](https://huggingface.co/datasets/nvidia/HelpSteer3) `preference` | 28,895 | 2.0 % | CC-BY-4.0 |
+
+**Tokenizer incompatibility — reuse the data and recipe, not the weights.** The threeway model's tokenizer
+appends ChatML/think tokens at IDs 262144–262151 (`<|im_start|>`=262144, `<think>`=262151). Our lineage maps them onto
+native slots (`<|im_start|>`=3, `<|im_end|>`=4, `<tool_call>`=11, `<tools>`=13, `<tool_response>`=15, `</think>`=17,
+`<think>`=18). Its checkpoint therefore cannot serve as our reference model or initialization, and its tokenized data
+must not be reused: re-render all pairs from text with our tokenizer and template.
+
+**Never use the threeway repo's `chat_template.jinja` or tokenizer files** — shipping them was the actual error in that
+release (it also emits empty `<think>` blocks). Every stage uses only our tokenizer and `templates/oellm_qwen3_two_stage_v2*.jinja`;
+a stage's data build must fail if the template or `tokenizer.json` sha256 differs from the pinned one.
+
+**Our Stage-4 plan**
+- Reference and initialization = the Stage-3 selected checkpoint (same tokenizer).
+- Pairs (text-only, re-rendered with v2.1 in default mode): the three threeway sources, but **subsample the
+  Dolci-DPO-translated block** (its 93.8 % share is many translations of the same prompts) to ~400–500K pairs with one
+  language per prompt family (as in Stage 1), keeping HelpSteer3 and UltraFeedback whole; plus
+
+- **More data**: [`jonasaise/dpo-*-interpreted`](https://huggingface.co/jonasaise) (sv, da, no, is, fi, de, fr, es, it, pl;
+  MIT; UltraFeedback-derived, Kimi-K3 adapted — dedup against UltraFeedback prompts), `allenai/Dolci-Think-DPO`-style
+  pairs for thinking mode, When2Call preference split, plus **targeted synthetic pairs from our own failures**:
   strict format (`15` ≻ `18 - 7 + 4 = 15`; `INSUFFICIENT` ≻ translated keyword; `B` ≻ `B. explanation`),
   refusal (refuse harmful ≻ comply; help benign-but-scary ≻ over-refuse), identity (OpenEuroLLM ≻ OpenAI claim).
   Generate rejected samples on-policy from the Stage-3 checkpoint where possible.
 - Both modes: thinking-mode pairs compare final answers with the trace kept identical or regenerated; never prefer
   empty think blocks.
-- Method: DPO (or SimPO; `scripts/simpo_train.py` exists) with low β, length-normalized; the earlier threeway-DPO run
-  reached 0.893 on EUROPA Alignment and is the reference recipe.
+- Method: the threeway recipe (sigmoid DPO, β 0.1, LR 5e-7, batch 128) with max length raised to 4,096 so
+  thinking-mode pairs fit; ~550–650K pairs ≈ 4.5–5K steps ≈ 250–350 A100 GPU-h on Leonardo (vs ~700 for the full 1.44M).
+  SimPO (`scripts/simpo_train.py`) as an ablation only.
 - Gates: EUROPA Alignment ≥ 0.85, EUROPA Eval ≥ Stage 3, over-refusal check (benign_non_refusal), response length
   not inflated vs Stage 3.
 
