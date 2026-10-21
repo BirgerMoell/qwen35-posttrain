@@ -10,7 +10,7 @@ paired evals pass the retention gates below; otherwise the next stage starts fro
 | 1 Instruct SFT ✅ | 256K anneal300b base | direct answers, 19+ languages | stage1-mix-v1 (3.1M rows) | ~395 GPU-h (done) |
 | 2 Reasoning SFT ⏳ | Stage 1 | opt-in thinking mode, keep default mode | openeurollm-reasoning-instruct-v1 | ~450–500 GPU-h |
 | 3 Tool-use SFT | Stage 2 selected | function calling in both modes, *when* to call | tool mix + 40–50 % replay | ~100–150 GPU-h |
-| 4 DPO | Stage 3 selected | safety, format discipline, multilingual preference | threeway sources (subsampled) + multilingual + targeted pairs | ~250–350 GPU-h |
+| 4 DPO | Stage 3 selected | safety, format discipline, multilingual preference | threeway-run replication (1.44M pairs), corrected tokenizer/template | ~600–750 GPU-h |
 | 5 RLVR | Stage 4 selected | verifiable math / IF / tool-call accuracy | oellm-rlvr task pools | campaign-gated |
 
 ## Baseline facts that shape the plan
@@ -88,23 +88,18 @@ must not be reused: re-render all pairs from text with our tokenizer and templat
 release (it also emits empty `<think>` blocks). Every stage uses only our tokenizer and `templates/oellm_qwen3_two_stage_v2*.jinja`;
 a stage's data build must fail if the template or `tokenizer.json` sha256 differs from the pinned one.
 
-**Our Stage-4 plan**
-- Reference and initialization = the Stage-3 selected checkpoint (same tokenizer).
-- Pairs (text-only, re-rendered with v2.1 in default mode): the three threeway sources, but **subsample the
-  Dolci-DPO-translated block** (its 93.8 % share is many translations of the same prompts) to ~400–500K pairs with one
-  language per prompt family (as in Stage 1), keeping HelpSteer3 and UltraFeedback whole; plus
-
-- **More data**: [`jonasaise/dpo-*-interpreted`](https://huggingface.co/jonasaise) (sv, da, no, is, fi, de, fr, es, it, pl;
-  MIT; UltraFeedback-derived, Kimi-K3 adapted — dedup against UltraFeedback prompts), `allenai/Dolci-Think-DPO`-style
-  pairs for thinking mode, When2Call preference split, plus **targeted synthetic pairs from our own failures**:
-  strict format (`15` ≻ `18 - 7 + 4 = 15`; `INSUFFICIENT` ≻ translated keyword; `B` ≻ `B. explanation`),
-  refusal (refuse harmful ≻ comply; help benign-but-scary ≻ over-refuse), identity (OpenEuroLLM ≻ OpenAI claim).
-  Generate rejected samples on-policy from the Stage-3 checkpoint where possible.
-- Both modes: thinking-mode pairs compare final answers with the trace kept identical or regenerated; never prefer
-  empty think blocks.
-- Method: the threeway recipe (sigmoid DPO, β 0.1, LR 5e-7, batch 128) with max length raised to 4,096 so
-  thinking-mode pairs fit; ~550–650K pairs ≈ 4.5–5K steps ≈ 250–350 A100 GPU-h on Leonardo (vs ~700 for the full 1.44M).
-  SimPO (`scripts/simpo_train.py`) as an ablation only.
+**Our Stage-4 plan (decided 2026-10-21): replicate the threeway run, fix only the tokenizer/template.**
+- Same data as the threeway run, at full size and with all translations: Dolci-Instruct-DPO-translated (~1.35M),
+  UltraFeedback-cleaned (~60K), HelpSteer3 preference (~29K); same trainer filters; same validation split rule.
+- Same recipe: TRL DPO, sigmoid loss, β 0.1, LR 5e-7 cosine, 3 % warmup, global batch 128, max length 2,048
+  (truncated pairs dropped), 1 epoch, seed 42.
+- Only changes: (1) pairs rendered from text with **our tokenizer and template v2.1** (`<think>`=18, `</think>`=17,
+  default mode, no empty think blocks) — never the threeway repo's tokenizer/template; (2) policy init and reference =
+  the Stage-3 selected checkpoint; (3) `scripts/dpo_train.py` gets the same guards as SFT (explicit tokenizer +
+  `CHAT_TEMPLATE_FILE`, template/tokenizer hash check, abort on supervised `<think>`).
+- Cost: ~1.44M pairs ≈ 11.3K steps; on Leonardo A100s roughly 600–750 GPU-h (the LUMI run was ~1,387 MI250X GCD-h).
+- Optional follow-up (separate, small DPO ablation, not part of the replication): targeted format/refusal/identity
+  pairs, jonasaise multilingual pairs, When2Call preference pairs, thinking-mode pairs.
 - Gates: EUROPA Alignment ≥ 0.85, EUROPA Eval ≥ Stage 3, over-refusal check (benign_non_refusal), response length
   not inflated vs Stage 3.
 
