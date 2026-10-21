@@ -94,11 +94,14 @@ def select(rows, per_lang: int, seed: int) -> list[tuple[dict, str]]:
 
 
 def call_ollama(endpoint: str, model: str, lang: str, protected: list[str], seg: dict[str, str]) -> dict:
-    body = {"model": model, "stream": False, "format": "json", "think": False, "options": {"temperature": 0, "num_ctx": 8192},
+    # Bound the output: a translation is at most ~2.5x the source, so runaway generations stop early.
+    budget = min(4096, 256 + 3 * sum(len(v) for v in seg.values()) // 3)
+    body = {"model": model, "stream": False, "format": "json", "think": False,
+            "options": {"temperature": 0, "num_ctx": 8192, "num_predict": budget},
             "messages": [{"role": "system", "content": SYSTEM.format(lang=LANGS[lang], protected=json.dumps(protected, ensure_ascii=False))},
                          {"role": "user", "content": json.dumps(seg, ensure_ascii=False)}]}
     req = urllib.request.Request(f"{endpoint}/api/chat", data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=600) as resp:
+    with urllib.request.urlopen(req, timeout=300) as resp:
         return json.loads(json.loads(resp.read())["message"]["content"])
 
 
@@ -141,9 +144,12 @@ def main() -> None:
     chosen = select(rows, a.per_lang, seed=20261021)
     if a.limit:
         chosen = chosen[:: max(1, len(chosen) // a.limit)][: a.limit]
-    done = set()
+    done = set()  # validation failures are final; transport errors (timeouts) are retried on resume
     for p in a.work_dir.glob("*.jsonl"):
-        done |= {json.loads(l)["source_id"] for l in p.read_text().splitlines() if l.strip()}
+        for l in p.read_text().splitlines():
+            rec = json.loads(l) if l.strip() else None
+            if rec and not (rec["reason"] or "").startswith("error:"):
+                done.add(rec["source_id"])
     todo = [(r, lang) for r, lang in chosen if r["id"] not in done]
     print(f"selected {len(chosen)}; already done {len(chosen) - len(todo)}; to translate {len(todo)}", flush=True)
     endpoints = a.endpoints.split(",")
@@ -152,11 +158,14 @@ def main() -> None:
 
     def work(i, row, lang):
         seg, prot = segments(row), protected_strings(row)
-        try:
-            out = call_ollama(endpoints[i % len(endpoints)], a.model, lang, prot, seg)
-            reason = validate(lang, seg, out, prot)
-        except Exception as exc:  # network / JSON errors are recorded, not fatal
-            out, reason = None, f"error:{type(exc).__name__}"
+        out, reason = None, None
+        for attempt in range(2):  # one immediate retry on a transport error
+            try:
+                out = call_ollama(endpoints[(i + attempt) % len(endpoints)], a.model, lang, prot, seg)
+                reason = validate(lang, seg, out, prot)
+                break
+            except Exception as exc:  # network / JSON errors are recorded, not fatal
+                out, reason = None, f"error:{type(exc).__name__}"
         rec = {"source_id": row["id"], "lang": lang, "ok": reason is None, "reason": reason, "segments": out if reason is None else None}
         with lock:
             stats["ok" if reason is None else reason.split(":")[0]] += 1
@@ -179,7 +188,7 @@ def main() -> None:
     by_id = {r["id"]: r for r in rows}
     data_schema = pq.read_schema(files[0]).append(pa.field("translation_model", pa.string()))
     pool_schema = pq.read_schema(next(a.pool_dir.glob("train-*.parquet")))
-    out_rows, tok_rows, audit = [], [], Counter()
+    out_rows, tok_rows, audit, seen = [], [], Counter(), set()
     stats = Counter()  # recompute over all passes (the run may have been resumed)
     for p in a.work_dir.glob("*.jsonl"):
         for line in p.read_text().splitlines():
@@ -189,8 +198,9 @@ def main() -> None:
     for p in sorted(a.work_dir.glob("*.jsonl")):
         for line in p.read_text().splitlines():
             rec = json.loads(line)
-            if not rec["ok"]:
+            if not rec["ok"] or rec["source_id"] in seen:
                 continue
+            seen.add(rec["source_id"])
             src = by_id[rec["source_id"]]
             msgs = [dict(m) for m in src["messages"]]
             for k, text in rec["segments"].items():
