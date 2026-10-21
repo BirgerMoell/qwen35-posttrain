@@ -84,6 +84,50 @@ Dedup by normalized problem text and semantic group; decontaminate (13-gram + ex
 our SFT/DPO prompts *are allowed* (RL on seen prompts is fine) but eval prompts are not; reject rows whose ground truth
 the verifier cannot parse, multi-answer or proof questions, and anything needing images.
 
+## 3b. RL in three environment tiers (simple → agentic)
+
+RL runs as a sequence of tiers ordered by **environment complexity**, each with its own difficulty windows (§4) and
+promotion gate; a tier starts only from the previous tier's selected checkpoint. Licenses are from the HF cards
+(checked 2026-10-21); "verify" = card has no license field.
+
+### Tier A — single-turn, programmatic verifiers (TMAX/DAPO; cheap, start here)
+Everything in §3 (math, code stdin/stdout, IF, strict format, single-call tool use) plus:
+| Pool | License | Adds |
+|---|---|---|
+| [MiniMaxAI/SynLogic](https://huggingface.co/datasets/MiniMaxAI/SynLogic) | MIT | logic puzzles with verifiers |
+| [nvidia/Nemotron-RL-ReasoningGym-v1](https://huggingface.co/datasets/nvidia/Nemotron-RL-ReasoningGym-v1) | CC-BY-4.0 | Reasoning-Gym tasks (algebra, graphs, games, cognition) |
+| Reasoning Gym library (generate ourselves) | Apache-2.0 (code) | unlimited procedural tasks with difficulty knobs — and we can render prompts in our 24+ languages, like oellm-math-rlvr |
+| [TIGER-Lab/WebInstruct-verified](https://huggingface.co/datasets/TIGER-Lab/WebInstruct-verified) | Apache-2.0 | general STEM / science QA with verified answers (beyond math) |
+| [nvidia/Nemotron-CrossThink](https://huggingface.co/datasets/nvidia/Nemotron-CrossThink) | CC-BY-4.0 | multi-domain (STEM, humanities, law, social science) QA with templated, verifiable answers |
+| [nvidia/Nemotron-RL-instruction_following](https://huggingface.co/datasets/nvidia/Nemotron-RL-instruction_following) | ODC-BY | IF RL prompts |
+| [nvidia/Nemotron-RL-Agentic-Function-Calling-Pivot-v1](https://huggingface.co/datasets/nvidia/Nemotron-RL-Agentic-Function-Calling-Pivot-v1) | CC-BY-4.0 | function-calling RL |
+| [nvidia/Nemotron-RL-coding-competitive_coding](https://huggingface.co/datasets/nvidia/Nemotron-RL-coding-competitive_coding) | CC-BY-SA-4.0 | competitive coding with tests (share-alike applies to a republished pool) |
+| nvidia/Nemotron-RL-knowledge-mcqa | verify | knowledge MCQ (letter-only answers also train our strict-format behaviour) |
+Excluded: Enigmata-Data and KodCode (CC-BY-NC).
+
+### Tier B — multi-turn with local, simulated environments (SkyRL; moderate infra, no containers per task)
+| Environment | Data / license | Reward |
+|---|---|---|
+| Search agent over a **local Wikipedia index** (Search-R1 / ASearcher setup: BM25 or e5 + FAISS server, ~50–60 GB) | [inclusionAI/ASearcher-train-data](https://huggingface.co/datasets/inclusionAI/ASearcher-train-data) (Apache-2.0); NQ/HotpotQA mixes (verify) | exact match / F1 on the final answer, format guard |
+| Conversational tool use with simulated users and mock tools | [Nemotron-RL-Agentic-Conversational-Tool-Use-Pivot-v1](https://huggingface.co/datasets/nvidia/Nemotron-RL-Agentic-Conversational-Tool-Use-Pivot-v1), [Nemotron-RL-agent-workplace_assistant](https://huggingface.co/datasets/nvidia/Nemotron-RL-agent-workplace_assistant) (CC-BY-4.0); τ²-bench gym interface for *evaluation* only | task-state checks, as in τ²-bench |
+| Multi-step tool loops on executable mock tools | our openeurollm-tool-use-v1 multi-step rows (held out from SFT) | final-answer / end-state match |
+| Agent safety | [Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1](https://huggingface.co/datasets/nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1) (CC-BY-4.0) | does not follow injected instructions in tool outputs |
+| Text-to-SQL (optional) | NovaSky-AI/SkyRL-SQL-653-data (verify); BIRD/Spider train splits (check terms) | execution match on a local SQLite DB |
+Multilingual: translate user turns of the search and tool tasks (answers stay checkable), as in Stage 3.
+
+### Tier C — sandboxed agents (SkyRL + Harbor; already backend-qualified in `oellm-rlvr`)
+| Environment | Data / license | Size |
+|---|---|---|
+| Terminal tasks | [allenai/open-instruct-endless-terminals](https://huggingface.co/datasets/allenai/open-instruct-endless-terminals) (Apache-2.0), [camel-ai/SETA-Env](https://huggingface.co/datasets/camel-ai/SETA-Env) (Apache-2.0), [Lite-Coder/LiteCoder-Terminal-RL-preview](https://huggingface.co/datasets/Lite-Coder/LiteCoder-Terminal-RL-preview) (MIT), [Nemotron-RL-Agentic-Terminal-Pivot-v1](https://huggingface.co/datasets/nvidia/Nemotron-RL-Agentic-Terminal-Pivot-v1) (CC-BY-4.0) | ~1K–4.5K envs each |
+| Software engineering | [SWE-Gym](https://huggingface.co/datasets/SWE-Gym/SWE-Gym) (MIT, 2.4K), [SWE-smith-py](https://huggingface.co/datasets/SWE-bench/SWE-smith-py) (MIT), [R2E-Gym-Subset](https://huggingface.co/datasets/R2E-Gym/R2E-Gym-Subset) (Apache-2.0, 4.6K), [nebius/SWE-rebench-V2](https://huggingface.co/datasets/nebius/SWE-rebench-V2) (CC-BY-4.0; keep only rows whose `license_name` is permissive), [Nemotron-RL-Agentic-SWE-Pivot-v1](https://huggingface.co/datasets/nvidia/Nemotron-RL-Agentic-SWE-Pivot-v1) (CC-BY-4.0) | 10K+ tasks |
+Eval only: Terminal-Bench 2.x ([harborframework](https://huggingface.co/datasets/harborframework/terminal-bench-2.0)), SWE-bench Verified, SWE-rebench leaderboard —
+decontaminate training repos/tasks against them. Tier C needs an SFT warm-start on agent trajectories first
+(e.g. the Stage-3 multi-step data plus terminal/SWE SFT traces) — RL from a model that cannot yet complete any task
+yields all-zero groups; the 0/8 rule (§4) will show this before compute is spent.
+
+Reference blend: [nvidia/Nemotron-RL-Ultra-Training-Blends](https://huggingface.co/datasets/nvidia/Nemotron-RL-Ultra-Training-Blends)
+(CC-BY-4.0) documents how NVIDIA mixed these domains — useful to compare against our proportions.
+
 ## 4. Slicing into gradually harder problems
 
 Source difficulty labels (oellm 1–5, DeepMath 1–9, code 1–5) are **priors for candidate selection only**; admission
@@ -147,7 +191,7 @@ with the qualified stack; qualify Leonardo with a 16-update canary (~10 GPU-h) i
 updates per window, 64–128 prompts × 8–16 samples per update and growing response lengths: W1 ~60–100, W2 ~150–250,
 W3 ~250–400 A100-equivalent GPU-h, plus ~10 % for profiling and evals.
 
-## 8. Order of work
+## 8. Order of work (Tier A first; B and C only after A's gate)
 
 1. Pool builders (one per source → common schema) + decontamination + verifier-parse checks; publish an aggregated
    **`birgermoell/openeurollm-rlvr-pool-v1`** (prompts + ground truth + priors, per-row license; NC sources excluded).
