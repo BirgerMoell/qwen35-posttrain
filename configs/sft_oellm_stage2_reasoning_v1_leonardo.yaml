@@ -1,0 +1,47 @@
+# Stage-2 Reasoning SFT from the Stage-1 Instruct checkpoint, 8x4 A100.
+# Data: pre-tokenized stage2-mix-v2 = openeurollm-reasoning-instruct-v1 (reasoning ~75%: Excellent, Dolci-Think
+# 32B + translated, multilingual traces, MedQA, Swedish Kimi; direct replay ~25%). Docs <=32K; BFD 32K bins.
+# Global batch: 32 GPUs x 32K = ~1M tokens/step; one epoch is ~1.7K steps.
+model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/stage1-instruct-v1-bf16
+dtype: bfloat16
+attn_implementation: flash_attention_2
+datasets:
+  - path: parquet
+    data_files:
+      train: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/data/stage2-mix-v2/train-*.parquet
+    split: train
+output_dir: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/stage2-reasoning-v1
+eos_token: <|im_end|>
+assistant_only_loss: true
+max_length: 32768
+packing: true
+packing_strategy: bfd
+padding_free: true
+use_liger_kernel: true
+dataset_num_proc: 16
+num_train_epochs: 1
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 1
+learning_rate: 5.0e-6
+lr_scheduler_type: cosine_with_min_lr
+lr_scheduler_kwargs:
+  min_lr_rate: 0.1
+warmup_ratio: 0.03
+weight_decay: 0.0
+max_grad_norm: 1.0
+bf16: true
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+seed: 42
+data_seed: 42
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 100
+save_strategy: steps
+save_steps: 400                 # full ckpt with optimizer is ~135 GB and ~4 min to write
+save_total_limit: 1
+dataloader_num_workers: 2
+ddp_timeout: 7200
+report_to: none

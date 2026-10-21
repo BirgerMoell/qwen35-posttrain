@@ -194,18 +194,23 @@ def _validate_assistant_mask(tokenizer, training_args) -> None:
 
 
 class _NoThinkLabelsCollator:
-    """Abort before an optimizer step if Stage-1 labels contain think tokens."""
+    """Abort before an optimizer step if labels contain forbidden think-delimiter IDs.
 
-    def __init__(self, inner):
+    Stage 1 forbids both <think> (18) and </think> (17); Stage 2 forbids only <think>,
+    which the v2 template always places prompt-side.
+    """
+
+    def __init__(self, inner, forbidden=(17, 18)):
         self.inner = inner
+        self.forbidden = tuple(forbidden)
 
     def __call__(self, features):
         batch = self.inner(features)
         labels = batch["labels"]
         if not (labels == -100).any().item():
-            raise RuntimeError("Stage-1 batch has no masked labels; assistant-only loss is not applied")
-        if ((labels == 17) | (labels == 18)).any().item():
-            raise RuntimeError("Stage-1 batch contains supervised <think> or </think> tokens")
+            raise RuntimeError("batch has no masked labels; assistant-only loss is not applied")
+        if any((labels == token).any().item() for token in self.forbidden):
+            raise RuntimeError(f"batch contains supervised forbidden think tokens {self.forbidden}")
         return batch
 
 
@@ -312,6 +317,12 @@ def main(script_args, training_args, model_args, dataset_args):
             raise ValueError("SFT_FORBID_THINK_LABELS requires assistant_only_loss=True")
         trainer.data_collator = _NoThinkLabelsCollator(trainer.data_collator)
         print("[safety] aborting on supervised think tokens in every batch", flush=True)
+    elif os.environ.get("SFT_FORBID_LABEL_IDS", "").strip():
+        if not assistant_only:
+            raise ValueError("SFT_FORBID_LABEL_IDS requires assistant_only_loss=True")
+        forbidden = [int(t) for t in os.environ["SFT_FORBID_LABEL_IDS"].replace(":", ",").split(",") if t.strip()]
+        trainer.data_collator = _NoThinkLabelsCollator(trainer.data_collator, forbidden)
+        print(f"[safety] aborting on supervised token IDs {forbidden} in every batch", flush=True)
 
     # Resume from a saved checkpoint if requested (RESUME_FROM_CHECKPOINT=1 -> auto-find the latest
     # checkpoint-* in output_dir; or set it to an explicit checkpoint path). Restores model +
