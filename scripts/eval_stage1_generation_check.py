@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Post-training generation check for a Stage-1 (direct-answer) checkpoint.
+"""Post-training generation check in default and (optionally) thinking mode.
 
-Greedy-decodes a fixed multilingual prompt set in default mode and records, per prompt,
-whether the reply contains a think delimiter (must never happen in Stage 1) and whether
-it terminated with <|im_end|> (vs running into the token limit). Writes all outputs to
-JSON for human review; exits nonzero if any default-mode reply contains a think tag.
+Greedy-decodes a fixed multilingual prompt set. Default mode: a reply must never contain a think
+delimiter. Thinking mode (--enable-thinking; the template pre-fills `<think>\n`): a reply must
+contain exactly one `</think>`, no `<think>`, and a nonempty answer after it. Records termination
+(<|im_end|> vs token limit). Writes all outputs to JSON; exits nonzero on any violation.
 """
 from __future__ import annotations
 
@@ -48,6 +48,7 @@ def main() -> int:
     ap.add_argument("--model", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--max-new-tokens", type=int, default=768)
+    ap.add_argument("--enable-thinking", action="store_true")
     args = ap.parse_args()
     tok = AutoTokenizer.from_pretrained(args.model)
     model = AutoModelForCausalLM.from_pretrained(args.model, dtype=torch.bfloat16, device_map="cuda").eval()
@@ -55,21 +56,27 @@ def main() -> int:
     results = []
     for language, prompt in PROMPTS:
         inputs = tok.apply_chat_template([{"role": "user", "content": prompt}], add_generation_prompt=True,
+                                         enable_thinking=args.enable_thinking,
                                          return_tensors="pt", return_dict=True).to(model.device)
         with torch.no_grad():
             out = model.generate(**inputs, max_new_tokens=args.max_new_tokens, do_sample=False,
                                  eos_token_id=end_id, pad_token_id=end_id)
         new = out[0][inputs["input_ids"].shape[1]:].tolist()
         raw = tok.decode(new, skip_special_tokens=False)
+        if args.enable_thinking:
+            trace, closed, answer = raw.partition("</think>")
+            violation = "<think>" in raw or raw.count("</think>") != 1 or not answer.replace("<|im_end|>", "").strip()
+        else:
+            violation = "<think>" in raw or "</think>" in raw
         results.append({
             "language": language, "prompt": prompt,
             "reply": tok.decode(new, skip_special_tokens=True).strip(),
-            "think_tag": "<think>" in raw or "</think>" in raw,
+            "think_tag": violation,
             "terminated": end_id in new, "new_tokens": len(new),
         })
         print(f"[{language}] {prompt}\n{results[-1]['reply'][:600]}\n", flush=True)
     summary = {
-        "model": args.model, "prompts": len(results),
+        "model": args.model, "mode": "thinking" if args.enable_thinking else "default", "prompts": len(results),
         "think_tag_replies": sum(r["think_tag"] for r in results),
         "terminated_replies": sum(r["terminated"] for r in results),
     }
