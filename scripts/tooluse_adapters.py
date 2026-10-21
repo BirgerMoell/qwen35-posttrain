@@ -396,8 +396,30 @@ def validate(row: dict) -> None:
 
 # ---------------------------------------------------------------- labels
 
-_ASK = re.compile(r"\?\s*$|\b(could you (please )?(provide|tell|specify|share)|please (provide|specify|let me know))\b", re.I)
-_CANNOT = re.compile(r"\b(unable to|can(no|')t|cannot|not able to|don't have (access|the ability)|no (available )?(tool|function))\b", re.I)
+_ASK = re.compile(r"\?\s*$|\b(could you (please )?(provide|tell|specify|share)|please (provide|specify|let me know)|"
+                  r"you need to provide)\b|^\s*(in )?(which|what|who|where|when|how)\b[^.\n]*\?", re.I)
+# Missing-parameter explanations ("The query is missing `x`", "I'll need the username") are requests for information.
+_MISSING = re.compile(r"\b(is missing|are missing|missing (the|a|an|required)|(not|n't) (been )?provided?|"
+                      r"(does not|doesn't|didn't|did not) (provide|contain|include|specify) (the |a |an |any )?(required|necessary|needed)|"
+                      r"lacks? the|(I|we)('ll| will| would)? need (the|your|to know)|requires? (both|the|a|an|you to)|"
+                      r"insufficient information|not (contain )?sufficient information)\b", re.I)
+_CANNOT = re.compile(r"\b(unable to|can(no|')t|cannot|not able to|don't have (access|the ability|the capability)|"
+                     r"(don't|do not) have (a|any|the) [^.\n]{0,40}(tool|function|capabilit)|"
+                     r"none of the (provided |available |given )?functions|"
+                     r"functions? (provided |available |given |listed )?(do|does) not (include|provide|support|cover)|"
+                     r"(do|does) not include (a |any )?function|no (available |suitable |relevant )?(tool|function)s?\b|"
+                     r"not (relevant|applicable) to (the|any) (available|provided|given) functions)\b", re.I)
+
+
+_META = re.compile(r"\[No Need to Ask\]|(provides?|provided|have provided) sufficient information to call|"
+                   r"Required Arguments:|Provided Arguments:|the query provides sufficient information", re.I)
+
+
+def check_not_meta(row: dict) -> None:
+    """Reject answers that describe a call ("sufficient information to call X") instead of making it."""
+    for m in row["messages"]:
+        if m["role"] == "assistant" and not m.get("tool_calls") and _META.search(m.get("content") or ""):
+            raise ValueError("describes a call instead of making it")
 
 
 def categorize(row: dict) -> str:
@@ -415,7 +437,7 @@ def categorize(row: dict) -> str:
         final = msgs[-1]["content"]
         if not row["tools"]:
             return "no_tools_direct"
-        if _ASK.search(final[-300:]):
+        if _ASK.search(final[-300:]) or _MISSING.search(final[:400]):
             return "ask_for_info"
         if _CANNOT.search(final[:300]):
             return "cannot_answer"

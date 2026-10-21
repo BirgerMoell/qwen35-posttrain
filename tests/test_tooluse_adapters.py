@@ -75,6 +75,17 @@ class Units(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate({"tools": tools, "messages": messages})
 
+    def test_missing_parameter_is_ask_for_info(self):
+        tools = [tool("get_intervals", {"interval_type": {"type": "string"}}, ["interval_type"])]
+        for answer in ["The query is missing the `interval_type` required to call the function.",
+                       "To proceed, I'll need the CNPJ number for the establishment."]:
+            row = {"tools": tools, "messages": [{"role": "user", "content": "Find intervals."},
+                                                {"role": "assistant", "content": answer}]}
+            self.assertEqual(categorize(row), "ask_for_info")
+        row = {"tools": tools, "messages": [{"role": "user", "content": "Order a pizza."},
+                                            {"role": "assistant", "content": "I'm unable to order food with these tools."}]}
+        self.assertEqual(categorize(row), "cannot_answer")
+
     def test_mode_assignment(self):
         row = {"messages": [{"role": "user", "content": "a"}, {"role": "assistant", "content": "b", "reasoning_content": "old"},
                             {"role": "user", "content": "c"}, {"role": "assistant", "content": "", "reasoning_content": "t1",
