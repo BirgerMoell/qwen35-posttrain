@@ -19,6 +19,17 @@ Training data (411M tokens, one epoch, LR 3e-6 cosine, 32K packing, 32 × A100, 
 | Stage-2 replay, direct answers | 105,684 | 80M |
 | Identity + safety (always kept) | 36,933 | 27M |
 
+## Revision history
+
+- **v1.1 (current)**: output-row repair of the chat-tag tokens. v1 closed every tool call with `<tool_call>` instead
+  of `</tool_call>`: the two tokens' `lm_head` rows were still nearly identical after SFT (397 AdamW steps at LR 3e-6
+  cannot separate rows that start equal), although all 160,990 supervised calls in the data were well formed. Only the
+  `lm_head` rows of IDs 11–18 were re-fitted on the frozen model's hidden states (exact full-vocabulary cross-entropy,
+  L2 pull to the original rows); every other weight is unchanged. On held-out Stage-3 validation rows the teacher-forced
+  top-1 rate for `</tool_call>` went from 0.0% to 99.6%, for `<tool_call>` from 75.9% to 98.8% and for `</think>` from
+  84.7% to 100%. Script: `scripts/repair_tag_head_rows.py` in qwen35-posttrain; details in `tag_head_repair.json`.
+- v1 (revision `0dc97efa`): SFT checkpoint. Do not use for tool calling.
+
 ## Template (v2.1)
 
 Qwen3/Hermes tool format: tools are listed in `<tools>` in the system turn, the assistant emits `<tool_call>` JSON, and
