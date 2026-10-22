@@ -308,6 +308,9 @@ reference = Stage-3 v1.1; every source pinned; offline pre-tokenization with gua
 Estimated 19–28 h on 8 nodes, 600–900 GPU-h (4.7–7K local-h); the smoke measures throughput first.
 Gates: Alignment ≥ 0.85, Eval ≥ Stage 3 with malformed answers ≤ 40, over-refusal check, no length inflation or collapse,
 tag-row check (§7.4).
+Merging after DPO (`docs/OELLM_RL_RUN_PROGRAM.md` §7): the average of the last 2–3 checkpoints is evaluated against the
+best single one; if a gate shows a thinking-mode or tool regression, linear interpolation Stage-3 v1.1 → DPO at
+α ∈ {0.5, 0.75, 1.0} is the first fallback, before starting RL from Stage 3.
 
 ---
 
@@ -351,6 +354,9 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
   DPO → W1/W2/W3 windows from the DPO checkpoint → T1/T2 tool RL → final selection), with each run's question, cost,
   gate and decision rule, the cost model from canary 6, stop rules and the run-card template.
 - `docs/OELLM_STAGE5_RL_PLAN.md`: the pools, rewards, difficulty bins and environment tiers the runs draw on.
+- Merging policy (program §7): checkpoint averaging at the end of every window; task-vector recovery if tool RL hurts
+  reasoning; delta transplant onto a rebuilt SFT checkpoint; a final soup. Never with a different base, tokenizer,
+  template contract, or with Stage-3 v1.
 
 ---
 
@@ -416,4 +422,4 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
 - 2026-10-22: Stage 3 done; tag-row repair → v1.1; storage cleanup; EUROPA Reasoning published; EUROPA Eval gap traced
   to strict-format SFT targets; DPO data staging; RL canaries on Leonardo.
 - 2026-10-23: DPO data built (1,441,722 / 15,827 pairs); pre-tokenized DPO trainer and smoke submitted; RL canary 6
-  passed, think probe submitted; RL run program written (`OELLM_RL_RUN_PROGRAM.md`).
+  passed, think probe submitted; RL run program written (`OELLM_RL_RUN_PROGRAM.md`), including the merging policy.

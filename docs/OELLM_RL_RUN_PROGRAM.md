@@ -35,7 +35,7 @@ Estimates below use this formula; each run re-measures it and the playbook recor
 
 1. **One question per run.** Ablations change one thing against a fixed baseline; production windows change only what
    the ablations decided.
-2. **A run card before submission** (template in §8): parent checkpoint, hypothesis, data with the realized mix,
+2. **A run card before submission** (template in §9): parent checkpoint, hypothesis, data with the realized mix,
    reward, settings, budget, live stop rules, end-of-run evaluation, decision rule.
 3. **Select on frozen holdouts, never on training reward.** Checkpoints every 16 updates; the selected one is the best
    on the target holdout among those that pass retention.
@@ -169,7 +169,41 @@ Stop the run (and keep the last good checkpoint) if any of these hold for 4 cons
 Every window also gets a manual audit of the 20 highest-reward rollouts (reward hacking: answers inside the trace,
 several boxed answers, prompt echo).
 
-## 7. Order of work (next two weeks)
+## 7. Merging and combining checkpoints
+
+Merging is cheap (minutes on CPU with mergekit, no GPU) and works when the models share a parent, tokenizer and
+template and differ by small deltas, which holds for our DPO and RL stages (LR 5e-7 to 1e-6). The cost is the
+evaluation, so a merge is only made where it answers a concrete question.
+
+**Standing (every run):**
+
+| When | Merge | Compared against | Cost |
+|---|---|---|---|
+| End of DPO and of every RL window | uniform average of the last 2–3 saved checkpoints | the best single checkpoint | one eval pass |
+| After DPO, **only if** a gate shows thinking-mode or tool regression | linear interpolation Stage-3 v1.1 → DPO, α ∈ {0.5, 0.75, 1.0} (α = 1 is DPO) | DPO and Stage 3 | three eval passes |
+
+The DPO interpolation is the first fallback for the risk that all-default-mode, tool-free DPO pairs weaken thinking or
+tool use; it replaces "start RL from Stage 3" unless every α fails the gates.
+
+**Options (used only if the situation arises):**
+- **Recovery after a specialist run**: if T1/T2 tool RL regresses reasoning, combine task vectors of the reasoning and
+  tool checkpoints over their common parent (task arithmetic first; TIES/DARE if the deltas conflict). Mixed-data RL
+  with a controlled mix stays the main path.
+- **Delta transplant onto a new SFT checkpoint**: when the instruct data is rebuilt (strict-format targets fixed), add
+  the (DPO + RL) delta to the new SFT checkpoint and evaluate before deciding to re-run DPO and RL. Works less well the
+  more the new SFT checkpoint differs.
+- **Final soup**: average of the last promoted W3 and T2 checkpoints, before the release evaluation.
+
+**Never merge**: models from a different base, tokenizer or RoPE configuration (use distillation instead); models
+trained for different template contracts (e.g. Stage 2 with Stage 3); **Stage-3 v1 (`0dc97efa`)**, whose collapsed tag
+rows would partly undo the v1.1 repair.
+
+**Rules for every merge**: the output keeps our tokenizer and the v2.1 template (never mergekit's tokenizer union);
+mixing weights are chosen on the selection holdouts, never on the release evaluations; the merged checkpoint passes
+the same gates as any checkpoint (both modes, tool eval, EUROPA Eval/Alignment/Reasoning, trace closure, tag-row
+check) and is recorded with its recipe (inputs with revisions, method, weights, mergekit version).
+
+## 8. Order of work (next two weeks)
 
 1. RL-0 finishes; read the closed-rate curve and the end eval; record in the playbook.
 2. While DPO trains: build the A1/A3 data (non-English math + exam-MCQ slice; strict-format numeric set), add the
@@ -178,7 +212,7 @@ several boxed answers, prompt echo).
 4. W1 → W2 → W3, each gated; T1 inside W2 if A4 passes.
 5. In parallel with W2/W3: SkyRL qualification canary on Leonardo, mock-tool and Wikipedia-search environments.
 
-## 8. Run card template
+## 9. Run card template
 
 ```
 Run ID / job IDs:
