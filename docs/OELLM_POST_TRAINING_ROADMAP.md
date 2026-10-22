@@ -13,6 +13,22 @@ paired evals pass the retention gates below; otherwise the next stage starts fro
 | 4 DPO | Stage 3 selected | safety, format discipline, multilingual preference | threeway-run replication (1.44M pairs), corrected tokenizer/template | ~600–750 GPU-h |
 | 5 RLVR | Stage 4 selected | verifiable math / IF / tool-call accuracy | oellm-rlvr task pools | campaign-gated |
 
+## Compute budget (decided 2026-10-22)
+
+The Leonardo account `aifac_f02_352` is shared; this project's share is **~50K local-h** (1 GPU-h = 8 local-h on
+boost_usr_prod). Spent so far (`sacct`, own jobs since 2026-10-20): **~6.6K local-h** (Stage 1 3.2K, Stage 2 2.8K,
+tool translation 0.45K, evals/smokes ~0.14K). Per-stage caps:
+
+| Stage | Cap (GPU-h) | Cap (local-h) | Notes |
+|---|---:|---:|---|
+| 3 Tool-use SFT | ~100 | ~800 | running; ~470M tokens, one mid-run checkpoint |
+| Gate evals per stage | ~15 | ~120 | EUROPA Eval + Alignment, quick reasoning eval |
+| 4 DPO | ~250 | ~2,000 | threeway recipe on a subsample (~400K Dolci-translated pairs + HelpSteer3 + UltraFeedback + targeted pairs); the full 1.44M replication (~5K local-h) only with explicit approval |
+| 5 RL | ~200 | ~1,600 | Tier A only (math, IF, strict format, single tool calls), two windows; Tiers B/C only if A clearly helps and budget remains |
+| **Planned total** | | **~11K** | leaves headroom in the shared 50K |
+
+Every job above ~20 GPU-h gets a local-h estimate before submission.
+
 ## Baseline facts that shape the plan
 
 Stage-1 eval vs the earlier Neonkraft SFT (same base): EUROPA Eval 0.600 vs 0.762, Alignment 0.455 vs 0.773.
