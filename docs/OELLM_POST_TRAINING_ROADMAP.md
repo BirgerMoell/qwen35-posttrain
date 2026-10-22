@@ -1,5 +1,8 @@
 # OpenEuroLLM 9B post-training roadmap: reasoning → tool use → DPO → RL
 
+> The complete, reproducible record of what was actually run (data, configs, hashes, jobs, costs, results, pitfalls)
+> is [`OELLM_POST_TRAINING_PLAYBOOK.md`](OELLM_POST_TRAINING_PLAYBOOK.md); this file is the plan.
+
 Status 2026-10-21. Stage 1 (Instruct SFT) is done; Stage 2 (reasoning SFT) is building/queued.
 Every stage starts from the previous **selected** checkpoint: a candidate is promoted only when its
 paired evals pass the retention gates below; otherwise the next stage starts from the previous one
