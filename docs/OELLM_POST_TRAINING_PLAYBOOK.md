@@ -6,7 +6,7 @@ and tool-using assistant on Leonardo (CINECA): **Stage 1 Instruct SFT → Stage 
 relative to the `qwen35-posttrain` repository unless marked as Leonardo paths.
 
 This document is maintained as the run progresses. **Status (2026-10-22):** Stages 1–3 done and published; Stage 4
-DPO data in preparation; Stage 5 RL probe in its Leonardo canary phase.
+DPO data built, trainer smoke running; Stage 5 RL think probe running (canaries passed).
 
 | Stage | Checkpoint (HF, private) | Revision | Leonardo cost | EUROPA Eval | EUROPA Alignment |
 |---|---|---|---:|---:|---:|
@@ -14,8 +14,8 @@ DPO data in preparation; Stage 5 RL probe in its Leonardo canary phase.
 | 1 Instruct | `birgermoell/oellm-9b-256k-stage1-instruct-v1` | `58e42ab4` | 3,153 local-h | 0.600 | 0.455 |
 | 2 Reasoning | `birgermoell/oellm-9b-256k-stage2-reasoning-v1` | `2db72459` | 2,811 local-h | 0.609 | 0.605 |
 | 3 Tool use | `birgermoell/oellm-9b-256k-stage3-tooluse-v1` | v1 `0dc97efa`, **v1.1 `88875629`** | 541 local-h | 0.616 | 0.642 |
-| 4 DPO | in preparation | | est. 4.7–7K local-h | | |
-| 5 RL | probe in canary phase | | probe ≤ 320 local-h | | |
+| 4 DPO | data built; smoke running | | est. 4.7–7K local-h | | |
+| 5 RL | think probe running; program in `OELLM_RL_RUN_PROGRAM.md` | | probe ≤ 320 local-h; program ~14–16K | | |
 
 Reference points on the same EUROPA protocol: Neonkraft instruct SFT (same base family) 0.762, threeway DPO 0.840,
 Qwen3.6-35B-A3B 0.881. Our gap is analysed in §8.3 and addressed in Stage 4.
@@ -279,14 +279,33 @@ reference = Stage-3 v1.1; every source pinned; offline pre-tokenization with gua
   generation prompt; completion = render(prompt + response) minus the prompt), template byte-identical to the model's
   bundled template, hashes recorded; drops empty responses, render errors, prefix mismatches, pairs over 2,048 tokens,
   and any pair containing IDs 11–18.
+- **Result (job 61856512, 35 min on `lrd_all_serial`): 1,441,722 train / 15,827 validation pairs** (reference
+  1,441,547 / 15,824). Train drops: over 2,048 tokens 35,095 Dolci + 7,329 HelpSteer3 + 404 UltraFeedback; empty
+  response 137; render error 49; chat-tag tokens 2. Pair length (prompt + longer completion): median 473, p95 1,173,
+  mean 529. 29 + 1 zstd parquet shards in `$SCRATCH/oellm-dpo/pretok-v1`.
 - Format-compliance pairs (to be built): strict-format prompts (number, letter, single word, JSON only, N lines, no
   explanation) in the 36 languages; chosen = verified bare answer, rejected = Stage-3 v1.1's own verbose/wrong answer;
   no EUROPA items; checks that unconstrained answers keep their length.
 
 ### 9.3 Training plan
-`scripts/dpo_train.py` with a `DPOTrainer` subclass that accepts the pre-tokenized columns as is (TRL 0.29 always
-re-tokenizes otherwise), template/tokenizer hash checks and a label guard; 8 nodes, two chained 24 h jobs with resume.
-Estimated 19–28 h, 600–900 GPU-h (4.7–7K local-h); a ≤ 20 local-h smoke measures throughput first.
+`scripts/dpo_train_pretok.py` (config `configs/dpo_oellm_stage4_v1_leonardo.yaml`, launcher
+`slurm/dpo_oellm_stage4_v1_leonardo.sbatch`, tests `tests/test_dpo_train_pretok.py`):
+- `PretokenizedDPOTrainer` overrides `_prepare_dataset` (TRL 0.29 otherwise re-extracts prompts and re-renders the chat
+  template) and only checks that `prompt_ids` / `chosen_ids` / `rejected_ids` exist.
+- Before training: manifest kind, template sha256 and tokenizer.json sha256 must match; the model's bundled template
+  must equal the file; a vectorized pyarrow scan of every shard rejects forbidden IDs 11–18 anywhere, empty
+  completions, completions without `<|im_end|>`, and prompt + completion > `max_length` (so TRL's truncation never
+  fires). On the real data: 1,457,549 pairs pass in 26 s. Every batch is re-checked for forbidden IDs.
+- Policy and reference both loaded from Stage-3 v1.1 (bf16; FSDP upcasts the policy to fp32 master weights).
+  Global batch 128 = 1 per device × grad-accum (128 / GPUs, set by the launcher); ~11,264 optimizer steps.
+- Checkpoints (model + optimizer) every 500 steps to `$SCRATCH/oellm-dpo/output/stage4-dpo-v1`; a timed-out job is
+  continued by resubmitting the launcher (`--dependency=afterany:<job>`). `$SCRATCH` purges after 40 days, so the
+  selected export is copied to work storage.
+- Smoke mode (`DPO_SMOKE=1`, 1 node, ≤ 20 local-h): 1,536 pairs = 12 steps at the production global batch; phase A
+  stops with a checkpoint after step 6 (`DPO_STOP_AFTER_STEP`), phase B resumes and finishes, so the resume path is
+  tested before the 24 h jobs depend on it.
+
+Estimated 19–28 h on 8 nodes, 600–900 GPU-h (4.7–7K local-h); the smoke measures throughput first.
 Gates: Alignment ≥ 0.85, Eval ≥ Stage 3 with malformed answers ≤ 40, over-refusal check, no length inflation or collapse,
 tag-row check (§7.4).
 
@@ -314,13 +333,24 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
      `RAY_NUM_CPUS=64` (logical) in `scripts/ray_node.sh`.
   3. OOM at the weight sync: whole-model ZeRO-3 gather (~18 GB) on top of ~31 GB → `--gather_whole_model False`.
   4. OOM at the training step (263K-vocabulary logits) → `--deepspeed_offload_optimizer True` with a prebuilt
-     `DeepSpeedCPUAdam` (`TORCH_EXTENSIONS_DIR`) and `OELLM_PATCH_POLICY_CPU_ADAM` (TMAX used torch AdamW for the policy
-     even under offload, which DeepSpeed refuses).
+     `DeepSpeedCPUAdam` (`TORCH_EXTENSIONS_DIR`).
+  5. `ZeRORuntimeException`: TMAX passes a torch AdamW to DeepSpeed even under offload, which DeepSpeed refuses. A patch
+     on the policy class cannot attach (the trainer runs as `__main__` via runpy and is pickled to Ray by value), so
+     `OELLM_PATCH_POLICY_CPU_ADAM=1` wraps `deepspeed.initialize` itself (`oellm_rlvr.compat
+     .patch_deepspeed_cpu_adam_offload`): with CPU offload and a torch AdamW it builds `DeepSpeedCPUAdam` from the same
+     param groups and re-points the LR scheduler. The prebuilt extension also needs `DS_SKIP_CUDA_CHECK=1` (container
+     CUDA 13.0 vs torch cu128). Verified in a 1-GPU ZeRO-3 offload test (job 61858418).
+- **Canary 6 (job 61859252) passed**: 2 updates in 29 min, no errors; first update 461 s (with warm-up), second 125 s;
+  verifiable reward 0.46 / 0.48; mean response 3,864 / 3,675 tokens, some at the 6,144 cap. ~200 episodes counted per
+  update (dynamic-sampling refills), so the probe's 6,144 episodes may give ~30 updates instead of 48.
+- Full probe submitted as job 61868620 (5 h limit, checkpoints every 24 updates).
 - Evaluation before/after: quick reasoning eval (thinking accuracy and unclosed rate), EUROPA Reasoning process metrics.
 
 ### 10.3 Production RL plan
-`docs/OELLM_STAGE5_RL_PLAN.md`: tiered pools (math/code verifiable first, agentic later), measured-difficulty bins,
-selected-vs-candidate checkpoints, format-following rewards.
+- `docs/OELLM_RL_RUN_PROGRAM.md`: the run sequence (RL-0 probe → A-series ablations on Stage-3 v1.1 in parallel with
+  DPO → W1/W2/W3 windows from the DPO checkpoint → T1/T2 tool RL → final selection), with each run's question, cost,
+  gate and decision rule, the cost model from canary 6, stop rules and the run-card template.
+- `docs/OELLM_STAGE5_RL_PLAN.md`: the pools, rewards, difficulty bins and environment tiers the runs draw on.
 
 ---
 
@@ -385,3 +415,5 @@ selected-vs-candidate checkpoints, format-following rewards.
 - 2026-10-21: Stage 1 done; identity fix; reasoning dataset; Stage 2 done; tool dataset and template v2.1.
 - 2026-10-22: Stage 3 done; tag-row repair → v1.1; storage cleanup; EUROPA Reasoning published; EUROPA Eval gap traced
   to strict-format SFT targets; DPO data staging; RL canaries on Leonardo.
+- 2026-10-23: DPO data built (1,441,722 / 15,827 pairs); pre-tokenized DPO trainer and smoke submitted; RL canary 6
+  passed, think probe submitted; RL run program written (`OELLM_RL_RUN_PROGRAM.md`).

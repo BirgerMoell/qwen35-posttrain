@@ -1,6 +1,8 @@
 # Stage 5 — RL with verifiable rewards: plan
 
-Status 2026-10-21. Starts from the Stage-4 (DPO) selected checkpoint. Executed with
+Status 2026-10-21. **The run-by-run program (which runs, in what order, budgets, gates) is in
+[`OELLM_RL_RUN_PROGRAM.md`](OELLM_RL_RUN_PROGRAM.md); this document specifies the data, rewards and tiers it draws on.**
+Since 2026-10-22 the TMAX stack is also qualified on Leonardo (canary 6, job 61859252; fixes in the playbook §10). Starts from the Stage-4 (DPO) selected checkpoint. Executed with
 [`oellm-rlvr`](https://github.com/BirgerMoell/oellm-rlvr) (TMAX/Open-Instruct DAPO backend for single-turn domains;
 SkyRL + Harbor for multi-turn agentic tasks). This plan adds the data, curriculum and reward design; the control
 plane, gates and checkpoint-selection rules of `oellm-rlvr` are kept as they are.
