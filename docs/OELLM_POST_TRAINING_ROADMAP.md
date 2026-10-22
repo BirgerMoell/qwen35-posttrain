@@ -116,8 +116,19 @@ a stage's data build must fail if the template or `tokenizer.json` sha256 differ
 - Cost: ~1.44M pairs ≈ 11.3K steps; on Leonardo A100s roughly 600–750 GPU-h (the LUMI run was ~1,387 MI250X GCD-h).
 - Optional follow-up (separate, small DPO ablation, not part of the replication): targeted format/refusal/identity
   pairs, jonasaise multilingual pairs, When2Call preference pairs, thinking-mode pairs.
-- Gates: EUROPA Alignment ≥ 0.85, EUROPA Eval ≥ Stage 3, over-refusal check (benign_non_refusal), response length
-  not inflated vs Stage 3.
+- **Format-compliance pairs (decided 2026-10-22, part of the Stage-4 mix, not optional).** Stage 3 scores 0.616 on
+  EUROPA Eval vs 0.762 (Neonkraft SFT) and 0.840 (threeway DPO) almost entirely on strict-format items: numeric 0.06
+  vs 0.58, tool-recovery letter 0.49 vs 0.92, 122 malformed answers vs 38 / 9. Cause in our instruct data: of 9,685
+  strict-format user turns ("answer only with the number/letter/name") in 3.15M rows, 99 % of targets ignore the
+  constraint (mostly OpenEuroLLM-Excellent-SFT zebra puzzles: "The person … is **Alice**. Step-by-step explanation…").
+  Build multilingual pairs on held-out strict-format prompts (number, letter, single word, JSON-only, N lines, no
+  explanation) in the 36 languages: *chosen* = the bare compliant answer (verified correct), *rejected* = the Stage-3
+  model's own verbose or wrong answer (on-policy). Keep EUROPA items out of the prompt pool (no eval leakage); check
+  that refusal and explanation quality do not drop (answers must stay full when no constraint is given).
+- Next instruct-data version: rewrite or drop the 9.4K non-compliant strict-format targets and add a small
+  multilingual strict-format SFT set, so a future SFT does not relearn the habit.
+- Gates: EUROPA Alignment ≥ 0.85, EUROPA Eval ≥ Stage 3 (target: malformed answers ≤ 40), over-refusal check
+  (benign_non_refusal), response length not inflated vs Stage 3, no length collapse on unconstrained prompts.
 
 ## Stage 5 — RLVR (`oellm-rlvr`)
 
