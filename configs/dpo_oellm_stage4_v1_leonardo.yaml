@@ -1,0 +1,36 @@
+# Stage-4 DPO from Stage-3 Tool-use v1.1 (policy and reference), 8x4 A100, template v2.1.
+# Recipe = the threeway reference run (birgermoell/oellm-9b-threeway-dpo-full-v1): sigmoid loss, beta 0.1,
+# LR 5e-7 cosine, 3 % warmup, global batch 128, 1 epoch, seed 42, pairs > 2048 tokens dropped at build time.
+# Data: pre-tokenized dpo pretok-v1 (1,441,722 train / 15,827 validation pairs) -> ~11,264 optimizer steps.
+# Global batch: per-device 1 x grad-accum x GPUs = 128; the sbatch sets grad-accum from the node count.
+model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/stage3-tooluse-v1.1-bf16
+dtype: bfloat16
+attn_implementation: flash_attention_2
+output_dir: /leonardo_scratch/large/userexternal/pmoell00/oellm-dpo/output/stage4-dpo-v1
+loss_type: [sigmoid]
+beta: 0.1
+max_length: 2048
+num_train_epochs: 1
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 4
+learning_rate: 5.0e-7
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+max_grad_norm: 1.0
+bf16: true
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+seed: 42
+data_seed: 42
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 1000
+save_strategy: steps
+save_steps: 500                 # full state (model + optimizer) for resume across the 24 h walltime
+save_total_limit: 1
+dataloader_num_workers: 2
+ddp_timeout: 7200
+report_to: none
