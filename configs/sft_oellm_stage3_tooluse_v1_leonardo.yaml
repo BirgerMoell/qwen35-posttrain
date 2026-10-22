@@ -40,7 +40,7 @@ logging_steps: 10
 eval_strategy: steps
 eval_steps: 50
 save_strategy: steps
-save_steps: 200                 # full ckpt with optimizer is ~135 GB and ~4 min to write
+save_steps: 300                 # full ckpt with optimizer is ~135 GB and ~4 min to write
 save_total_limit: 1
 dataloader_num_workers: 2
 ddp_timeout: 7200

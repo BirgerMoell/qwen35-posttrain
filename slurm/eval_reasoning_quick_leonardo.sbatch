@@ -16,12 +16,15 @@ root=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight
 C=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
 MODEL=${MODEL:-$root/output/stage2-reasoning-v1-bf16}
 NAME=${NAME:-stage2-reasoning-v1}
+DATA=${DATA:-$root/data/eval-quick/reasoning_quick.jsonl}
+MODES=${MODES:-default thinking}
+MAXNEW=${MAXNEW:-0}
 out=$root/eval/reasoning-quick/$NAME
 mkdir -p $out/results
 run() { singularity exec --nv -B /leonardo_work "$C" env HF_HUB_OFFLINE=1 python "$root/eval_reasoning_quick.py" "$@"; }
-for mode in default thinking; do
+for mode in $MODES; do
   for g in 0 1 2 3; do
-    CUDA_VISIBLE_DEVICES=$g run run --model "$MODEL" --data "$root/data/eval-quick/reasoning_quick.jsonl" \
+    CUDA_VISIBLE_DEVICES=$g run run --model "$MODEL" --data "$DATA" --max-new-tokens $MAXNEW \
       --out "$out/results/$mode-$g.jsonl" --mode $mode --rank $g --world 4 > $out/$mode-$g.log 2>&1 &
   done
   wait

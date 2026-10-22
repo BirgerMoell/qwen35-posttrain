@@ -26,6 +26,8 @@ TOOL_BUDGET = {  # rendered tokens; None = keep all
 }
 REPLAY_BUDGET = {"reasoning": 85e6, "direct": 80e6}
 ALWAYS_KEEP = ("replay:identity", "dolci32b:WildGuardMix", "dolci32b:WildJailbreak", "dolci32b:CoCoNot")
+# Stage-2 eval showed long, non-converging thinking; replay only short, decisive traces in Stage 3.
+MAX_REPLAY_REASONING_TOKENS = 8192
 
 
 def h(x: str) -> float:
@@ -75,14 +77,17 @@ def main() -> None:
         t = pq.read_table(f, columns=["source", "input_ids"])
         for s, n in zip(t["source"].to_pylist(), lengths(t)):
             if s not in ALWAYS_KEEP:
-                group_tokens["direct" if s.startswith("replay:") or s.endswith(":direct") else "reasoning"] += n
+                g = "direct" if s.startswith("replay:") or s.endswith(":direct") else "reasoning"
+                if g == "direct" or n <= MAX_REPLAY_REASONING_TOKENS:
+                    group_tokens[g] += n
     replay_p = {g: min(1.0, REPLAY_BUDGET[g] / group_tokens[g]) for g in REPLAY_BUDGET}
     for f in s2_files:
         t = pq.read_table(f)
         srcs, ids, lens = t["source"].to_pylist(), t["id"].to_pylist(), lengths(t)
         groups = ["always" if s in ALWAYS_KEEP else "direct" if s.startswith("replay:") or s.endswith(":direct") else "reasoning"
                   for s in srcs]
-        keep = [g == "always" or h(i + "#s3") < replay_p[g] for i, g in zip(ids, groups)]
+        keep = [g == "always" or ((g == "direct" or n <= MAX_REPLAY_REASONING_TOKENS) and h(i + "#s3") < replay_p[g])
+                for i, g, n in zip(ids, groups, lens)]
         part = t.filter(pa.array(keep)).select(SCHEMA.names).cast(SCHEMA)
         train_parts.append(part)
         for g, n, k in zip(groups, lens, keep):
@@ -111,6 +116,7 @@ def main() -> None:
                            "tokenizer_json_sha256": sha(a.tokenizer / "tokenizer.json"),
                            "tool_budget": TOOL_BUDGET, "tool_keep_probability": keep_p,
                            "replay_budget": REPLAY_BUDGET, "replay_keep_probability": replay_p, "always_keep": ALWAYS_KEEP,
+                           "max_replay_reasoning_tokens": MAX_REPLAY_REASONING_TOKENS,
                            "note": "replay tokens from the v2 template are identical under v2.1 for tool-free rows"},
                 "totals": {k: dict(v) for k, v in sorted(stats.items())}, "files": files}
     (a.output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
