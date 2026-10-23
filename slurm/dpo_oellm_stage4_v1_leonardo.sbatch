@@ -35,8 +35,9 @@ fi
 test -s "$data/manifest.json" && test -s "$model/model.safetensors.index.json"
 cmp "$model/chat_template.jinja" "$template"
 gpus=$((SLURM_NNODES * 4))
-(( 128 % gpus == 0 )) || { echo "global batch 128 is not divisible by $gpus GPUs"; exit 1; }
-accum=$((128 / gpus))
+per_device=$(awk '/^per_device_train_batch_size:/ {print $2}' "$config")
+(( 128 % (gpus * per_device) == 0 )) || { echo "global batch 128 is not divisible by $gpus GPUs x $per_device"; exit 1; }
+accum=$((128 / (gpus * per_device)))
 
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_CACHE=/leonardo_scratch/large/userexternal/pmoell00/oellm-dpo/datasets-cache
 export TOKENIZER_NAME_OR_PATH="$model" CHAT_TEMPLATE_FILE="$template" REQUIRED_MODEL_DTYPE=bfloat16

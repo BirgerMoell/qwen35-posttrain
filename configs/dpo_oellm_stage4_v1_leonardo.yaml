@@ -2,7 +2,7 @@
 # Recipe = the threeway reference run (birgermoell/oellm-9b-threeway-dpo-full-v1): sigmoid loss, beta 0.1,
 # LR 5e-7 cosine, 3 % warmup, global batch 128, 1 epoch, seed 42, pairs > 2048 tokens dropped at build time.
 # Data: pre-tokenized dpo pretok-v1 (1,441,722 train / 15,827 validation pairs) -> ~11,264 optimizer steps.
-# Global batch: per-device 1 x grad-accum x GPUs = 128; the sbatch sets grad-accum from the node count.
+# Global batch: per-device 2 x grad-accum x GPUs = 128; the sbatch sets grad-accum from the node count.
 model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/stage3-tooluse-v1.1-bf16
 dtype: bfloat16
 attn_implementation: flash_attention_2
@@ -11,9 +11,11 @@ loss_type: [sigmoid]
 beta: 0.1
 max_length: 2048
 num_train_epochs: 1
-per_device_train_batch_size: 1
-per_device_eval_batch_size: 1
-gradient_accumulation_steps: 4
+# 2 pairs per device per micro-step: at 1 pair the run is bound by FSDP all-gathers (3 per micro-step: policy
+# forward, backward, reference forward; 25.3 s/step on 8 nodes), so fewer, larger micro-steps cut communication.
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 2
+gradient_accumulation_steps: 2
 learning_rate: 5.0e-7
 lr_scheduler_type: cosine
 warmup_ratio: 0.03
