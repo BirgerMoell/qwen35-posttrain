@@ -104,8 +104,13 @@ first 30 min of the resumed job). The user approved the full set (10-23).
 1. **Format-compliance pairs** (builder `scripts/build_oellm_format_pairs.py`, launcher
    `slurm/build_oellm_format_pairs_leonardo.sbatch`; first build 10-23 night: 18,062 prompts — 11,500 math
    final-answer-only in 23 languages, 6,562 letter-only MCQ in 10 languages from `exams_qa` + `slovak_financial_exam` —
-   Stage-3 v1.1 answered in the bare requested form for only 12 of 6,562 MCQ prompts; the math part is being rebuilt
-   after a ground-truth unpacking fix). Design: strict-format prompts (number, letter, one word,
+   Stage-3 v1.1 answered in the bare requested form for 12 of 6,562 MCQ prompts and **0 of 11,500 math prompts** —
+   every math reply is a worked solution). **Built: 14,769 train / 295 validation pairs** (8,628 math, 6,141 MCQ;
+   2,985 prompts dropped because the reply did not finish within 512 tokens), pre-tokenized with the main DPO guards
+   in `$SCRATCH/oellm-dpo/format-v1/pretok` (median 208 tokens). Plan: a short follow-up DPO pass on the Stage-4
+   checkpoint with these pairs mixed 1:2 with a sample of the main pairs (same recipe), then EUROPA Eval strict-format
+   items as the check. Because the model never samples bare math answers, RL alone cannot teach this (A3 canary:
+   `math_direct` reward 0), so this pass must precede the RL windows. Design: strict-format prompts (number, letter, one word,
    JSON-only, N lines, no explanation) in the 36 languages, EUROPA items excluded; chosen = verified bare answer,
    rejected = Stage-3 v1.1's own verbose/wrong answer (vLLM, ~2–4 GPU-h). They go into a short follow-up DPO pass on the
    Stage-4 checkpoint (or the next DPO version), since the main run is already training.
