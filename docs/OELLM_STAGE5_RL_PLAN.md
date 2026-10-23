@@ -81,6 +81,12 @@ English semantic-group ID so all variants stay in one split; verify the answer i
 | no-call items | ours | from openeurollm-tool-use-v1 categories `no_call_direct` / `ask_for_info` / `cannot_answer` (held-out from SFT rows) |
 Multi-turn agentic RL (Harbor tasks) only after single-turn tool RL passes its gate.
 
+### European exam MCQ (`birgermoell/oellm-eu-exam-mcq-v1` @ `12a22a62`, 583K GRPO rows, 35 languages)
+Mixed licenses and mixed provenance. **Excluded**: `belebele` (31.5K), `global_mmlu` (244K), `mmmlu` (70K) and `xcopa`
+(1.8K) because they are evaluation benchmarks we report (oellm-eval), and every source with `unknown`, non-commercial or
+"needs review" status (e.g. `polish_pes_medical` 178K, `llmzszl` 14K). Usable today: `exams_qa` (19K, CC-BY-SA-4.0) and
+`slovak_financial_exam` (1.1K, CC-BY-SA-4.0); share-alike applies to any republished pool.
+
 ### Hygiene (all pools)
 Dedup by normalized problem text and semantic group; decontaminate (13-gram + exact) against every eval below,
 our SFT/DPO prompts *are allowed* (RL on seen prompts is fine) but eval prompts are not; reject rows whose ground truth

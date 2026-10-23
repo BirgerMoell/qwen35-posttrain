@@ -147,7 +147,7 @@ Ablation total: ~600–900 local-h.
 | | |
 |---|---|
 | Question | Does the RL-0 + ablation recipe transfer to the DPO checkpoint, at the production batch size? |
-| Data | math (oellm EU24 ≥ 40 % non-English, DeepMath 3–5), exam-MCQ (35 languages, letter-only answers), strict format, IF ≤ 2 constraints; 30 % easy / 60 % medium / 10 % hard by measured pass@8 |
+| Data | math (oellm EU24 ≥ 40 % non-English, DeepMath 3–5), exam-MCQ (letter-only answers; **only sources that are neither evaluation benchmarks nor license-unclear**: drop `belebele`, `global_mmlu`, `mmmlu`, `xcopa` — we report them in oellm-eval — and every `unknown`/NC/needs-review source; today that leaves mainly `exams_qa` and `slovak_financial_exam`), strict format, IF ≤ 2 constraints; 30 % easy / 60 % medium / 10 % hard by measured pass@8 |
 | Settings | 64 prompts × 8, max response 4K, 48 updates, decisions from A1–A3 |
 | Cost | profiling ~150 + training ~450 local-h |
 | Gate | target holdouts up (paired test), closed rate ≥ 90 %, no retention regression |
