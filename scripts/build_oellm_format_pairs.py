@@ -37,6 +37,15 @@ MCQ_SOURCES = {"exams_qa", "slovak_financial_exam"}
 MCQ_LICENSES = {"CC-BY-SA-4.0"}
 
 
+def single_answer(value) -> str:
+    """oellm-math-rlvr stores `ground_truth` as a one-element list of strings."""
+    if isinstance(value, (list, tuple)):
+        if len(value) != 1:
+            raise ValueError(f"expected one ground-truth answer, got {value!r}")
+        value = value[0]
+    return str(value)
+
+
 def bucket(key: str, salt: str) -> float:
     return int(hashlib.sha256((key + salt).encode()).hexdigest()[:12], 16) / 16 ** 12
 
@@ -74,7 +83,7 @@ def select(a) -> None:
             content = r["messages"][0]["content"] if isinstance(r["messages"], list) else json.loads(r["messages"])[0]["content"]
             out.append({"id": f"fmt-math-{r['id']}", "kind": "math_final_only", "language": lang,
                         "source": MATH_REPO, "license": "Apache-2.0", "prompt": content,
-                        "answer": str(r["ground_truth"])})
+                        "answer": single_answer(r["ground_truth"])})
     Path(a.out).mkdir(parents=True, exist_ok=True)
     with open(Path(a.out) / "prompts.jsonl", "w", encoding="utf-8") as handle:
         for r in out:
