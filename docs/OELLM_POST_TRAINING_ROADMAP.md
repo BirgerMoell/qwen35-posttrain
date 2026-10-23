@@ -190,7 +190,9 @@ retention regression, closure targets). Selection always on frozen holdouts, nev
 **Reference comparisons:** public oellm-eval scores (`openeurollm/prelude-base-eval-scores`) for Prelude, datamix,
 Apertus-8B, Olmo-3-7B, Llama-3.1-8B, Qwen3-8B-Base, Qwen3.5-9B-Base (playbook §8.1). Stage-3 v1.1 leads all European and
 open base models in the file on Belebele/Global-MMLU/INCLUDE and trails Qwen3/3.5 by 5–9 points. Own runs (10-23,
-array 61949325): our base checkpoint, Neonkraft SFT, threeway DPO (with our tokenizer), Apertus-8B-Instruct, Qwen3-8B.
+array 61949325; playbook §8.1): versus our own base, post-training added +8 (Belebele), +4 (Global-MMLU), +12 (INCLUDE)
+points with grammar unchanged; Stage 3 matches the Neonkraft SFT and the threeway DPO, beats Apertus-8B-Instruct on
+reading/Global-MMLU but not on INCLUDE, and trails Qwen3-8B by 4–8 points on knowledge.
 
 ## 9. Budget
 

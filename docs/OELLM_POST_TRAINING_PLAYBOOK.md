@@ -308,6 +308,23 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 �
   Neonkraft SFT @ `85bf18fb`, threeway DPO @ `df4ca880` **with our tokenizer** (its own has the switched-token bug;
   weights fp32), Apertus-8B-Instruct-2509 @ `b946d404`, Qwen3-8B @ `b968826d`. Comparison script:
   `scripts/oellm_eval_compare.py <results.csv …>` (copy on Leonardo: `…/oellm-eval/compare.py`) (means over tasks common to all models).
+  **Result** (10-23, 96 GPU-h; means over the tasks every model completed — Belebele 20, Global-MMLU 11, INCLUDE 11,
+  MultiBLiMP 28; Global-MGSM dropped: 0-shot generation without chat template ran into the 4 h limit for most models,
+  and the fp32 threeway weights timed out on several knowledge tasks — `results_missing.csv` lists the 14 gaps):
+
+  | Model | Belebele | Global-MMLU | INCLUDE | MultiBLiMP |
+  |---|---:|---:|---:|---:|
+  | Our base (Prelude anneal → 256K) | 0.737 | 0.547 | 0.422 | 0.935 |
+  | **Ours, Stage-3 v1.1** | **0.820** | **0.584** | 0.539 | 0.930 |
+  | Neonkraft instruct SFT (same base) | 0.808 | 0.573 | 0.546 | 0.931 |
+  | threeway DPO (from Neonkraft; our tokenizer) | 0.810 | 0.574 | 0.546 | 0.926 |
+  | Apertus-8B-Instruct-2509 | 0.792 | 0.560 | 0.578 | 0.924 |
+  | Qwen3-8B | 0.865 | 0.663 | 0.587 | 0.866 |
+
+  Readings: post-training added +8.3 (Belebele), +3.7 (Global-MMLU) and +11.7 (INCLUDE) points over our base and kept
+  grammar (MultiBLiMP) intact; Stage 3 is on par with the Neonkraft SFT and the threeway DPO (DPO did not change these
+  knowledge benchmarks), ahead of Apertus-8B-Instruct on reading and Global-MMLU but behind it on INCLUDE (regional
+  knowledge), and 4–8 points behind Qwen3-8B on knowledge while ahead of it on grammar.
 
 ### 8.2 Gates
 Stage acceptance: no think tags in default-mode answers; identity correct; EUROPA Eval ≥ previous stage; Alignment not
