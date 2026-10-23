@@ -10,6 +10,7 @@ on:
       - "docs/OELLM_STAGE5_RL_PLAN.md"
       - "pages/**"
       - ".github/workflows/pages.yml"
+      - "scripts/check_site_identifiers.sh"
   workflow_dispatch:
 
 permissions:
