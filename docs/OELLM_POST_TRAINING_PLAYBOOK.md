@@ -256,7 +256,11 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 �
   = 110 lm-eval units, 1 GPU each (tool estimate ≤ 18 GPU-h ≈ 150 local-h per checkpoint). lm-eval runs **without the
   chat template** (few-shot raw prompts), so these measure knowledge and language competence, not chat behaviour; the
   JudgeArena groups (`judgearena-fluency` in ~40 languages, `judgearena-m-arena-hard` EU) test chat output and need a
-  judge endpoint (not yet set up offline). Baseline: Stage-3 v1.1, array job 61934097.
+  judge endpoint (not yet set up offline). Baseline: Stage-3 v1.1, array job 61934097 (103/110 done, 22.2 GPU-h ≈
+  178 local-h): Belebele 0.820 (24 languages, lowest Italian 0.786), Global-MMLU 0.588 (16), INCLUDE 0.561 (20,
+  lowest Georgian 0.26, Basque 0.39), Global-MGSM 0.395 (11, 0-shot without chat template; lowest Basque 0.12),
+  MultiBLiMP 0.932 (32, lowest Basque 0.69). Summary: `runs/2026-10-23-10-56-28/summary.json`. Failed in the v0.3.0
+  container: PolyMath (missing `latex2sympy2_extended`) and `include_base_44_north_macedonian` (task not found).
 
 ### 8.2 Gates
 Stage acceptance: no think tags in default-mode answers; identity correct; EUROPA Eval ≥ previous stage; Alignment not
