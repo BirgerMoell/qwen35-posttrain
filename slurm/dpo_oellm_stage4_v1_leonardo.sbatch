@@ -12,10 +12,12 @@
 #SBATCH --output=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.out
 #SBATCH --error=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.err
 
-# Stage-4 DPO, 8 nodes x 4 A100. Resumes from the latest checkpoint in output_dir, so a timed-out job is
-# continued by resubmitting this script unchanged (chain with --dependency=afterany:<jobid>).
-# Engineering smoke (DPO_SMOKE=1, submit with --nodes=1 --time=01:00:00): 1,536 pairs = 12 steps at the
-# production global batch; phase A stops with a checkpoint after step 6, phase B resumes and finishes.
+# Stage-4 DPO, 8 nodes x 4 A100. Resumes from the latest checkpoint in output_dir. Each production job, once it
+# is running, queues its own continuation (afterany on itself) while DPO_CHAIN_REMAINING > 0 (default 1), so a
+# continuation can never start because a predecessor was cancelled before it ran.
+# Engineering smoke (DPO_SMOKE=1, submit with --nodes=2 --time=01:00:00; one node cannot hold the fp32 optimizer
+# state): 1,536 pairs = 12 steps at the production global batch; phase A stops with a checkpoint after step 6,
+# phase B resumes and finishes.
 set -euo pipefail
 root=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight
 container=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
@@ -67,6 +69,12 @@ if [[ "$smoke" == 1 ]]; then
   exit 0
 fi
 export DPO_EVAL_MAX_ROWS=1024
+chain="${DPO_CHAIN_REMAINING:-1}"
+if (( chain > 0 )); then
+  next=$(sbatch --parsable --dependency=afterany:"$SLURM_JOB_ID" --export=ALL,DPO_CHAIN_REMAINING=$((chain - 1)) \
+    "$root/dpo_oellm_stage4_v1_leonardo.sbatch")
+  echo "queued continuation $next (afterany:$SLURM_JOB_ID, $((chain - 1)) more after it)"
+fi
 export RESUME_FROM_CHECKPOINT=$([[ -n $(ls -d "$output"/checkpoint-* 2>/dev/null) ]] && echo 1 || echo 0)
 echo "resume=$RESUME_FROM_CHECKPOINT master=$MASTER_ADDR nodes=$SLURM_NNODES accum=$accum"
 launch ""

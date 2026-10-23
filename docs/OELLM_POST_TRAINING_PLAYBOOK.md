@@ -306,6 +306,13 @@ reference = Stage-3 v1.1; every source pinned; offline pre-tokenization with gua
   tested before the 24 h jobs depend on it.
 
 Estimated 19–28 h on 8 nodes, 600–900 GPU-h (4.7–7K local-h); the smoke measures throughput first.
+- First smoke (1 node, job 61869942) ran out of GPU memory at step 2: the fp32 master weights, gradients and Adam state
+  of the policy (~144 GB) do not fit on 4 GPUs. Step 1 took 42.7 s on 4 GPUs (loss 0.695, as expected at the start).
+  The smoke now runs on 2 nodes.
+- **Chaining pitfall**: a continuation submitted with `--dependency=afterany:<part 1>` starts when part 1 is
+  *cancelled* (here, because part 1's own `afterok` dependency on the failed smoke could never be met), so an 8-node
+  job started with nothing to resume (~33 local-h lost before it was cancelled). The launcher now has each running
+  job queue its own continuation (`DPO_CHAIN_REMAINING`).
 Gates: Alignment ≥ 0.85, Eval ≥ Stage 3 with malformed answers ≤ 40, over-refusal check, no length inflation or collapse,
 tag-row check (§7.4).
 Merging after DPO (`docs/OELLM_RL_RUN_PROGRAM.md` §7): the average of the last 2–3 checkpoints is evaluated against the
@@ -346,7 +353,11 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
 - **Canary 6 (job 61859252) passed**: 2 updates in 29 min, no errors; first update 461 s (with warm-up), second 125 s;
   verifiable reward 0.46 / 0.48; mean response 3,864 / 3,675 tokens, some at the 6,144 cap. ~200 episodes counted per
   update (dynamic-sampling refills), so the probe's 6,144 episodes may give ~30 updates instead of 48.
-- Full probe submitted as job 61868620 (5 h limit, checkpoints every 24 updates).
+- **Probe (job 61868620) completed: 48 updates in 2 h 51 min** (~50 local-h; the episode counter does not cap
+  updates). Training batches (different prompts each update, so noisy): rollouts hitting the 6,144 cap fell from
+  ~35 % (updates 1–6) to ~24 % (last 10); mean response 3.75K → 3.3K tokens; correct rate ~0.50 → ~0.55. Exports at
+  steps 24 and 48 in `$SCRATCH/oellm-rl/outputs/think-probe/*_checkpoints/`; held-out quick eval of step 48 is job
+  61912816.
 - Evaluation before/after: quick reasoning eval (thinking accuracy and unclosed rate), EUROPA Reasoning process metrics.
 
 ### 10.3 Production RL plan
