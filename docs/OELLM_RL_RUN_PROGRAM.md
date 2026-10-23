@@ -65,7 +65,19 @@ Estimates below use this formula; each run re-measures it and the playbook recor
                          F final selection, release evals
 ```
 
-### RL-0 — Think probe (running: job 61868620)
+### RL-0 — Think probe (done: job 61868620, 48 updates, 2 h 51 min, ~50 local-h)
+
+**Result (quick reasoning eval, held out, vs Stage-3):** thinking accuracy 0.435 → **0.512**, unfinished
+48.9 % → **39.3 %**, mean thinking length 3,478 → 2,970 tokens; default mode 0.581 → 0.593 (retained). Largest gains on
+EU-language math (0.108 → 0.308; unfinished 86 % → 58 %) and MGSM (0.59 → 0.66); **MATH-500 flat** (0.16 → 0.14,
+80 % unfinished at 6K). Decision: closure responds to RL (+9.6 points closed, accuracy up) → proceed; run A2 because
+hard problems still do not finish; the update count is not capped by the episode counter (48 of 48 ran).
+
+**Follow-ups submitted 2026-10-23** (2 nodes each, ~50 local-h each, quick eval of step 48 queued automatically):
+- RL-0b `think-cont` (job 61923006): 48 more updates from RL-0 step 48, seed 43 — is the gain still rising?
+- A2a `think-nonstop` (job 61923004): RL-0 with one change, truncated rollouts get −0.5 instead of 0.
+
+#### RL-0 card (as planned)
 
 | | |
 |---|---|
