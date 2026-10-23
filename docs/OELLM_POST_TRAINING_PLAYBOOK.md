@@ -256,7 +256,15 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 â
   the TMAX vLLM venv with the EvalPlus venv (`$SCRATCH/code-eval/evalplus-venv`, datasets pre-downloaded to
   `$SCRATCH/code-eval/cache`) appended to `PYTHONPATH`; **scoring executes model code** in
   `singularity exec --contain --cleanenv --no-home` with only the EvalPlus venv and its Python read-only and the run
-  directory writable (verified: no home, no project or scratch data visible). Baseline job 61939877 (Stage-3 v1.1, RL-0).
+  directory writable (verified: no home, no project or scratch data visible). Baseline job 61939877 (50 min, 1 node):
+
+  | pass@1 base / plus | HumanEval+ default | MBPP+ default | HumanEval+ thinking | MBPP+ thinking | traces closed (HE / MBPP) |
+  |---|---|---|---|---|---|
+  | Stage-3 v1.1 | 0.384 / 0.335 | 0.431 / 0.357 | 0.220 / 0.189 | 0.267 / 0.243 | 42 % / 47 % |
+  | RL-0 (math RL) | 0.366 / 0.323 | 0.421 / 0.352 | 0.274 / 0.250 | 0.296 / 0.251 | 48 % / 52 % |
+
+  Code is weak in both modes and thinking mode is worse than direct (half the traces do not close within 8,192 tokens).
+  Math RL slightly helps thinking-mode code through closure; direct mode is unchanged within noise.
 - **Trace-language audit**: lingua (`oellm_rlvr.language_audit`) over the quick-eval thinking traces; share of
   non-English traces in the prompt language (Stage 3: 24.8 %, RL-0: 1.1 %).
 - **oellm-eval** (the OpenEuroLLM project harness, github.com/OpenEuroLLM/oellm-eval, pinned **v0.3.0**): retention

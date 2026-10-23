@@ -161,6 +161,10 @@ and native reasoning is revisited after SFT on good native traces.
 - Baseline: HumanEval+ / MBPP+ (EvalPlus 0.3.1) in both modes for Stage-3 v1.1 and RL-0 (`scripts/eval_code_evalplus.py`,
   `slurm/eval_code_evalplus_leonardo.sbatch`); model code is scored in a contained container (no home or project
   mounts). LiveCodeBench and multilingual-instruction code tasks are next.
+- **Baseline result (10-23):** HumanEval+ 0.335 / MBPP+ 0.357 in direct mode; thinking mode worse (0.19 / 0.24) because
+  half the traces do not finish within 8K tokens. RL-0 (math only) moved thinking-mode code up slightly via closure.
+  This is far below comparable 8–9B instruct models, so code needs both data (a code-reasoning SFT top-up with short,
+  closed traces) and RL; A5 shows whether RL alone gives signal (canary: 16 % of rollouts pass all tests).
 - RL: A5 (above); afterwards easy code in W2, harder (DeepCoder-type) in W3. If pass@8 is near zero on a pool, a small
   code-reasoning SFT top-up comes first.
 - Agentic coding (terminal/SWE, Tier C) only after the main windows and an SFT warm-start on agent trajectories.
