@@ -12,7 +12,8 @@
 #SBATCH --output=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.out
 #SBATCH --error=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.err
 
-# Stage-4 DPO, 8 nodes x 4 A100. Resumes from the latest checkpoint in output_dir. Each production job, once it
+# Stage-4 DPO, 8 nodes x 4 A100 by default (submit with --nodes=4 when the queue is full; continuations keep the
+# node count and grad-accum is derived from it). Resumes from the latest checkpoint in output_dir. Each production job, once it
 # is running, queues its own continuation (afterany on itself) while DPO_CHAIN_REMAINING > 0 (default 1), so a
 # continuation can never start because a predecessor was cancelled before it ran.
 # Engineering smoke (DPO_SMOKE=1, submit with --nodes=2 --time=01:00:00; one node cannot hold the fp32 optimizer
@@ -72,7 +73,8 @@ fi
 export DPO_EVAL_MAX_ROWS=1024
 chain="${DPO_CHAIN_REMAINING:-1}"
 if (( chain > 0 )); then
-  next=$(sbatch --parsable --dependency=afterany:"$SLURM_JOB_ID" --export=ALL,DPO_CHAIN_REMAINING=$((chain - 1)) \
+  next=$(sbatch --parsable --nodes="$SLURM_NNODES" --dependency=afterany:"$SLURM_JOB_ID" \
+    --export=ALL,DPO_CHAIN_REMAINING=$((chain - 1)) \
     "$root/dpo_oellm_stage4_v1_leonardo.sbatch")
   echo "queued continuation $next (afterany:$SLURM_JOB_ID, $((chain - 1)) more after it)"
 fi
