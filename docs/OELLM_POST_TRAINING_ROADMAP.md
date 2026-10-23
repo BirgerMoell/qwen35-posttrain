@@ -59,6 +59,7 @@ Budget: **9.34K of ~50K local-h** spent since 2026-10-20 (`sacct`, own jobs; acc
 | 10-23 | Merging policy: checkpoint averaging; Stage-3→DPO interpolation as DPO fallback; never with v1 | cheap insurance against DPO hurting thinking/tool use |
 | 10-23 | Keep the non-stop penalty (−0.5 for unfinished traces) in RL | A2a: fewest unfinished traces, best MATH-500 |
 | 10-23 | **Reasoning-language policy pending A1**: answers must be in the user's language (hard rule); the trace language is decided by A1's accuracy cost | RL-0 switched EU-language traces to English (24.8 % → 1.1 % in prompt language) |
+| 10-23 | **Reasoning language: traces in any language, final answer in the prompt language** (`multilingual_math` `check: answer` in W1–W3); native reasoning later as an opt-in | A1's trace-language reward cost 11.6 points on native EU math, concentrated in smaller languages with unfinished traces; DeepSeek-R1 reported the same kind of cost |
 | 10-23 | Code track: EvalPlus baseline + single-turn code RL (A5) with a contained execution server | only ~7K code-reasoning SFT rows; code is verifiable |
 | 10-23 | oellm-eval (project harness, v0.3.0) at stage boundaries; comparison set: our base, Neonkraft SFT, threeway DPO, Apertus-8B-Instruct, Qwen3-8B | project comparability and knowledge-retention checks |
 
@@ -139,8 +140,8 @@ Measured cost: ~2.2 local-h per 128 rollouts at ~3.8K tokens; a 48-update ablati
 | A2a | non-stop penalty −0.5 | 0.523 | 34.0 % | 0.210 | 0.300 | 1.5 % |
 
 A1 (language-consistency reward on the EU-language rows): native traces kept (65 % on native EU math vs 2.5 % for RL-0),
-overall accuracy equal (0.514), but EU-math accuracy 0.192 vs 0.308 for RL-0 — native traces finish less often; decision
-pending (options in the RL program, A1). Default-mode accuracy unchanged in all (0.575–0.593 vs 0.581). Running: **A5** (single-turn code RL, 2,004 `oellm-code-rlvr` problems, contained execution server).
+overall accuracy equal (0.514), but EU-math accuracy 0.192 vs 0.308 for RL-0 — native traces finish less often (worst in
+cs/hu/nl/sv/bg/fi); not adopted. Decided: traces in any language, answer-language check (RL program, A1). Default-mode accuracy unchanged in all (0.575–0.593 vs 0.581). Running: **A5** (single-turn code RL, 2,004 `oellm-code-rlvr` problems, contained execution server).
 Still to build: A3 (default-mode strict-format/numeric prompts in RL, per-row mode switch), A4 (single-turn tool reward).
 
 **Production sequence** (from the selected Stage-4 checkpoint): W1 warm-up (4K responses, math + exam-MCQ + strict
@@ -150,10 +151,12 @@ checkpoint (pass@8 bins), realized-mix logging, checkpoints every 16 updates, ga
 (entropy collapse, length blow-up, > 25 % at length cap, < 20 % mixed groups, default-mode think tags, language drift,
 trace legibility).
 
-**Reasoning-language policy:** hard rule — the final answer is in the user's language. Trace language: if A1 shows a
-cost ≤ 2 points, W1–W3 use the language-consistency reward; otherwise traces may be in English but must stay legible
-natural language (legibility monitored: detector confidence, glued-word share, perplexity under the Stage-3 model),
-and native reasoning is revisited after SFT on good native traces.
+**Reasoning-language policy (decided 2026-10-23 after A1):** the final answer is in the user's language, enforced in
+W1–W3 by the `multilingual_math` answer-language check (`check: answer`). Traces may be in any language (in practice
+English) but must stay legible natural language (legibility monitored: detector confidence, glued-word share,
+perplexity under the Stage-3 model). Native-language reasoning is revisited as an opt-in after SFT on good native
+traces, starting with the languages where A1 kept accuracy (de, fr, es, it, pl), and informed by the 16K re-eval of
+A1's unfinished native items (job 62021559).
 
 ## 7. Code track
 
@@ -223,7 +226,7 @@ job runs.
 
 ## 11. Next steps (in order)
 
-1. Collect A1 (language), A5 (code) and the code baseline; run the trace-language audit; decide the language policy.
+1. ✅ Language policy decided (traces any language, answers in the prompt language). Collect A5 (code) and the 16K A1 re-eval.
 2. Collect the oellm-eval comparison (5 models) and add it to the playbook table.
 3. DPO resume starts → record measured speed and cost → run to the end with self-queued continuations.
 4. Build the format-compliance pairs while DPO trains; build A3 (default-mode RL rows) and A4 (tool reward).

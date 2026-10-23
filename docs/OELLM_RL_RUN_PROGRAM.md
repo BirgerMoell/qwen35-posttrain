@@ -125,6 +125,23 @@ native-language reasoning traces) before RL, then re-test A1; (c) language rewar
 off-language = 0.5) to trade accuracy against native traces. Differences per benchmark are within noise at 100–200
 items; the EU-math gap (37 vs 23 correct of 120) is the clearest effect.
 
+Per-language breakdown of A1 (native EU math, ~8 prompts per language, so noisy): de/fr/es/en keep 0.68–0.80 accuracy
+with 16–26 % unfinished; cs/hu/nl/sv/bg/fi fall to 0.0–0.1 with 60–100 % unfinished at the 6,144-token limit. The cost
+is concentrated in the smaller languages and looks like a token-budget/termination problem rather than wrong
+reasoning. Check: the 114 unfinished native-language items re-generated at 16,384 tokens (job 62021559,
+`eval/reasoning-quick/think-lang-step48-unfinished-native-16k`). If most of them finish and are correct, native
+reasoning becomes a per-language budget/SFT question (option b) rather than a capability limit.
+
+**Decision (2026-10-23): option (a) with an answer-language check.** W1–W3 allow traces in any language; the
+EU-language math rows use `multilingual_math` with label `"check": "answer"` (oellm-rlvr `f6552b6`): reward 1 only if
+the answer is correct, the think/box form is valid and the final answer's prose (after `</think>`, boxes and LaTeX
+removed) is in the prompt language; answers with < 20 letters of prose (a bare `\boxed{}`) pass. Pool:
+`CHECK=answer scripts/leonardo_a1_language_data.sh` → `data/answer-language/` (2,008 rows, sha `0b745cd2…`). On the
+existing quick-eval outputs, 92–96 % of finished non-English answers already pass (RL-0: 156/172, A2a: 183/192), so
+the term rarely binds and needs no separate ablation; it mainly stops two drifts seen in RL-0/RL-0b/A2a: English
+answers to German/French/Hungarian prompts and Russian answers to Bulgarian prompts. Native-language reasoning becomes a
+later opt-in (system-prompt switch, high-resource languages first) on top of the English-reasoning model.
+
 #### RL-0 card (as planned)
 
 | | |
@@ -147,7 +164,7 @@ Each runs 32–48 updates at 16 prompts × 8 samples, 6K max response, against t
 
 | Run | Status | Result / note |
 |---|---|---|
-| A1 language (arm c, `think-lang`, job 61928425) | ✅ done | see result below; arm b (answer language only) not run: math answers are boxed numbers |
+| A1 language (arm c, `think-lang`, job 61928425) | ✅ done | not adopted; **answer-language check (arm b) adopted for W1–W3** without its own run (it binds on < 10 % of correct answers); 16K re-eval of unfinished native items queued (62021559) |
 | A2a non-stop penalty (`think-nonstop`, job 61923004) | ✅ done | fewest unfinished (34 %), best MATH-500; **adopted for W1–W3** |
 | A2b loop penalty | not needed yet | revisit if loops persist at 8K/16K |
 | A3 both modes (`think-mixed`, canary 61969304 → full 61969305) | submitted 10-23 night | template `templates/oellm_qwen3_two_stage_v2_1_rl_mixed.jinja` (thinking by default, no thinking block for rows with `rl_mode: default`); verifiers `math_direct` / `mcq_letter_direct` (bare correct answer only, no think tags; `OELLM_PATCH_DIRECT_MODE_VERIFIERS`); pool `oellm-rlvr/scripts/leonardo_a3_mixed_mode_data.sh` = RL-0 rows + 430 math + 430 letter-only default-mode rows (letter rows mostly bg/hr: the format pairs used most other exams_qa rows); A2a recipe |
@@ -281,7 +298,7 @@ check) and is recorded with its recipe (inputs with revisions, method, weights, 
 Done: RL-0 → RL-0b, A2a (results in §4); A1 and A5 submitted.
 
 Next:
-1. A1 result + trace-language audit → language policy for W1–W3 (roadmap §6).
+1. ✅ Language policy decided (A1 section): traces any language, answer in the prompt language. Pending: 16K re-eval 62021559.
 2. A5 result + EvalPlus on its final export → decide code in W2 (or SFT top-up).
 3. Build A3 (per-row default mode) and A4 (tool reward); run both on Stage-3 v1.1 while DPO trains.
 4. Build W1 pools: oellm-math-rlvr EU24 (≥ 40 % non-English) + DeepMath 3–5, exam-MCQ (35 languages, letter answers),
