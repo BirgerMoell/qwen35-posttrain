@@ -128,8 +128,8 @@ Each runs 32–48 updates at 16 prompts × 8 samples, 6K max response, against t
 | A1 language (arm c, `think-lang`, job 61928425) | running | trace-language reward on the 1,008 EU rows; arm b (answer language only) not run: math answers are boxed numbers |
 | A2a non-stop penalty (`think-nonstop`, job 61923004) | ✅ done | fewest unfinished (34 %), best MATH-500; **adopted for W1–W3** |
 | A2b loop penalty | not needed yet | revisit if loops persist at 8K/16K |
-| A3 both modes | to build | needs per-row mode in RL data: RL template variant that disables thinking for rows marked `mode: default`, and a default-mode verifier (no think tags, exact answer) |
-| A4 tool single-turn | to build | ToolRL-style reward on the `grpo` split |
+| A3 both modes (`think-mixed`, canary 61969304 → full 61969305) | submitted 10-23 night | template `templates/oellm_qwen3_two_stage_v2_1_rl_mixed.jinja` (thinking by default, no thinking block for rows with `rl_mode: default`); verifiers `math_direct` / `mcq_letter_direct` (bare correct answer only, no think tags; `OELLM_PATCH_DIRECT_MODE_VERIFIERS`); pool `oellm-rlvr/scripts/leonardo_a3_mixed_mode_data.sh` = RL-0 rows + 430 math + 430 letter-only default-mode rows (letter rows mostly bg/hr: the format pairs used most other exams_qa rows); A2a recipe |
+| A4 tool single-turn (`think-tool`, canary 61968632 → full 61968633) | submitted 10-23 night | verifier `tool_call` (`OELLM_PATCH_TOOL_CALL_VERIFIER`): 0.2 well-formed + 0.3 tool names + 0.5 arguments, no-call rows 1 only without a call, scored after exactly one closed trace; pool `scripts/leonardo_a4_tool_data.sh` = 1,000 English `grpo` + 500 non-English single-call + 500 no-call rows from the Stage-3 tool dataset (held-out bucket excluded), tool blocks re-rendered with our template |
 | **A5 code** (`think-code`, job 61949439) | queued | added 10-23: single-turn code RL with the contained `code_api` server; canary passed (16 % all-tests pass) |
 
 | Run | Question | Arms | Data | Cost | Decides |
@@ -175,7 +175,8 @@ from the reserve rather than starting the next window.
 
 ### T1 — Single-turn tool RL (if not already in W2)
 
-oellm-eu-tooluse-v1 `grpo` (46K, 16 languages), Nemotron function-calling pivot, no-call items; ToolRL reward;
+oellm-eu-tooluse-v1 `grpo` (46K, **English only, exactly one call per row, no no-call rows** — checked 10-23) plus
+multilingual and no-call rows from the Stage-3 tool dataset (as in A4), Nemotron function-calling pivot; ToolRL reward;
 default and thinking mode. ~800 local-h. Gate: held-out tool eval decision ≥ 0.92, BFCL irrelevance, no regression.
 
 ### T2 — Multi-turn tools and search (SkyRL)

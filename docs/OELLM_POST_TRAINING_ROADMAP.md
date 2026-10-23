@@ -101,7 +101,11 @@ on the partition). Health at step ~400: loss 0.43, preference accuracy 0.80, mar
 first 30 min of the resumed job). The user approved the full set (10-23).
 
 **Still to do in Stage 4:**
-1. **Format-compliance pairs** (part of the plan, not yet built): strict-format prompts (number, letter, one word,
+1. **Format-compliance pairs** (builder `scripts/build_oellm_format_pairs.py`, launcher
+   `slurm/build_oellm_format_pairs_leonardo.sbatch`; first build 10-23 night: 18,062 prompts — 11,500 math
+   final-answer-only in 23 languages, 6,562 letter-only MCQ in 10 languages from `exams_qa` + `slovak_financial_exam` —
+   Stage-3 v1.1 answered in the bare requested form for only 12 of 6,562 MCQ prompts; the math part is being rebuilt
+   after a ground-truth unpacking fix). Design: strict-format prompts (number, letter, one word,
    JSON-only, N lines, no explanation) in the 36 languages, EUROPA items excluded; chosen = verified bare answer,
    rejected = Stage-3 v1.1's own verbose/wrong answer (vLLM, ~2–4 GPU-h). They go into a short follow-up DPO pass on the
    Stage-4 checkpoint (or the next DPO version), since the main run is already training.
