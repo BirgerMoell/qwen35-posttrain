@@ -27,26 +27,29 @@ Qwen3.6-35B-A3B 0.881. Our gap is analysed in §8.3 and addressed in Stage 4.
 ## 1. Environment
 
 ### 1.1 Cluster, accounts, budget
+Placeholders used throughout: `$WORK` = the project work directory of the running user
+(`/leonardo_work/<account>/<user>`), `$SCRATCH` = the user's large scratch, `<account>` = the Slurm account. The
+launchers in `slurm/` and the `oellm-rlvr` configs carry concrete paths and must be edited for another user.
 - **Leonardo Booster** (CINECA): 4 × A100 64 GB per node, 32 CPU cores, 512 GB RAM; partition `boost_usr_prod`
   (24 h job limit); CPU builds on `lrd_all_serial` (4 cores, 30 GB, nearly free).
-- Account `aifac_f02_352` (400K local-h, shared). **Working budget for this project: ~50K local-h.**
+- Account `<account>` (400K local-h, shared). **Working budget for this project: ~50K local-h.**
   Billing: 1 GPU-hour = 8 local-h, so an 8-node × 4-GPU job costs 256 local-h per wall-hour.
-  Measure own usage: `sacct -u $USER -A aifac_f02_352 -S <date> -X -P -o ElapsedRaw,AllocTRES` (sum
+  Measure own usage: `sacct -u $USER -A <account> -S <date> -X -P -o ElapsedRaw,AllocTRES` (sum
   `ElapsedRaw/3600 × billing`); `saldo` is account-wide.
 - Spent by 2026-10-23 evening (`sacct`, own jobs since 10-20, billing-weighted): **9.34K local-h** — Stage 1 3,276;
   Stage 2 2,811; Stage 4 DPO 1,035; RL runs 926; Stage 3 541; translation 447; quick reasoning evals 160; EUROPA 58;
   oellm-eval 45 (1-GPU array jobs bill less than node-hours suggest); the rest < 50. Script `scripts/leonardo_budget.py`: sums
-  `ElapsedRaw/3600 × billing` over `sacct -u $USER -A aifac_f02_352 -S 2026-10-20 -X -P -o JobID,JobName,ElapsedRaw,AllocTRES`.
+  `ElapsedRaw/3600 × billing` over `sacct -u $USER -A <account> -S 2026-10-20 -X -P -o JobID,JobName,ElapsedRaw,AllocTRES`.
 - Login: `step ssh login '<email>' --provisioner cineca-hpc` (certificate expires; renew when SSH says
-  "Permission denied"). Host-key alias: `ssh -o HostKeyAlias=login.leonardo.cineca.it pmoell00@login07-ext.leonardo.cineca.it`.
+  "Permission denied"). Host-key alias: `ssh -o HostKeyAlias=login.leonardo.cineca.it <user>@<login-node>.leonardo.cineca.it`.
 
 ### 1.2 Storage layout
 | Location | Use | Limits |
 |---|---|---|
-| `/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight` | SFT code (flat), data, final BF16 exports, logs | **1 TB shared project quota**; keep only final exports and datasets |
-| `/leonardo_work/AIFAC_F02_352/pmoell00/europa` | EUROPA harnesses, pinned pylibs, HF cache | small |
-| `$SCRATCH = /leonardo_scratch/large/userexternal/pmoell00` | RL env (`oellm-rl/`), DPO staging (`oellm-dpo/`), rollouts, checkpoints, archives | PB-scale, **40-day purge** |
-| `/leonardo_scratch/fast/AIFAC_F02_352` | project fast scratch | full; do not use |
+| `$WORK/sft-migration-preflight` | SFT code (flat), data, final BF16 exports, logs | **1 TB shared project quota**; keep only final exports and datasets |
+| `$WORK/europa` | EUROPA harnesses, pinned pylibs, HF cache | small |
+| `$SCRATCH` (personal large scratch) | RL env (`oellm-rl/`), DPO staging (`oellm-dpo/`), rollouts, checkpoints, archives | PB-scale, **40-day purge** |
+| `<project fast scratch>` | project fast scratch | full; do not use |
 
 Full SFT checkpoints with optimizer state are ~135–170 GB; delete them once the BF16 export and checks pass. Anything
 long-term goes to Hugging Face. Use `setsid nohup` for long commands on login nodes; the login node kills processes
@@ -258,10 +261,10 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 �
   non-English traces in the prompt language (Stage 3: 24.8 %, RL-0: 1.1 %).
 - **oellm-eval** (the OpenEuroLLM project harness, github.com/OpenEuroLLM/oellm-eval, pinned **v0.3.0**): retention
   and project comparability at stage boundaries. Installed with `uv tool install … @v0.3.0` into
-  `/leonardo_work/AIFAC_F02_352/pmoell00/oellm-eval` (`bin/oellm-eval`); the project container
+  `$WORK/oellm-eval` (`bin/oellm-eval`); the project container
   `eval_env-leonardo.sif` is symlinked from `/leonardo_work/OELLM_prod2026/container_images/`. The default Leonardo
   config points at a shared directory we cannot use, so every call sets `EVAL_BASE_DIR=<that dir>`,
-  `EVAL_OUTPUT_DIR=<that dir>/runs` (it is *not* derived from the overridden base), `ACCOUNT=aifac_f02_352`,
+  `EVAL_OUTPUT_DIR=<that dir>/runs` (it is *not* derived from the overridden base), `ACCOUNT=<account>`,
   `HF_HOME=$SCRATCH/oellm-eval-hf` (datasets pre-downloaded on the login node by `schedule`), `SLURM_MEM=120G`.
   Retention subset: `belebele-eu-5-shot, global-mmlu-eu, include, multiblimp-eu, global-mgsm-eu, polymath-eu-low`
   = 110 lm-eval units, 1 GPU each (tool estimate ≤ 18 GPU-h ≈ 150 local-h per checkpoint). lm-eval runs **without the
@@ -540,7 +543,7 @@ rollouts passed all hidden tests, 71 % hit the 6K cap.
    held-out tool check, generation checks (4,096 tokens), EUROPA evals → upload.
 5. Stage 4: prefetch (`python scripts/stage_oellm_dpo_v1.py --prefetch-only` on a login node) →
    `sbatch slurm/build_oellm_dpo_v1_leonardo.sbatch` → format pairs → DPO smoke → full DPO (two chained jobs).
-   Exact DPO commands (Leonardo, in `/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight`, files copied flat
+   Exact DPO commands (Leonardo, in `$WORK/sft-migration-preflight`, files copied flat
    from the repo): smoke `sbatch --nodes=2 --time=01:00:00 --job-name=oellm-stage4-dpo-smoke --export=ALL,DPO_SMOKE=1
    dpo_oellm_stage4_v1_leonardo.sbatch`; full `sbatch --dependency=afterok:<smoke> --export=ALL,DPO_CHAIN_REMAINING=2
    dpo_oellm_stage4_v1_leonardo.sbatch` (resumes automatically from the latest checkpoint in the output directory).
@@ -556,8 +559,8 @@ rollouts passed all hidden tests, 71 % hit the 6K cap.
    eval_reasoning_quick_leonardo.sbatch`; trace language with `oellm_rlvr.language_audit` over
    `eval/reasoning-quick/<name>/results/thinking-*.jsonl`; code with `sbatch --export=ALL,MODELS="<name>=<dir>"
    eval_code_evalplus_leonardo.sbatch`.
-9. oellm-eval: `export EVAL_BASE_DIR=/leonardo_work/AIFAC_F02_352/pmoell00/oellm-eval EVAL_OUTPUT_DIR=$EVAL_BASE_DIR/runs
-   ACCOUNT=aifac_f02_352 HF_HOME=$SCRATCH/oellm-eval-hf SLURM_MEM=120G; $EVAL_BASE_DIR/bin/oellm-eval schedule --models
+9. oellm-eval: `export EVAL_BASE_DIR=$WORK/oellm-eval EVAL_OUTPUT_DIR=$EVAL_BASE_DIR/runs
+   ACCOUNT=<account> HF_HOME=$SCRATCH/oellm-eval-hf SLURM_MEM=120G; $EVAL_BASE_DIR/bin/oellm-eval schedule --models
    <dir,dir,…> --task_groups "belebele-eu-5-shot,global-mmlu-eu,include,multiblimp-eu,global-mgsm-eu"` (login node;
    downloads datasets, submits an array); afterwards `oellm-eval collect --results_dir <run> --check true --output_csv
    <run>/results.csv` and `scripts/oellm_eval_compare.py`.

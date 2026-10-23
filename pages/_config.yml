@@ -1,0 +1,10 @@
+title: OpenEuroLLM 9B post-training
+description: Plan, playbook and RL program for post-training the OpenEuroLLM 9B model (SFT → reasoning → tools → DPO → RL)
+theme: jekyll-theme-cayman
+plugins:
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-titles-from-headings
+relative_links:
+  enabled: true
+  collections: false
