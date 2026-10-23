@@ -5,8 +5,10 @@ and tool-using assistant on Leonardo (CINECA): **Stage 1 Instruct SFT → Stage 
 → Stage 4 DPO → Stage 5 RL**. Every number here comes from a run artifact (manifest, log, eval report); file paths are
 relative to the `qwen35-posttrain` repository unless marked as Leonardo paths.
 
-This document is maintained as the run progresses. **Status (2026-10-22):** Stages 1–3 done and published; Stage 4
-DPO data built, trainer smoke running; Stage 5 RL think probe running (canaries passed).
+This document is maintained as the run progresses; the plan and decisions log are in
+[`OELLM_POST_TRAINING_ROADMAP.md`](OELLM_POST_TRAINING_ROADMAP.md). **Status (2026-10-23 evening):** Stages 1–3 done and
+published; Stage 4 DPO at step 500/11,264, resume queued (§9); Stage 5 RL ablations RL-0, RL-0b, A2a done, A1 and A5
+running/queued (§10); code baseline and oellm-eval comparison running (§8).
 
 | Stage | Checkpoint (HF, private) | Revision | Leonardo cost | EUROPA Eval | EUROPA Alignment |
 |---|---|---|---:|---:|---:|
@@ -14,8 +16,8 @@ DPO data built, trainer smoke running; Stage 5 RL think probe running (canaries 
 | 1 Instruct | `birgermoell/oellm-9b-256k-stage1-instruct-v1` | `58e42ab4` | 3,153 local-h | 0.600 | 0.455 |
 | 2 Reasoning | `birgermoell/oellm-9b-256k-stage2-reasoning-v1` | `2db72459` | 2,811 local-h | 0.609 | 0.605 |
 | 3 Tool use | `birgermoell/oellm-9b-256k-stage3-tooluse-v1` | v1 `0dc97efa`, **v1.1 `88875629`** | 541 local-h | 0.616 | 0.642 |
-| 4 DPO | data built; smoke running | | est. 4.7–7K local-h | | |
-| 5 RL | think probe running; program in `OELLM_RL_RUN_PROGRAM.md` | | probe ≤ 320 local-h; program ~14–16K | | |
+| 4 DPO | step 500 saved; resume (2 pairs/GPU) queued, job 61922663 | | 1,035 so far; est. 9–11K total | | |
+| 5 RL | ablations (RL-0 0.435 → 0.512 thinking acc.; A2a fewest unfinished) | | 926 so far | | |
 
 Reference points on the same EUROPA protocol: Neonkraft instruct SFT (same base family) 0.762, threeway DPO 0.840,
 Qwen3.6-35B-A3B 0.881. Our gap is analysed in §8.3 and addressed in Stage 4.
@@ -31,8 +33,10 @@ Qwen3.6-35B-A3B 0.881. Our gap is analysed in §8.3 and addressed in Stage 4.
   Billing: 1 GPU-hour = 8 local-h, so an 8-node × 4-GPU job costs 256 local-h per wall-hour.
   Measure own usage: `sacct -u $USER -A aifac_f02_352 -S <date> -X -P -o ElapsedRaw,AllocTRES` (sum
   `ElapsedRaw/3600 × billing`); `saldo` is account-wide.
-- Spent by 2026-10-22 evening: ~7.35K local-h (Stage 1 3,153; Stage 2 2,811; Stage 3 541; tool-data translation 438;
-  evaluations, diagnostics, canaries the rest).
+- Spent by 2026-10-23 evening (`sacct`, own jobs since 10-20, billing-weighted): **9.34K local-h** — Stage 1 3,276;
+  Stage 2 2,811; Stage 4 DPO 1,035; RL runs 926; Stage 3 541; translation 447; quick reasoning evals 160; EUROPA 58;
+  oellm-eval 45 (1-GPU array jobs bill less than node-hours suggest); the rest < 50. Script `scripts/leonardo_budget.py`: sums
+  `ElapsedRaw/3600 × billing` over `sacct -u $USER -A aifac_f02_352 -S 2026-10-20 -X -P -o JobID,JobName,ElapsedRaw,AllocTRES`.
 - Login: `step ssh login '<email>' --provisioner cineca-hpc` (certificate expires; renew when SSH says
   "Permission denied"). Host-key alias: `ssh -o HostKeyAlias=login.leonardo.cineca.it pmoell00@login07-ext.leonardo.cineca.it`.
 
@@ -243,6 +247,13 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 �
   default and reasoning mode, `\boxed{}` scoring, rubric judge for explanations, process metrics (trace closure, loops,
   budget exhaustion, reasoning length, trace script). Launcher `scripts/hpc/run_leonardo.sbatch` (vLLM target + Ollama
   judge on one node).
+- **Code (EvalPlus)** `scripts/eval_code_evalplus.py` + `slurm/eval_code_evalplus_leonardo.sbatch`: HumanEval+ (164) and
+  MBPP+ (378), EvalPlus 0.3.1 instruction prompt, greedy, default mode 2,048 / thinking 8,192 new tokens, code taken
+  only after a closed trace, EvalPlus sanitizer. `MODELS="name=path …"` (one GPU per model × mode). Generation runs in
+  the TMAX vLLM venv with the EvalPlus venv (`$SCRATCH/code-eval/evalplus-venv`, datasets pre-downloaded to
+  `$SCRATCH/code-eval/cache`) appended to `PYTHONPATH`; **scoring executes model code** in
+  `singularity exec --contain --cleanenv --no-home` with only the EvalPlus venv and its Python read-only and the run
+  directory writable (verified: no home, no project or scratch data visible). Baseline job 61939877 (Stage-3 v1.1, RL-0).
 - **Trace-language audit**: lingua (`oellm_rlvr.language_audit`) over the quick-eval thinking traces; share of
   non-English traces in the prompt language (Stage 3: 24.8 %, RL-0: 1.1 %).
 - **oellm-eval** (the OpenEuroLLM project harness, github.com/OpenEuroLLM/oellm-eval, pinned **v0.3.0**): retention
@@ -281,6 +292,11 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 �
   (Prelude anneal → 256K) is not in the file, and no post-trained OpenEuroLLM model has public oellm-eval scores
   (checked 2026-10-23: `openeurollm` datasets/spaces, `varisd/OELLM-eval-leaderboard` = Czech BenCzechMark on
   Prelude checkpoints, `MahamadSalah74/OELLM-Evals-Dashboard` = pairwise arena data).
+- **Own comparison runs** (array 61949325, same groups minus PolyMath): our base (`base-256k-anneal300b` with our
+  tokenizer, copied to `$SCRATCH/oellm-eval-models/` because the eval container binds only the model directory),
+  Neonkraft SFT @ `85bf18fb`, threeway DPO @ `df4ca880` **with our tokenizer** (its own has the switched-token bug;
+  weights fp32), Apertus-8B-Instruct-2509 @ `b946d404`, Qwen3-8B @ `b968826d`. Comparison script:
+  `scripts/oellm_eval_compare.py <results.csv …>` (copy on Leonardo: `…/oellm-eval/compare.py`) (means over tasks common to all models).
 
 ### 8.2 Gates
 Stage acceptance: no think tags in default-mode answers; identity correct; EUROPA Eval ≥ previous stage; Alignment not
@@ -296,7 +312,7 @@ drops those targets.
 
 ---
 
-## 9. Stage 4 — DPO (in preparation)
+## 9. Stage 4 — DPO (in progress)
 
 ### 9.1 Recipe: replicate the threeway run, fix tokenizer and template
 Reference `birgermoell/oellm-9b-threeway-dpo-full-v1` (LUMI, 32 MI250X GCDs, 43 h): TRL DPO, sigmoid loss, β 0.1,
@@ -351,8 +367,20 @@ Estimated 19–28 h on 8 nodes, 600–900 GPU-h (4.7–7K local-h); the smoke me
   *cancelled* (here, because part 1's own `afterok` dependency on the failed smoke could never be met), so an 8-node
   job started with nothing to resume (~33 local-h lost before it was cancelled). The launcher now has each running
   job queue its own continuation (`DPO_CHAIN_REMAINING`).
+- **Second smoke (2 nodes, job 61897622) passed**, including stop at step 6 and resume to step 12 (~60 s/step).
+- **Full run, part 1 (job 61897623, 8 nodes, 1 pair/GPU, grad-accum 4):** 25.3 s/step ⇒ ~79 h / ~20K local-h for the
+  epoch. Diagnosis: all-gather bound — each micro-step gathers the full weights three times (policy forward, backward,
+  reference forward); the same pair took 3.75 s on 2 nodes and 6.3 s on 8. Health was normal (step ~400: loss 0.43,
+  rewards/accuracies 0.80, margin 1.2). Stopped right after `checkpoint-500` (136 GB: model, FSDP state, optimizer).
+- **Fix: 2 pairs per GPU per micro-step, grad-accum 2** (global batch 128 unchanged; the launcher derives grad-accum
+  from `per_device_train_batch_size`). Resumes from `checkpoint-500` (job 61922663, `DPO_CHAIN_REMAINING=2`). Not used:
+  TRL's Liger DPO loss (reads `lm_head.weight` outside the FSDP forward, so it would see a shard) and
+  `precompute_ref_log_probs` (its cache key hashes the full reference `state_dict` on every rank under FSDP).
+- Expected: 35–45 h, ~9–11K local-h for the epoch; replace with the measured step time once the job runs.
+
 Gates: Alignment ≥ 0.85, Eval ≥ Stage 3 with malformed answers ≤ 40, over-refusal check, no length inflation or collapse,
-tag-row check (§7.4).
+tag-row check (§7.4), thinking-mode quick eval and held-out tool check (all pairs are default-mode, tool-free),
+oellm-eval within noise of Stage 3.
 Merging after DPO (`docs/OELLM_RL_RUN_PROGRAM.md` §7): the average of the last 2–3 checkpoints is evaluated against the
 best single one; if a gate shows a thinking-mode or tool regression, linear interpolation Stage-3 v1.1 → DPO at
 α ∈ {0.5, 0.75, 1.0} is the first fallback, before starting RL from Stage 3.
@@ -403,7 +431,40 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
 - Probe result and the trace-language finding (24.8 % → 1.1 % of non-English traces in the prompt language): see
   `docs/OELLM_RL_RUN_PROGRAM.md` RL-0.
 
-### 10.3 Production RL plan
+### 10.3 Ablations on Stage-3 v1.1 (details and run cards: `docs/OELLM_RL_RUN_PROGRAM.md`)
+All 2 nodes, DAPO, β 0, LR 1e-6, 16 × 8, 6K responses, 48 updates, pool = think-probe pool unless noted; quick eval of
+step 48 queued automatically; trace language audited with lingua.
+
+| Run (job) | Change vs RL-0 | Thinking acc. | Unfinished | MATH-500 | EU math | Trace in prompt lang. |
+|---|---|---:|---:|---:|---:|---:|
+| RL-0 (61868620) | — | 0.512 | 39.3 % | 0.140 | 0.308 | 1.1 % |
+| RL-0b `think-cont` (61923006) | +48 updates from RL-0, seed 43 | 0.532 | 37.4 % | 0.180 | 0.367 | 0.4 % |
+| A2a `think-nonstop` (61923004) | truncated rollouts −0.5 (`--non_stop_penalty`) | 0.523 | 34.0 % | 0.210 | 0.300 | 1.5 % |
+| A1 `think-lang` (61928425) | EU rows scored by `multilingual_math` (correct ∧ trace in prompt language ∧ form) | running | | | | |
+| A5 `think-code` (61949439) | code pool, `code_stdio` binary reward, contained server | queued | | | | |
+
+Configs: `oellm-rlvr/configs/leonardo-grpo-math-oellm9b-think-{cont,nonstop,lang,code}.yaml`; pools:
+`scripts/leonardo_a1_language_data.sh` (sha256 `958f0939…`), `scripts/leonardo_a5_code_data.sh` (2,004 rows,
+`birgermoell/oellm-code-rlvr` @ `e1cae771` train, 167 per family × 12, difficulty 1–4, sha256 `e5b8bc2f…`).
+The language verifier needs `lingua-language-detector` in the TMAX venv (see §10.2 venv note).
+
+### 10.4 Single-turn code reward on Leonardo (`code_api`)
+TMAX's `code`/`code_stdio` verifiers POST programs to an execution server and are called inside the vLLM engine actors.
+`oellm-rlvr` config block `code_api` (port, workers, max execution time, binary reward) makes the launcher:
+- request the nodes `--exclusive` (loopback is shared by everyone on a node);
+- start one server per node: `singularity exec --contain --cleanenv --no-home --pwd /tmp` with the backend repo, its
+  resolved venv (`.venv` is a symlink into the uv cache) and the uv Python bound **read-only**, `uvicorn
+  open_instruct.code_utils.api:app --host 127.0.0.1`; wait until `/health` answers on every node;
+- pass `--code_api_url http://127.0.0.1:<port>/test_program`, `--code_max_execution_time`,
+  `--code_pass_rate_reward_threshold 1.0` (binary).
+`--pwd /tmp` is required: the test runner creates a cache directory in its working directory, and `/` is read-only.
+Verified on Leonardo: correct program passes, wrong output fails, home/project/scratch data invisible, writes to the
+bound repo refused, infinite loop killed at the time limit; TMAX's own filter also refuses programs importing `os`
+etc. `OELLM_PATCH_REQUIRE_THINK_CLOSE` now also makes `CodeVerifier.extract_python_code` read only the text after one
+closed trace (unfinished trace ⇒ empty program). Canary (job 61940667, 1 update in 50 min): reward computed, 16 % of
+rollouts passed all hidden tests, 71 % hit the 6K cap.
+
+### 10.5 Production RL plan
 - `docs/OELLM_RL_RUN_PROGRAM.md`: the run sequence (RL-0 probe → A-series ablations on Stage-3 v1.1 in parallel with
   DPO → W1/W2/W3 windows from the DPO checkpoint → T1/T2 tool RL → final selection), with each run's question, cost,
   gate and decision rule, the cost model from canary 6, stop rules and the run-card template.
@@ -425,6 +486,8 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
 | `birgermoell/openeurollm-reasoning-instruct-v1` (dataset) | public | `9273ba4` |
 | `birgermoell/openeurollm-tool-use-v1` (dataset) | public | `e30b5449` |
 | github.com/BirgerMoell/europa-reasoning (benchmark) | public | main |
+| RL pools used: `birgermoell/oellm-math-rlvr` @ `0ffc9d6d`, `openai/gsm8k` @ `740312ad`, `birgermoell/oellm-code-rlvr` @ `e1cae771` | public | pinned |
+| DPO sources: HelpSteer3 @ `f6d14577`, Dolci-Instruct-DPO-translated @ `a57841a6`, UltraFeedback-cleaned @ `770076f0` | public | pinned |
 | `qwen35-posttrain`, `oellm-rlvr` (code) | GitHub | main |
 
 ---
@@ -450,6 +513,16 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
 9. **Machine translation needs automatic script checks**: Gemma inserted CJK, Hangul, Thai, Arabic and Cyrillic
    fragments into 11 of 35 EUROPA Reasoning packs; greedy retries are deterministic (vary temperature, not only seed).
 10. **Storage**: delete full checkpoints after export; archive to personal scratch, publish to HF.
+11. **`--dependency=afterany` fires on cancellation**: a continuation chained to a job that is cancelled before it
+    runs starts anyway. Let each running job queue its own continuation.
+12. **Multi-node DPO at 1 pair per GPU is communication-bound** (three full-weight all-gathers per micro-step); larger
+    micro-batches, not more nodes, speed it up. A 1-node smoke cannot hold the fp32 optimizer state of a 9B policy.
+13. **Outcome-only RL moves reasoning to the model's strongest language**: after 48 math updates, 1 % of non-English
+    traces stayed in the prompt language (from 25 %). Measure trace language in every RL run.
+14. **Running model-written code**: contained container, read-only binds, private `/tmp` as working directory,
+    loopback-only server on exclusive nodes. On shared login nodes, ports and loopback belong to everyone.
+15. **Container binds and symlinks**: venvs and model folders built from symlinks need their resolved targets bound
+    (`readlink -f`), or the container sees nothing.
 
 ---
 
@@ -467,13 +540,35 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
    held-out tool check, generation checks (4,096 tokens), EUROPA evals → upload.
 5. Stage 4: prefetch (`python scripts/stage_oellm_dpo_v1.py --prefetch-only` on a login node) →
    `sbatch slurm/build_oellm_dpo_v1_leonardo.sbatch` → format pairs → DPO smoke → full DPO (two chained jobs).
-6. Stage 5: `$SCRATCH/oellm-rl` env (`sync.sh` inside the container), probe data script, `oellm-rlvr render-slurm`,
-   canary (2 updates) → probe.
+   Exact DPO commands (Leonardo, in `/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight`, files copied flat
+   from the repo): smoke `sbatch --nodes=2 --time=01:00:00 --job-name=oellm-stage4-dpo-smoke --export=ALL,DPO_SMOKE=1
+   dpo_oellm_stage4_v1_leonardo.sbatch`; full `sbatch --dependency=afterok:<smoke> --export=ALL,DPO_CHAIN_REMAINING=2
+   dpo_oellm_stage4_v1_leonardo.sbatch` (resumes automatically from the latest checkpoint in the output directory).
+6. Stage 5 environment: `$SCRATCH/oellm-rl/sync.sh` inside the container builds the TMAX venv; then
+   `uv pip install -p .venv/bin/python beaker-py lingua-language-detector==2.2.0`; prebuild `DeepSpeedCPUAdam` into
+   `$SCRATCH/oellm-rl/cache/torch_extensions`.
+7. Stage 5 runs (in `$SCRATCH/oellm-rl/oellm-rlvr`): data scripts `scripts/leonardo_think_probe_data.sh`,
+   `scripts/leonardo_a1_language_data.sh`, `scripts/leonardo_a5_code_data.sh`; render
+   `singularity exec -B /leonardo_scratch $C env PYTHONPATH=src $SCRATCH/oellm-rl/tmax-reproduction/.venv/bin/python
+   -m oellm_rlvr.cli render-slurm --config configs/<config>.yaml --output $SCRATCH/oellm-rl/runs/<name>.sbatch`, then
+   `sbatch`. Canary first for any new reward path (copy the config with `walltime: 00:50:00`, `total_episodes: 256`).
+8. RL evaluation: `sbatch --export=ALL,MODEL=<step dir>,NAME=<name>,APPTAINER_BIND=/leonardo_scratch,SINGULARITY_BIND=/leonardo_scratch
+   eval_reasoning_quick_leonardo.sbatch`; trace language with `oellm_rlvr.language_audit` over
+   `eval/reasoning-quick/<name>/results/thinking-*.jsonl`; code with `sbatch --export=ALL,MODELS="<name>=<dir>"
+   eval_code_evalplus_leonardo.sbatch`.
+9. oellm-eval: `export EVAL_BASE_DIR=/leonardo_work/AIFAC_F02_352/pmoell00/oellm-eval EVAL_OUTPUT_DIR=$EVAL_BASE_DIR/runs
+   ACCOUNT=aifac_f02_352 HF_HOME=$SCRATCH/oellm-eval-hf SLURM_MEM=120G; $EVAL_BASE_DIR/bin/oellm-eval schedule --models
+   <dir,dir,…> --task_groups "belebele-eu-5-shot,global-mmlu-eu,include,multiblimp-eu,global-mgsm-eu"` (login node;
+   downloads datasets, submits an array); afterwards `oellm-eval collect --results_dir <run> --check true --output_csv
+   <run>/results.csv` and `scripts/oellm_eval_compare.py`.
 
 ## 14. Changelog
 - 2026-10-20: took over from Codex; template v2; Stage 1 launched.
 - 2026-10-21: Stage 1 done; identity fix; reasoning dataset; Stage 2 done; tool dataset and template v2.1.
 - 2026-10-22: Stage 3 done; tag-row repair → v1.1; storage cleanup; EUROPA Reasoning published; EUROPA Eval gap traced
   to strict-format SFT targets; DPO data staging; RL canaries on Leonardo.
-- 2026-10-23: DPO data built (1,441,722 / 15,827 pairs); pre-tokenized DPO trainer and smoke submitted; RL canary 6
-  passed, think probe submitted; RL run program written (`OELLM_RL_RUN_PROGRAM.md`), including the merging policy.
+- 2026-10-23: DPO data built (1,441,722 / 15,827 pairs); pre-tokenized DPO trainer; smoke passed on 2 nodes; full run
+  to step 500, then 2 pairs/GPU for speed (resume queued); RL canary 6 passed; RL-0, RL-0b, A2a done; trace-language
+  finding; A1 and A5 (code RL with contained execution server) submitted; code baseline (EvalPlus) submitted;
+  oellm-eval baseline and public reference comparison; comparison runs for base, Neonkraft SFT, threeway DPO,
+  Apertus-8B-Instruct, Qwen3-8B submitted; RL run program, merging policy and master plan (roadmap) rewritten.

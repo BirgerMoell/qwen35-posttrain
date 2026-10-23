@@ -188,10 +188,11 @@ never a selection criterion.
 
 ## 7. Compute and platform
 
-`oellm-rlvr` is qualified on LUMI (MI250X); a CUDA profile exists but has not run on Leonardo. Plan: run W1 on LUMI
-with the qualified stack; qualify Leonardo with a 16-update canary (~10 GPU-h) in parallel. Rough budget at 32–64
-updates per window, 64–128 prompts × 8–16 samples per update and growing response lengths: W1 ~60–100, W2 ~150–250,
-W3 ~250–400 A100-equivalent GPU-h, plus ~10 % for profiling and evals.
+`oellm-rlvr` is qualified on LUMI (MI250X) and, since 2026-10-22, on Leonardo (A100 64 GB; six canaries, fixes in
+the playbook §10.2: Ray CPU reservation, per-parameter weight sync, CPU-offloaded `DeepSpeedCPUAdam`, CUDA-check skip).
+Single-turn code rewards run against a contained per-node execution server (`code_api`, playbook §10.4). All windows
+run on Leonardo. Budgets per window are in `OELLM_RL_RUN_PROGRAM.md` §5, from the measured cost model (~2.2 local-h
+per 128 rollouts at ~3.8K tokens): W1 ~0.6K, W2 ~1.75K, W3 ~4.9K local-h including profiling.
 
 ## 8. Order of work (Tier A first; B and C only after A's gate)
 

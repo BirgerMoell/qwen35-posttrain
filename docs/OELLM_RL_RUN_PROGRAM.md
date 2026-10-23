@@ -1,6 +1,6 @@
 # Stage 5 — RL run program
 
-Status 2026-10-23. This is the **run-by-run** plan for Stage 5: which RL runs we make, in what order, what each one
+Status 2026-10-23 (evening): RL-0, RL-0b, A2a done; A1 running; A5 (code) queued; A3/A4 not yet built. This is the **run-by-run** plan for Stage 5: which RL runs we make, in what order, what each one
 must answer, what it costs, and how its result changes the next run. The data pools, rewards and environment tiers are
 specified in [`OELLM_STAGE5_RL_PLAN.md`](OELLM_STAGE5_RL_PLAN.md); results go into the
 [playbook](OELLM_POST_TRAINING_PLAYBOOK.md) §10 as each run finishes.
@@ -14,14 +14,15 @@ losing what SFT and DPO built. Concretely, by the end of Stage 5:
 |---|---|---|---|
 | Thinking traces that finish | 51 % closed at 6K (quick eval); 81 % of unclosed traces stay unclosed at 16K, half are loops | ≥ 95 % closed within the window budget, loops ≈ 0 | quick reasoning eval, EUROPA Reasoning process metrics |
 | Reasoning accuracy (thinking mode) | 0.435 (quick eval) | clear paired gain on frozen holdouts | MATH-500, AIME, MGSM, PolyMath, EUROPA Reasoning |
-| Reasoning in the user's language | not yet measured | ≥ 90 % of traces in the prompt language, accuracy cost ≤ 2 points | EUROPA Reasoning trace-language metric |
+| Reasoning in the user's language | 24.8 % of non-English traces in the prompt language (RL-0: 1.1 %) | answers always in the user's language; traces per A1 (≥ 90 % native if the cost is ≤ 2 points, otherwise legible English) | lingua audit on quick-eval traces; EUROPA Reasoning trace-script metric |
 | Direct-mode answers and strict formats | EUROPA numeric 0.056, 122 malformed | numeric ≥ 0.5, malformed ≤ 20 | EUROPA Eval |
 | Tool use | decision 0.870, JSON 0.995; EUROPA tool-recovery 0.486 | decision ≥ 0.92, recovery ≥ 0.8 | held-out tool eval, EUROPA Eval, BFCL |
 | Retention | EUROPA Eval 0.616 / Alignment 0.642 (before DPO) | no regression vs the Stage-4 checkpoint | EUROPA Eval/Alignment, identity, default-mode think-tag rate = 0 |
 
 ## 2. Budget envelope
 
-Working budget 50K local-h (account total 400K, shared). Used by 2026-10-23: ~7.7K. Planned DPO: ~5–7K.
+Working budget 50K local-h (account total 400K, shared). Used by 2026-10-23 evening: 9.34K (`sacct`), of which RL
+926. Planned DPO: ~9–11K for the full epoch (revised after the speed measurement).
 **RL envelope: ~25K local-h** with a ~5K reserve, so the program can absorb one failed window or one extra ablation.
 
 Cost model (measured, canary 6, job 61859252, 2 nodes): 16 prompts × 8 samples, mean response 3.8K tokens, max 6,144:
@@ -118,7 +119,18 @@ rate, and A1 decides whether the language term goes into W1–W3.
 
 ### A-series — ablations (2 nodes each, on Stage-3 v1.1, in parallel with DPO)
 
-Each runs 32 updates at 16–32 prompts × 8 samples, 6K max response, against the RL-0 settings as the baseline arm.
+Each runs 32–48 updates at 16 prompts × 8 samples, 6K max response, against the RL-0 settings as the baseline arm.
+
+**Status:**
+
+| Run | Status | Result / note |
+|---|---|---|
+| A1 language (arm c, `think-lang`, job 61928425) | running | trace-language reward on the 1,008 EU rows; arm b (answer language only) not run: math answers are boxed numbers |
+| A2a non-stop penalty (`think-nonstop`, job 61923004) | ✅ done | fewest unfinished (34 %), best MATH-500; **adopted for W1–W3** |
+| A2b loop penalty | not needed yet | revisit if loops persist at 8K/16K |
+| A3 both modes | to build | needs per-row mode in RL data: RL template variant that disables thinking for rows marked `mode: default`, and a default-mode verifier (no think tags, exact answer) |
+| A4 tool single-turn | to build | ToolRL-style reward on the `grpo` split |
+| **A5 code** (`think-code`, job 61949439) | queued | added 10-23: single-turn code RL with the contained `code_api` server; canary passed (16 % all-tests pass) |
 
 | Run | Question | Arms | Data | Cost | Decides |
 |---|---|---|---|---|---|
@@ -126,6 +138,7 @@ Each runs 32 updates at 16–32 prompts × 8 samples, 6K max response, against t
 | **A2 length** (only if RL-0 does not fix closure) | Which shaping fixes termination? | (a) DAPO soft overlong punishment; (b) (a) + loop penalty (n-gram repeat ratio ⇒ 0) | RL-0 data | 2 × ~150 local-h | the structure guards for all windows |
 | **A3 both modes** | Does mixing default-mode prompts keep and improve the direct mode? | (a) thinking only; (b) 70 % thinking + 30 % default-mode strict-format and numeric prompts | math + strict-format set | ~150 local-h (arm a = RL-0) | the default-mode share in W1–W3; expected to fix EUROPA numeric |
 | **A4 tools single-turn** | Does the ToolRL reward on the 46K GRPO split improve held-out tool decisions? | one arm | oellm-eu-tooluse-v1 `grpo` + no-call items | ~150 local-h | whether tools enter W2 or wait for T1 |
+| **A5 code** | Is there learning signal in single-turn code RL, and does it transfer to HumanEval+/MBPP+? | one arm | 2,004 `oellm-code-rlvr` train problems (12 families, d1–4) | ~80 local-h | whether code enters W2 as planned or needs an SFT top-up first |
 
 Ablation total: ~600–900 local-h.
 
@@ -240,14 +253,19 @@ mixing weights are chosen on the selection holdouts, never on the release evalua
 the same gates as any checkpoint (both modes, tool eval, EUROPA Eval/Alignment/Reasoning, trace closure, tag-row
 check) and is recorded with its recipe (inputs with revisions, method, weights, mergekit version).
 
-## 8. Order of work (next two weeks)
+## 8. Order of work
 
-1. RL-0 finishes; read the closed-rate curve and the end eval; record in the playbook.
-2. While DPO trains: build the A1/A3 data (non-English math + exam-MCQ slice; strict-format numeric set), add the
-   language and loop guards to `oellm-rlvr` verifiers with adversarial tests, run A1 and A3 (and A2 if needed).
-3. Build W1 pools and the profiling job; profile on the DPO checkpoint as soon as it passes its gates.
-4. W1 → W2 → W3, each gated; T1 inside W2 if A4 passes.
-5. In parallel with W2/W3: SkyRL qualification canary on Leonardo, mock-tool and Wikipedia-search environments.
+Done: RL-0 → RL-0b, A2a (results in §4); A1 and A5 submitted.
+
+Next:
+1. A1 result + trace-language audit → language policy for W1–W3 (roadmap §6).
+2. A5 result + EvalPlus on its final export → decide code in W2 (or SFT top-up).
+3. Build A3 (per-row default mode) and A4 (tool reward); run both on Stage-3 v1.1 while DPO trains.
+4. Build W1 pools: oellm-math-rlvr EU24 (≥ 40 % non-English) + DeepMath 3–5, exam-MCQ (35 languages, letter answers),
+   strict-format set, IF ≤ 2 constraints; decontaminate against every eval; profiling job (pass@8) ready to run on the
+   DPO checkpoint the day it passes its gates.
+5. W1 → W2 → W3, each gated; T1 inside W2 if A4 passes; legibility and language monitors from W1 on.
+6. In parallel with W2/W3: SkyRL qualification canary on Leonardo, mock-tool and Wikipedia-search environments.
 
 ## 9. Run card template
 
