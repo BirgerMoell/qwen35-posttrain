@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=oellm-stage4-dpo
-#SBATCH --account=aifac_f02_352
 #SBATCH --partition=boost_usr_prod
 #SBATCH --nodes=8
 #SBATCH --ntasks-per-node=1
@@ -9,8 +8,8 @@
 #SBATCH --mem=480G
 #SBATCH --exclusive
 #SBATCH --time=24:00:00
-#SBATCH --output=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.out
-#SBATCH --error=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.err
+#SBATCH --output=logs/%j.out
+#SBATCH --error=logs/%j.err
 
 # Stage-4 DPO, 8 nodes x 4 A100 by default (submit with --nodes=4 when the queue is full; continuations keep the
 # node count and grad-accum is derived from it). Resumes from the latest checkpoint in output_dir. Each production job, once it
@@ -20,13 +19,17 @@
 # state): 1,536 pairs = 12 steps at the production global batch; phase A stops with a checkpoint after step 6,
 # phase B resumes and finishes.
 set -euo pipefail
-root=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight
+[[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
+root=$OELLM_WORK/sft-migration-preflight
 container=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
-data=/leonardo_scratch/large/userexternal/pmoell00/oellm-dpo/pretok-v1
+data=$OELLM_SCRATCH/oellm-dpo/pretok-v1
 config="$root/dpo_oellm_stage4_v1_leonardo.yaml"
+# Site paths in the YAML are ${OELLM_*} references; render them for this job.
+mkdir -p "$root/tmp"; rendered="$root/tmp/${SLURM_JOB_ID:-local}-$(basename "$config")"
+python3 "$root/render_site_config.py" "$config" > "$rendered"; config="$rendered"
 template="$root/oellm_qwen3_two_stage_v2_1.jinja"
 model="$root/output/stage3-tooluse-v1.1-bf16"
-output=/leonardo_scratch/large/userexternal/pmoell00/oellm-dpo/output/stage4-dpo-v1
+output=$OELLM_SCRATCH/oellm-dpo/output/stage4-dpo-v1
 smoke="${DPO_SMOKE:-0}"
 [[ "$smoke" == 1 ]] && output="${output}-smoke"
 
@@ -40,7 +43,7 @@ per_device=$(awk '/^per_device_train_batch_size:/ {print $2}' "$config")
 (( 128 % (gpus * per_device) == 0 )) || { echo "global batch 128 is not divisible by $gpus GPUs x $per_device"; exit 1; }
 accum=$((128 / (gpus * per_device)))
 
-export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_CACHE=/leonardo_scratch/large/userexternal/pmoell00/oellm-dpo/datasets-cache
+export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_CACHE=$OELLM_SCRATCH/oellm-dpo/datasets-cache
 export TOKENIZER_NAME_OR_PATH="$model" CHAT_TEMPLATE_FILE="$template" REQUIRED_MODEL_DTYPE=bfloat16
 export DPO_DATA_MANIFEST="$data/manifest.json"
 export DPO_TRAIN_DATA_GLOB="$data/train-*.parquet" DPO_EVAL_DATA_GLOB="$data/validation-*.parquet"
@@ -73,7 +76,8 @@ fi
 export DPO_EVAL_MAX_ROWS=1024
 chain="${DPO_CHAIN_REMAINING:-1}"
 if (( chain > 0 )); then
-  next=$(sbatch --parsable --nodes="$SLURM_NNODES" --dependency=afterany:"$SLURM_JOB_ID" \
+  next=$(sbatch --parsable --account="$SLURM_JOB_ACCOUNT" --chdir="$root" --nodes="$SLURM_NNODES" \
+    --dependency=afterany:"$SLURM_JOB_ID" \
     --export=ALL,DPO_CHAIN_REMAINING=$((chain - 1)) \
     "$root/dpo_oellm_stage4_v1_leonardo.sbatch")
   echo "queued continuation $next (afterany:$SLURM_JOB_ID, $((chain - 1)) more after it)"

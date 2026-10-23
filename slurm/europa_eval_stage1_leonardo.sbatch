@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=europa-stage1
-#SBATCH --account=aifac_f02_352
 #SBATCH --partition=boost_usr_prod
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -8,15 +7,16 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=200G
 #SBATCH --time=06:00:00
-#SBATCH --output=/leonardo_work/AIFAC_F02_352/pmoell00/europa/logs/%j.out
-#SBATCH --error=/leonardo_work/AIFAC_F02_352/pmoell00/europa/logs/%j.err
+#SBATCH --output=logs/%j.out
+#SBATCH --error=logs/%j.err
 
 # EUROPA Eval + Alignment for a HF checkpoint, matching the Neonkraft SFT baseline protocol
 # (temperature 0, seed 42, bf16, judge gemma4:31b @ sha256:6316f062... via Ollama 0.32.8).
 # Judge on GPU 1, target on GPU 0. Offline; model pre-cached in $E/hf-cache. Resumable.
 set -euo pipefail
-E=/leonardo_work/AIFAC_F02_352/pmoell00/europa
-T=/leonardo_work/AIFAC_F02_352/pmoell00/tools
+[[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
+E=$OELLM_WORK/europa
+T=$OELLM_WORK/tools
 C=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
 MODEL=${MODEL:-birgermoell/oellm-9b-256k-stage1-instruct-v1}
 REV=${REV:-58e42ab4e06751275393441b3f2e6c2f08755159}

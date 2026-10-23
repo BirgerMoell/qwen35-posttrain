@@ -1,14 +1,14 @@
 # First checkpointed training slice on the full-corpus, direct-answer build.
 # The Slurm launcher selects deterministic warmup and validation files by glob.
-model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/base-256k-anneal300b
+model_name_or_path: ${OELLM_WORK}/sft-migration-preflight/base-256k-anneal300b
 dtype: bfloat16
 attn_implementation: flash_attention_2
 datasets:
   - path: json
     data_files:
-      train: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/data/excellent-stage1-full-v1/warmup-*.jsonl
+      train: ${OELLM_WORK}/sft-migration-preflight/data/excellent-stage1-full-v1/warmup-*.jsonl
     split: train
-output_dir: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/excellent-stage1-32step-v1
+output_dir: ${OELLM_WORK}/sft-migration-preflight/output/excellent-stage1-32step-v1
 eos_token: <|im_end|>
 assistant_only_loss: true
 max_length: 4096

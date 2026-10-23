@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=oellm-code-evalplus
-#SBATCH --account=aifac_f02_352
 #SBATCH --partition=boost_usr_prod
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -8,17 +7,18 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=240G
 #SBATCH --time=03:00:00
-#SBATCH --output=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.out
-#SBATCH --error=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.err
+#SBATCH --output=logs/%j.out
+#SBATCH --error=logs/%j.err
 
 # HumanEval+ / MBPP+ baseline for up to 4 (model, mode) pairs, one GPU each, then isolated scoring.
 # MODELS="name=path name=path" (each model gets a default-mode and a thinking-mode GPU; 2 models fill the node).
 set -euo pipefail
-root=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight
+[[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
+root=$OELLM_WORK/sft-migration-preflight
 C=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
-E=/leonardo_scratch/large/userexternal/pmoell00/code-eval
-VLLM_PY=/leonardo_scratch/large/userexternal/pmoell00/oellm-rl/tmax-reproduction/.venv/bin/python
-UV_PY=/leonardo_scratch/large/userexternal/pmoell00/oellm-rl/uv-python
+E=$OELLM_SCRATCH/code-eval
+VLLM_PY=$OELLM_SCRATCH/oellm-rl/tmax-reproduction/.venv/bin/python
+UV_PY=$OELLM_SCRATCH/oellm-rl/uv-python
 SITE=$E/evalplus-venv/lib/python3.12/site-packages
 script=$root/eval_code_evalplus.py
 run_dir=$E/runs/$SLURM_JOB_ID

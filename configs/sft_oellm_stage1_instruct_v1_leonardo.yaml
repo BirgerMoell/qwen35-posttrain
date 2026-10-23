@@ -3,15 +3,15 @@
 # selected by SFT_TRAIN_DATA_GLOB/SFT_EVAL_DATA_GLOB in the Slurm launcher.
 # Docs are <=4096 tokens; BFD packing into 16K padding-free bins (no cross-doc attention).
 # Global batch: 32 GPUs x 16K = ~0.5M tokens/step; one epoch is ~4-5K steps.
-model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/base-256k-anneal300b
+model_name_or_path: ${OELLM_WORK}/sft-migration-preflight/base-256k-anneal300b
 dtype: bfloat16
 attn_implementation: flash_attention_2
 datasets:
   - path: parquet
     data_files:
-      train: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/data/stage1-mix-v1/train-*.parquet
+      train: ${OELLM_WORK}/sft-migration-preflight/data/stage1-mix-v1/train-*.parquet
     split: train
-output_dir: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/stage1-instruct-v1
+output_dir: ${OELLM_WORK}/sft-migration-preflight/output/stage1-instruct-v1
 eos_token: <|im_end|>
 assistant_only_loss: true
 max_length: 16384

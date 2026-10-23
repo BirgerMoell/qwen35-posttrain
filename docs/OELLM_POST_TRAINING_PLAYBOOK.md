@@ -557,6 +557,10 @@ rollouts passed all hidden tests, 71 % hit the 6K cap.
 ## 13. Reproduction checklist
 
 1. Environment (§1): container, tokenizer and base staged; `step ssh login`; HF token via stdin only.
+   Site settings: copy `leonardo.env.example` to `~/.oellm/leonardo.env` (Slurm account, work/scratch roots), `source`
+   it, and submit from `$OELLM_WORK/sft-migration-preflight` (logs go to `./logs`). Launchers, YAML configs (rendered
+   per job by `scripts/render_site_config.py`) and the oellm-rlvr RL configs read `${OELLM_*}` from it; nothing
+   site-specific is tracked (`scripts/check_site_identifiers.sh` enforces this in the Pages build).
 2. Stage 1: `sbatch slurm/build_oellm_stage1_mix_leonardo.sbatch` → check manifest → `sbatch
    slurm/sft_oellm_stage1_instruct_v1_leonardo.sbatch` (resubmit to resume) → post/export job → EUROPA evals.
 3. Stage 2: build reasoning dataset and mix (`slurm/build_openeurollm_reasoning_instruct_leonardo.sbatch`,

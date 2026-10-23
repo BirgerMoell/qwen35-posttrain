@@ -1,16 +1,16 @@
 # Eight-step engineering canary, not a production instruction model.
 # The JSONL files are audited, pinned, and constructed by
 # scripts/build_oellm_two_stage_pilot.py on Leonardo.
-model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/base-256k-anneal300b
+model_name_or_path: ${OELLM_WORK}/sft-migration-preflight/base-256k-anneal300b
 dtype: bfloat16
 attn_implementation: flash_attention_2
 datasets:
   - path: json
     data_files:
-      train: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/data/two-stage-pilot-v1/instruct_train.jsonl
+      train: ${OELLM_WORK}/sft-migration-preflight/data/two-stage-pilot-v1/instruct_train.jsonl
     split: train
 test_split_size: 0.1
-output_dir: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/instruct-multilingual-pilot-v1
+output_dir: ${OELLM_WORK}/sft-migration-preflight/output/instruct-multilingual-pilot-v1
 eos_token: <|im_end|>
 assistant_only_loss: true
 max_length: 4096

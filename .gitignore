@@ -27,3 +27,6 @@ data/eval_holdouts/
 data/medical/
 data/*/data/*.jsonl
 data/*/metadata/*.jsonl
+
+# site settings (account, personal paths)
+leonardo.env

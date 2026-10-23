@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=oellm-stage2-post
-#SBATCH --account=aifac_f02_352
 #SBATCH --partition=boost_usr_prod
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -8,12 +7,13 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=160G
 #SBATCH --time=02:30:00
-#SBATCH --output=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.out
-#SBATCH --error=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.err
+#SBATCH --output=logs/%j.out
+#SBATCH --error=logs/%j.err
 
 # After Stage-2 training: FP32 export -> BF16 (with the v2 template), then generation check.
 set -euo pipefail
-root=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight
+[[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
+root=$OELLM_WORK/sft-migration-preflight
 container=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
 src="$root/output/stage2-reasoning-v1"
 dst="$root/output/stage2-reasoning-v1-bf16"

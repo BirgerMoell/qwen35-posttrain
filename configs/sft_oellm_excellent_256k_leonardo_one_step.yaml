@@ -1,14 +1,14 @@
 # One optimizer step only. Data and weights are pinned in the migration runbook.
 # This is Stage 1 (direct Instruct) smoke, not a production training recipe.
-model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/base-256k-anneal300b
+model_name_or_path: ${OELLM_WORK}/sft-migration-preflight/base-256k-anneal300b
 dtype: bfloat16
 attn_implementation: flash_attention_2
 datasets:
   - path: json
     data_files:
-      train: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/data/instruct.jsonl
+      train: ${OELLM_WORK}/sft-migration-preflight/data/instruct.jsonl
     split: train
-output_dir: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/instruct-one-step-bf16
+output_dir: ${OELLM_WORK}/sft-migration-preflight/output/instruct-one-step-bf16
 eos_token: <|im_end|>
 assistant_only_loss: true
 max_length: 4096

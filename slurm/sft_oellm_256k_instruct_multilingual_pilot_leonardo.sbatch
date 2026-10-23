@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=oellm-sft-8step
-#SBATCH --account=aifac_f02_352
 #SBATCH --partition=boost_usr_prod
 #SBATCH --qos=boost_qos_dbg
 #SBATCH --nodes=1
@@ -9,11 +8,16 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=256G
 #SBATCH --time=00:30:00
-#SBATCH --output=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.out
-#SBATCH --error=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/logs/%j.err
+#SBATCH --output=logs/%j.out
+#SBATCH --error=logs/%j.err
 
 set -euo pipefail
-root=/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight
+[[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
+root=$OELLM_WORK/sft-migration-preflight
+config="$root/sft_oellm_256k_instruct_multilingual_pilot.yaml"
+# Site paths in the YAML are ${OELLM_*} references; render them for this job.
+mkdir -p "$root/tmp"; rendered="$root/tmp/${SLURM_JOB_ID:-local}-$(basename "$config")"
+python3 "$root/render_site_config.py" "$config" > "$rendered"; config="$rendered"
 container=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
 data="$root/data/two-stage-pilot-v1"
 test -s "$data/manifest.json"
@@ -37,4 +41,4 @@ srun --unbuffered singularity exec --nv -B /leonardo_work:/leonardo_work \
   "$container" accelerate launch \
   --config_file "$root/accelerate_fsdp.yaml" \
   --num_machines 1 --num_processes 4 --main_process_port "$port" \
-  "$root/sft_train.py" --config "$root/sft_oellm_256k_instruct_multilingual_pilot.yaml"
+  "$root/sft_train.py" --config "$config"

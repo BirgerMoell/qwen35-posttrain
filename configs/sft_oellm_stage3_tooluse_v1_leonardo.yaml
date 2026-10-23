@@ -2,15 +2,15 @@
 # Data: pre-tokenized stage3-mix-v1 = openeurollm-tool-use-v1 pool (~225M tok, 16 langs) + Stage-2 replay
 # (~85M reasoning, ~80M direct, all identity + safety rows). Docs <=32K; BFD 32K bins.
 # Global batch: 32 GPUs x 32K = ~1M tokens/step; one epoch is ~400 steps.
-model_name_or_path: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/stage2-reasoning-v1-bf16
+model_name_or_path: ${OELLM_WORK}/sft-migration-preflight/output/stage2-reasoning-v1-bf16
 dtype: bfloat16
 attn_implementation: flash_attention_2
 datasets:
   - path: parquet
     data_files:
-      train: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/data/stage3-mix-v1/train-*.parquet
+      train: ${OELLM_WORK}/sft-migration-preflight/data/stage3-mix-v1/train-*.parquet
     split: train
-output_dir: /leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/output/stage3-tooluse-v1
+output_dir: ${OELLM_WORK}/sft-migration-preflight/output/stage3-tooluse-v1
 eos_token: <|im_end|>
 assistant_only_loss: true
 max_length: 32768

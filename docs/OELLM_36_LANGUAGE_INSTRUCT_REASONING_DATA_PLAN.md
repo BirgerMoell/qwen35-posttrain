@@ -222,7 +222,7 @@ The two additions are pinned at `63202c34b23a4f155658a9e157e988902fb62279`
 (EU synthetic). Leonardo staging job `61543133` and full structural-profile
 job `61543252` completed successfully. The profile and reproducible
 per-language review samples are at
-`/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/reports/instruct-expansion-structural-profile.json`.
+`$OELLM_WORK/sft-migration-preflight/reports/instruct-expansion-structural-profile.json`.
 They are not automatically admitted to a GPU run. This expands the research
 beyond the first eight-step pilot without claiming unverified language
 quality or source rights.
@@ -271,7 +271,7 @@ were quarantined; another 212 train rows repeated an existing user prompt
 with a different answer phrasing and were deduplicated deterministically.
 These are audited *candidates*, not evidence of native-language quality or
 membership in the still-unbuilt production mixture. The manifest and outputs
-are under `/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/data/model-identity-v1`.
+are under `$OELLM_WORK/sft-migration-preflight/data/model-identity-v1`.
 A no-GPU TRL SFTTrainer/collator check on a real multi-turn identity row passed
 as Leonardo job `61549699`: all 62 supervised tokens were assistant text,
 without an injected `<think>` span. No GPU training was launched for this

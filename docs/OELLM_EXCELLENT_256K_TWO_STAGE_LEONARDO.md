@@ -117,7 +117,7 @@ The full pinned-corpus structural survey found 2,649,634 direct rows,
 unsupported rows. The direct pool is only **42.8%** of the reference corpus by
 row count, before rendered-length, quality, licensing, and overlap filters.
 This survey is not a final training manifest. Its source report is at
-`/leonardo_work/AIFAC_F02_352/pmoell00/sft-migration-preflight/reports/excellent-sft-structural-profile.json`.
+`$OELLM_WORK/sft-migration-preflight/reports/excellent-sft-structural-profile.json`.
 All five large Nemotron multilingual slices (`de`, `es`, `fr`, `it`, `ja`)
 classify as reasoning, roughly 3.10M rows total, so they cannot supply the
 direct multilingual Stage-1 core. The direct SmolTalk2 multilingual-8 slice

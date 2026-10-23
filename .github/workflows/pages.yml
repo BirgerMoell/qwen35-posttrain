@@ -32,9 +32,8 @@ jobs:
           cp pages/* site/
           cp docs/OELLM_POST_TRAINING_ROADMAP.md docs/OELLM_POST_TRAINING_PLAYBOOK.md \
              docs/OELLM_RL_RUN_PROGRAM.md docs/OELLM_STAGE5_RL_PLAN.md site/
-          if grep -nE "pmoell00|aifac_f02_352|AIFAC_F02_352|userexternal" site/*.md; then
-            echo "personal paths or account names in the published documents" >&2; exit 1
-          fi
+          bash scripts/check_site_identifiers.sh site/*.md
+          bash scripts/check_site_identifiers.sh
       - uses: actions/configure-pages@v5
       - uses: actions/jekyll-build-pages@v1
         with:
