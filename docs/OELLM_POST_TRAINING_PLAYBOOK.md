@@ -243,6 +243,20 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 �
   default and reasoning mode, `\boxed{}` scoring, rubric judge for explanations, process metrics (trace closure, loops,
   budget exhaustion, reasoning length, trace script). Launcher `scripts/hpc/run_leonardo.sbatch` (vLLM target + Ollama
   judge on one node).
+- **Trace-language audit**: lingua (`oellm_rlvr.language_audit`) over the quick-eval thinking traces; share of
+  non-English traces in the prompt language (Stage 3: 24.8 %, RL-0: 1.1 %).
+- **oellm-eval** (the OpenEuroLLM project harness, github.com/OpenEuroLLM/oellm-eval, pinned **v0.3.0**): retention
+  and project comparability at stage boundaries. Installed with `uv tool install … @v0.3.0` into
+  `/leonardo_work/AIFAC_F02_352/pmoell00/oellm-eval` (`bin/oellm-eval`); the project container
+  `eval_env-leonardo.sif` is symlinked from `/leonardo_work/OELLM_prod2026/container_images/`. The default Leonardo
+  config points at a shared directory we cannot use, so every call sets `EVAL_BASE_DIR=<that dir>`,
+  `EVAL_OUTPUT_DIR=<that dir>/runs` (it is *not* derived from the overridden base), `ACCOUNT=aifac_f02_352`,
+  `HF_HOME=$SCRATCH/oellm-eval-hf` (datasets pre-downloaded on the login node by `schedule`), `SLURM_MEM=120G`.
+  Retention subset: `belebele-eu-5-shot, global-mmlu-eu, include, multiblimp-eu, global-mgsm-eu, polymath-eu-low`
+  = 110 lm-eval units, 1 GPU each (tool estimate ≤ 18 GPU-h ≈ 150 local-h per checkpoint). lm-eval runs **without the
+  chat template** (few-shot raw prompts), so these measure knowledge and language competence, not chat behaviour; the
+  JudgeArena groups (`judgearena-fluency` in ~40 languages, `judgearena-m-arena-hard` EU) test chat output and need a
+  judge endpoint (not yet set up offline). Baseline: Stage-3 v1.1, array job 61934097.
 
 ### 8.2 Gates
 Stage acceptance: no think tags in default-mode answers; identity correct; EUROPA Eval ≥ previous stage; Alignment not
