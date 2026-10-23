@@ -133,8 +133,9 @@ Measured cost: ~2.2 local-h per 128 rollouts at ~3.8K tokens; a 48-update ablati
 | RL-0b | RL-0 + 48 updates | 0.532 | 37.4 % | 0.180 | 0.367 | 0.4 % |
 | A2a | non-stop penalty −0.5 | 0.523 | 34.0 % | 0.210 | 0.300 | 1.5 % |
 
-Default-mode accuracy unchanged in all (0.575–0.593 vs 0.581). Running: **A1** (language-consistency reward on the
-EU-language rows) and **A5** (single-turn code RL, 2,004 `oellm-code-rlvr` problems, contained execution server).
+A1 (language-consistency reward on the EU-language rows): native traces kept (65 % on native EU math vs 2.5 % for RL-0),
+overall accuracy equal (0.514), but EU-math accuracy 0.192 vs 0.308 for RL-0 — native traces finish less often; decision
+pending (options in the RL program, A1). Default-mode accuracy unchanged in all (0.575–0.593 vs 0.581). Running: **A5** (single-turn code RL, 2,004 `oellm-code-rlvr` problems, contained execution server).
 Still to build: A3 (default-mode strict-format/numeric prompts in RL, per-row mode switch), A4 (single-turn tool reward).
 
 **Production sequence** (from the selected Stage-4 checkpoint): W1 warm-up (4K responses, math + exam-MCQ + strict

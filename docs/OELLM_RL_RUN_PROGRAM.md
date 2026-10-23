@@ -103,6 +103,28 @@ with English traces that close and score. MGSM prompts carry an English instruct
 English there. So part of RL-0's EU-math gain is a switch to English: every later run must log the trace-language
 rate, and A1 decides whether the language term goes into W1–W3.
 
+**A1 result (quick eval, thinking mode, held out; lingua audit):**
+
+| | Stage 3 | RL-0 | A1 (language reward on EU rows) |
+|---|---:|---:|---:|
+| Overall accuracy | 0.435 | 0.512 | 0.514 |
+| EU math (fully native prompts, 120): accuracy | 0.108 | 0.308 | 0.192 |
+| EU math: unfinished | 85.8 % | 57.5 % | 73.3 % |
+| EU math: trace in prompt language | 56 % (67/120) | 2.5 % (3/120) | **65 % (78/120)** |
+| MGSM (English instruction line) | 0.590 | 0.660 | 0.720 |
+| MATH-500 | 0.160 | 0.140 | 0.230 |
+| GSM8K | 0.673 | 0.727 | 0.687 |
+
+Reading: the language reward works (native traces 2.5 % → 65 % on native prompts, above Stage 3) and overall accuracy is
+unchanged, but on the prompts where it binds, accuracy is 11.6 points below RL-0 (still +8.4 over Stage 3) because native
+traces finish less often (73 % unfinished). The cost is a termination weakness of native-language reasoning, which comes
+from mostly-English reasoning SFT data, not from the reward. Against the decision rule (cost ≤ 2 points ⇒ adopt), the
+language reward is **not** adopted for W1 as is. Options for the user/project to decide (roadmap §6): (a) English
+traces allowed, answers in the user's language, legibility monitored; (b) add native-trace SFT (a "bridge" of verified
+native-language reasoning traces) before RL, then re-test A1; (c) language reward with a softer weight (e.g. correct but
+off-language = 0.5) to trade accuracy against native traces. Differences per benchmark are within noise at 100–200
+items; the EU-math gap (37 vs 23 correct of 120) is the clearest effect.
+
 #### RL-0 card (as planned)
 
 | | |
@@ -125,7 +147,7 @@ Each runs 32–48 updates at 16 prompts × 8 samples, 6K max response, against t
 
 | Run | Status | Result / note |
 |---|---|---|
-| A1 language (arm c, `think-lang`, job 61928425) | running | trace-language reward on the 1,008 EU rows; arm b (answer language only) not run: math answers are boxed numbers |
+| A1 language (arm c, `think-lang`, job 61928425) | ✅ done | see result below; arm b (answer language only) not run: math answers are boxed numbers |
 | A2a non-stop penalty (`think-nonstop`, job 61923004) | ✅ done | fewest unfinished (34 %), best MATH-500; **adopted for W1–W3** |
 | A2b loop penalty | not needed yet | revisit if loops persist at 8K/16K |
 | A3 both modes (`think-mixed`, canary 61969304 → full 61969305) | submitted 10-23 night | template `templates/oellm_qwen3_two_stage_v2_1_rl_mixed.jinja` (thinking by default, no thinking block for rows with `rl_mode: default`); verifiers `math_direct` / `mcq_letter_direct` (bare correct answer only, no think tags; `OELLM_PATCH_DIRECT_MODE_VERIFIERS`); pool `oellm-rlvr/scripts/leonardo_a3_mixed_mode_data.sh` = RL-0 rows + 430 math + 430 letter-only default-mode rows (letter rows mostly bg/hr: the format pairs used most other exams_qa rows); A2a recipe |
