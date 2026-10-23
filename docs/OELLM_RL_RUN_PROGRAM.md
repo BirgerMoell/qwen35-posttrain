@@ -77,6 +77,17 @@ hard problems still do not finish; the update count is not capped by the episode
 - RL-0b `think-cont` (job 61923006): 48 more updates from RL-0 step 48, seed 43 — is the gain still rising?
 - A2a `think-nonstop` (job 61923004): RL-0 with one change, truncated rollouts get −0.5 instead of 0.
 
+- A1 `think-lang` (job 61928425): RL-0 with one change, the 1,008 EU-language rows scored by `multilingual_math`
+  (correct AND trace in the prompt language AND valid think/box form; lingua detector). Pool
+  `oellm-rlvr/scripts/leonardo_a1_language_data.sh` (sha256 `958f0939…`).
+
+**Language finding (lingua on the quick-eval thinking traces, 270 non-English rows):** the share of traces in the
+prompt language fell from **24.8 % (Stage 3) to 1.1 % (RL-0)**. Stage 3 reasoned natively on the fully native
+oellm-math-eu prompts (cs, fi, hu, nl, sv 10/10, el 9/10) but those traces rarely closed; RL-0 answers the same prompts
+with English traces that close and score. MGSM prompts carry an English instruction, and Stage 3 already reasoned in
+English there. So part of RL-0's EU-math gain is a switch to English: every later run must log the trace-language
+rate, and A1 decides whether the language term goes into W1–W3.
+
 #### RL-0 card (as planned)
 
 | | |

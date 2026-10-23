@@ -359,6 +359,11 @@ Question: can DAPO with a closed-trace-or-zero reward cut loops and raise accura
   steps 24 and 48 in `$SCRATCH/oellm-rl/outputs/think-probe/*_checkpoints/`; held-out quick eval of step 48 is job
   61912816.
 - Evaluation before/after: quick reasoning eval (thinking accuracy and unclosed rate), EUROPA Reasoning process metrics.
+- Venv additions outside the lock file: `beaker-py` and `lingua-language-detector==2.2.0` (for `multilingual_math`),
+  installed with `uv pip install -p .venv/bin/python …` inside the container; **a later `uv sync --locked` removes
+  them**, so re-install after every sync.
+- Probe result and the trace-language finding (24.8 % → 1.1 % of non-English traces in the prompt language): see
+  `docs/OELLM_RL_RUN_PROGRAM.md` RL-0.
 
 ### 10.3 Production RL plan
 - `docs/OELLM_RL_RUN_PROGRAM.md`: the run sequence (RL-0 probe → A-series ablations on Stage-3 v1.1 in parallel with
