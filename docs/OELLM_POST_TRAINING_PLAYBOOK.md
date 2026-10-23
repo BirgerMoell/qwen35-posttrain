@@ -443,7 +443,7 @@ step 48 queued automatically; trace language audited with lingua.
 | RL-0 (61868620) | — | 0.512 | 39.3 % | 0.140 | 0.308 | 1.1 % |
 | RL-0b `think-cont` (61923006) | +48 updates from RL-0, seed 43 | 0.532 | 37.4 % | 0.180 | 0.367 | 0.4 % |
 | A2a `think-nonstop` (61923004) | truncated rollouts −0.5 (`--non_stop_penalty`) | 0.523 | 34.0 % | 0.210 | 0.300 | 1.5 % |
-| A1 `think-lang` (61928425) | EU rows scored by `multilingual_math` (correct ∧ trace in prompt language ∧ form) | running | | | | |
+| A1 `think-lang` (61928425) | EU rows scored by `multilingual_math` (correct ∧ trace in prompt language ∧ form) | 0.514 | 39.1 % | 0.230 | 0.192 | 30.0 % (65 % on native EU math) |
 | A5 `think-code` (61949439) | code pool, `code_stdio` binary reward, contained server | queued | | | | |
 
 Configs: `oellm-rlvr/configs/leonardo-grpo-math-oellm9b-think-{cont,nonstop,lang,code}.yaml`; pools:
