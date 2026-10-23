@@ -261,6 +261,26 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 �
   lowest Georgian 0.26, Basque 0.39), Global-MGSM 0.395 (11, 0-shot without chat template; lowest Basque 0.12),
   MultiBLiMP 0.932 (32, lowest Basque 0.69). Summary: `runs/2026-10-23-10-56-28/summary.json`. Failed in the v0.3.0
   container: PolyMath (missing `latex2sympy2_extended`) and `include_base_44_north_macedonian` (task not found).
+- **Reference scores** (public, `openeurollm/prelude-base-eval-scores` → `multilingual_scores.parquet`, same oellm-eval
+  tasks and shots; means over the exact task set both sides ran — Belebele 24, Global-MMLU 16, INCLUDE 20,
+  Global-MGSM 11, MultiBLiMP 32):
+
+  | Model | Belebele | Global-MMLU | INCLUDE | Global-MGSM* | MultiBLiMP |
+  |---|---|---|---|---|---|
+  | **Ours, Stage-3 v1.1** | 0.820 | 0.588 | 0.561 | 0.395 | 0.932 |
+  | Prelude base `iter_0648000` (latest in the file) | 0.739 | 0.526 | 0.477 | 0.025 | 0.925 |
+  | openeurollm/datamix-9b-80-20 | 0.778 | 0.545 | 0.531 | 0.032 | 0.952 |
+  | swiss-ai/Apertus-8B-2509 | 0.599 | 0.457 | 0.423 | 0.002 | 0.934 |
+  | allenai/Olmo-3-1025-7B | 0.489 | 0.399 | 0.335 | 0.011 | 0.780 |
+  | meta-llama/Llama-3.1-8B | 0.775 | 0.546 | 0.515 | 0.015 | 0.899 |
+  | Qwen/Qwen3-8B-Base | 0.871 | 0.682 | 0.615 | 0.707 | 0.767 |
+  | Qwen/Qwen3.5-9B-Base | 0.907 | 0.705 | 0.671 | 0.614 | 0.889 |
+
+  *0-shot generative without chat template: base models mostly fail the answer format, so this column compares
+  only instruction-following models (ours, Qwen). All rows except ours are **base** models; our own base
+  (Prelude anneal → 256K) is not in the file, and no post-trained OpenEuroLLM model has public oellm-eval scores
+  (checked 2026-10-23: `openeurollm` datasets/spaces, `varisd/OELLM-eval-leaderboard` = Czech BenCzechMark on
+  Prelude checkpoints, `MahamadSalah74/OELLM-Evals-Dashboard` = pairwise arena data).
 
 ### 8.2 Gates
 Stage acceptance: no think tags in default-mode answers; identity correct; EUROPA Eval ≥ previous stage; Alignment not
