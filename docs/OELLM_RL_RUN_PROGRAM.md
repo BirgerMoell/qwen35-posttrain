@@ -77,6 +77,20 @@ hard problems still do not finish; the update count is not capped by the episode
 - RL-0b `think-cont` (job 61923006): 48 more updates from RL-0 step 48, seed 43 — is the gain still rising?
 - A2a `think-nonstop` (job 61923004): RL-0 with one change, truncated rollouts get −0.5 instead of 0.
 
+**Results of RL-0b and A2a (quick reasoning eval, thinking mode, held out; 570 items):**
+
+| Model | Accuracy | Unfinished | Tokens | GSM8K | MGSM | MATH-500 | EU math | Trace in prompt language | Default-mode acc. |
+|---|---|---|---|---|---|---|---|---|---|
+| Stage-3 v1.1 | 0.435 | 48.9 % | 3,478 | 0.673 | 0.590 | 0.160 | 0.108 | 24.8 % | 0.581 |
+| RL-0 (48 updates) | 0.512 | 39.3 % | 2,970 | 0.727 | 0.660 | 0.140 | 0.308 | 1.1 % | 0.593 |
+| RL-0b (RL-0 + 48) | **0.532** | 37.4 % | 2,848 | 0.700 | 0.680 | 0.180 | **0.367** | 0.4 % | 0.593 |
+| A2a (−0.5 if unfinished) | 0.523 | **34.0 %** | **2,649** | 0.687 | **0.690** | **0.210** | 0.300 | 1.5 % | 0.575 |
+
+Readings: more updates on the same small pool still add a little (+2 points) but are flattening; the non-stop
+penalty gives the shortest, most often finished traces and the best MATH-500 at equal update count to RL-0
+(+1.1 points overall vs RL-0, +5 on MATH-500 with 120/100-item subsets, so within noise individually). Every RL
+variant reasons in English. Decision for W1: keep the non-stop penalty (−0.5); the language question is A1's.
+
 - A1 `think-lang` (job 61928425): RL-0 with one change, the 1,008 EU-language rows scored by `multilingual_math`
   (correct AND trace in the prompt language AND valid think/box form; lingua detector). Pool
   `oellm-rlvr/scripts/leonardo_a1_language_data.sh` (sha256 `958f0939…`).
