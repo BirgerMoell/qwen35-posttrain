@@ -74,11 +74,20 @@ if [[ "$smoke" == 1 ]]; then
   exit 0
 fi
 export DPO_EVAL_MAX_ROWS=1024
+# A continuation runs only if its predecessor ended by walltime (TIMEOUT) or was preempted: a crash (for example an
+# out-of-memory at the first step) would repeat identically in every link of the chain (2026-10-24: 4 x OOM, ~106 local-h).
+if [[ -n "${DPO_PREV_JOB:-}" ]]; then
+  prev_state=$(sacct -j "$DPO_PREV_JOB" -X -n -o State | awk '{print $1; exit}')
+  case "$prev_state" in
+    TIMEOUT|PREEMPTED|COMPLETED) ;;
+    *) echo "predecessor $DPO_PREV_JOB ended $prev_state; not continuing the chain"; exit 1;;
+  esac
+fi
 chain="${DPO_CHAIN_REMAINING:-1}"
 if (( chain > 0 )); then
   next=$(sbatch --parsable --account="$SLURM_JOB_ACCOUNT" --chdir="$root" --nodes="$SLURM_NNODES" \
     --dependency=afterany:"$SLURM_JOB_ID" \
-    --export=ALL,DPO_CHAIN_REMAINING=$((chain - 1)) \
+    --export=ALL,DPO_CHAIN_REMAINING=$((chain - 1)),DPO_PREV_JOB="$SLURM_JOB_ID" \
     "$root/dpo_oellm_stage4_v1_leonardo.sbatch")
   echo "queued continuation $next (afterany:$SLURM_JOB_ID, $((chain - 1)) more after it)"
 fi
