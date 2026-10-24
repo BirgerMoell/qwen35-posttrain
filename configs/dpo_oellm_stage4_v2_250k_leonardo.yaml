@@ -1,0 +1,39 @@
+# Stage-4 DPO v2 (2026-10-24): same recipe as v1 (threeway reference run: sigmoid loss, beta 0.1, LR 5e-7 cosine,
+# 3 % warmup, global batch 128, 1 epoch, seed 42) on a 249,996-pair stratified subset instead of the full 1.44M pairs,
+# because the measured full-set cost (25.3 s/step on 8 nodes, ~19K local-h) is out of budget. Data
+# (scripts/build_oellm_dpo_subset.py -> $SCRATCH/oellm-dpo/pretok-v2-250k): all 14,769 format-compliance pairs (so the
+# planned follow-up format pass is folded in), all 28,935 HelpSteer3, 30,000 UltraFeedback, 14,691 Dolci-translated per
+# language (12 languages) -> 1,953 optimizer steps; fresh start from Stage-3 v1.1 (v1 checkpoint-500 is evaluated
+# separately). 1 pair per device: 2 per device ran out of memory on 4 nodes (10-24, 4 x OOM at step 1).
+model_name_or_path: ${OELLM_WORK}/sft-migration-preflight/output/stage3-tooluse-v1.1-bf16
+dtype: bfloat16
+attn_implementation: flash_attention_2
+output_dir: ${OELLM_SCRATCH}/oellm-dpo/output/stage4-dpo-v2-250k
+loss_type: [sigmoid]
+beta: 0.1
+max_length: 2048
+num_train_epochs: 1
+# 1 pair per device per micro-step (2 per device does not fit in 64 GB on 4 nodes); grad-accum set by the sbatch.
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 2
+learning_rate: 5.0e-7
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+max_grad_norm: 1.0
+bf16: true
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+seed: 42
+data_seed: 42
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 500
+save_strategy: steps
+save_steps: 250                 # full state (model + optimizer, ~136 GB) for resume across the 24 h walltime
+save_total_limit: 1
+dataloader_num_workers: 2
+ddp_timeout: 7200
+report_to: none

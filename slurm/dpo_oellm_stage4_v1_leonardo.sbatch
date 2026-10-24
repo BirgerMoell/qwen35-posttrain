@@ -22,14 +22,16 @@ set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
 root=$OELLM_WORK/sft-migration-preflight
 container=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
-data=$OELLM_SCRATCH/oellm-dpo/pretok-v1
-config="$root/dpo_oellm_stage4_v1_leonardo.yaml"
+# DPO_CONFIG / DPO_DATA select another run (v2: the 250K subset); the output dir comes from the config.
+data=${DPO_DATA:-$OELLM_SCRATCH/oellm-dpo/pretok-v1}
+config="$root/${DPO_CONFIG:-dpo_oellm_stage4_v1_leonardo.yaml}"
 # Site paths in the YAML are ${OELLM_*} references; render them for this job.
 mkdir -p "$root/tmp"; rendered="$root/tmp/${SLURM_JOB_ID:-local}-$(basename "$config")"
 python3 "$root/render_site_config.py" "$config" > "$rendered"; config="$rendered"
 template="$root/oellm_qwen3_two_stage_v2_1.jinja"
 model="$root/output/stage3-tooluse-v1.1-bf16"
-output=$OELLM_SCRATCH/oellm-dpo/output/stage4-dpo-v1
+output=$(awk '/^output_dir:/ {print $2}' "$config")
+[[ -n "$output" ]] || { echo "no output_dir in $config"; exit 1; }
 smoke="${DPO_SMOKE:-0}"
 [[ "$smoke" == 1 ]] && output="${output}-smoke"
 
