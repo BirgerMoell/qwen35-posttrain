@@ -113,7 +113,20 @@ format-compliance pairs (the planned follow-up format pass folded in), all 28,93
 decision 0.870 → 0.831, names 0.734 → 0.654, JSON 0.995 → 0.898, arguments 0.981 → 0.849, finished 98 % → 90 % — mostly
 runaway generation inside tool calls (30 of 36 unfinished stop mid call, repeated near-identical calls or looping
 argument text), not tag errors. Cause: tool-free, default-mode pairs plus DPO's length push.
-**Next:** (1) Stage-3 ↔ v2 linear merges at α 0.5 / 0.75 (`slurm/merge_interpolate_leonardo.sbatch`) with tool and
+**Merge result (10-25, jobs 62268191–62268202):**
+
+| Model | default acc | thinking acc / unfinished | tool decision | names | JSON | args | finished |
+|---|---|---|---|---|---|---|---|
+| Stage-3 v1.1 | 0.581 | 0.435 / 49 % | 0.870 | 0.734 | 0.995 | 0.981 | 98 % |
+| DPO v2 (α 1.0) | 0.558 | 0.440 / 47 % | 0.831 | 0.654 | 0.898 | 0.849 | 90 % |
+| merge α 0.75 | 0.533 | 0.442 / 47 % | 0.839 | 0.679 | 0.920 | 0.862 | 91 % |
+| **merge α 0.5** | 0.568 | 0.426 / 47 % | **0.878** | **0.767** | 0.985 | 0.951 | 98 % |
+
+α 0.5 restores tool use (decision and names above Stage 3; JSON/args slightly below) at equal reasoning; it is the
+Stage-4 candidate pending EUROPA Eval/Alignment (does it keep DPO's chat-quality gain?).
+`oellm-dpo/output/stage4-dpo-v2-250k-merge-a0.5`.
+
+**Next (as planned before the merge result):** (1) Stage-3 ↔ v2 linear merges at α 0.5 / 0.75 (`slurm/merge_interpolate_leonardo.sbatch`) with tool and
 reasoning evals; (2) P1 and A4b RL runs from v2 (RL program); (3) EUROPA Eval/Alignment on the selected candidate
 (private HF upload); (4) if neither merge nor A4b restores tools, DPO v3 with tool-call and thinking-mode pairs.
 
