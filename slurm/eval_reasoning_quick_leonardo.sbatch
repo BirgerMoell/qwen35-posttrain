@@ -21,7 +21,7 @@ MODES=${MODES:-default thinking}
 MAXNEW=${MAXNEW:-0}
 out=$root/eval/reasoning-quick/$NAME
 mkdir -p $out/results
-run() { singularity exec --nv -B /leonardo_work "$C" env HF_HUB_OFFLINE=1 python "$root/eval_reasoning_quick.py" "$@"; }
+run() { singularity exec --nv -B /leonardo_work,/leonardo_scratch "$C" env HF_HUB_OFFLINE=1 python "$root/eval_reasoning_quick.py" "$@"; }
 for mode in $MODES; do
   for g in 0 1 2 3; do
     CUDA_VISIBLE_DEVICES=$g run run --model "$MODEL" --data "$DATA" --max-new-tokens $MAXNEW \

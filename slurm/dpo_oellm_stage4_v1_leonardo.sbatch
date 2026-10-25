@@ -35,7 +35,7 @@ output=$(awk '/^output_dir:/ {print $2}' "$config")
 smoke="${DPO_SMOKE:-0}"
 [[ "$smoke" == 1 ]] && output="${output}-smoke"
 
-if [[ -s "$output/model.safetensors.index.json" ]]; then
+if [[ -s "$output/model.safetensors.index.json" || -s "$output/model.safetensors" ]]; then
   echo "Final model already saved in $output; nothing to do"; exit 0
 fi
 test -s "$data/manifest.json" && test -s "$model/model.safetensors.index.json"

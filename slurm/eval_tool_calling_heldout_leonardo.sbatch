@@ -19,7 +19,7 @@ NAME=${NAME:-stage3-tooluse-v1}
 DATA=$root/data/eval-quick/tool_heldout.jsonl
 out=$root/eval/tool-heldout/$NAME
 mkdir -p $out/results
-run() { singularity exec --nv -B /leonardo_work "$C" env HF_HUB_OFFLINE=1 python "$root/eval_tool_calling_heldout.py" "$@"; }
+run() { singularity exec --nv -B /leonardo_work,/leonardo_scratch "$C" env HF_HUB_OFFLINE=1 python "$root/eval_tool_calling_heldout.py" "$@"; }
 [[ -s $DATA ]] || run prepare --dataset $root/data/openeurollm-tool-use-v1 --out $DATA
 for g in 0 1 2 3; do
   CUDA_VISIBLE_DEVICES=$g run run --model "$MODEL" --data "$DATA" --out "$out/results/$g.jsonl" --rank $g --world 4 \
