@@ -301,15 +301,23 @@ check) and is recorded with its recipe (inputs with revisions, method, weights, 
 
 Done: RL-0 → RL-0b, A2a, A1 (+16K re-eval), A3, A4, A5 (results in §4 and the status table).
 
-**Queued 10-25 (from Stage-4 DPO v2, model dir `models/stage4-dpo-v2-mixed` = v2 weights + RL mixed template):**
-- **P1** `dpo2-mixed` (job 62276759): the A3 run unchanged except the parent. Compare with A3: thinking accuracy and
-  closure, and whether `math_direct` (0 throughout A3) becomes learnable after the format pairs. ~150 local-h.
-- **A4b** `dpo2-tool` (canary 62276760 → full 62276761): tool RL on 2,000 multi-turn next-action rows
-  (`scripts/leonardo_a4b_tool_data.sh`: 1,200 Nemotron conversational tool use with Qwen3-235B pass rate 0.1–0.8,
-  500 Nemotron function calling, 300 xlam irrelevance; CC-BY-4.0; prompts ≤ 4,096 tokens, median 3.5K), reward
-  `tool_call`. Questions: learning signal (A4 had none) and repair of v2's tool regression. ~250 local-h.
-- Evals chained in Slurm on the newest checkpoint (`eval_latest_rl.sh`): P1 quick (62276764); A4b tool held-out
-  (62276766) and quick (62276768). A cleanup job cancels A4b and its evals if the canary fails.
+**Queued 10-25 evening (from the Stage-4 candidate = linear merge 0.5 × Stage-3 v1.1 + 0.5 × DPO v2,
+model dir `models/stage4-merge-a05-mixed` = merge weights + RL mixed template).** The P1/A4b runs planned from DPO v2
+were cancelled before they started once the merge restored tool use (roadmap §5).
+- **W1a** `w1a` (canary 62278865 → full 62278866), the first combined window, overnight on 2 nodes: 2,048 prompts =
+  128 updates, one pass (`oellm-rlvr/scripts/leonardo_w1a_data.sh`, sha `191e288e`): 560 EU-language math with the
+  answer-language check (`multilingual_math`, check=answer), 540 English/GSM8K math, 300 `math_direct` + 300
+  `mcq_letter_direct` default-mode rows, 348 code rows (`code_stdio`, contained execution server); non-stop penalty
+  −0.5; RL-0 recipe otherwise (DAPO, β 0, LR 1e-6, 16 × 8, 6K responses); checkpoints every 32 updates; walltime 11 h.
+  Estimate ~7–9 h, ~500–600 local-h. Evals on the newest checkpoint: quick reasoning (62278869), held-out tool
+  (62278870), EvalPlus (62278871). Questions: do the A-series gains add up in one run (thinking accuracy ≥ 0.53,
+  unfinished ≤ 34 %, code thinking > 0.256/0.265), does the default-mode bare-answer reward move from the merge (it
+  carries half of the format DPO), and do tools and the default mode hold?
+- **A4b** `merge-tool` (canary 62278867 → full 62278868): the multi-turn tool pool (`leonardo_a4b_tool_data.sh`) from
+  the merge, ~250 local-h; evals tool held-out (62278872) and quick (62278873). Question: learning signal and held-out
+  tool check above the merge (decision 0.878, JSON 0.985, args 0.951).
+- Each canary (256 episodes, 1 h) gates its full run (`afterok`); a cleanup job cancels the full run and its evals if
+  the canary fails.
 
 Next:
 1. ✅ Language policy decided (A1 section): traces any language, answer in the prompt language. ✅ 16K re-eval done.
