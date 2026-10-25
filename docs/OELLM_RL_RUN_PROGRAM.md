@@ -301,8 +301,18 @@ check) and is recorded with its recipe (inputs with revisions, method, weights, 
 
 Done: RL-0 → RL-0b, A2a, A1 (+16K re-eval), A3, A4, A5 (results in §4 and the status table).
 
+**Queued 10-25 (from Stage-4 DPO v2, model dir `models/stage4-dpo-v2-mixed` = v2 weights + RL mixed template):**
+- **P1** `dpo2-mixed` (job 62276759): the A3 run unchanged except the parent. Compare with A3: thinking accuracy and
+  closure, and whether `math_direct` (0 throughout A3) becomes learnable after the format pairs. ~150 local-h.
+- **A4b** `dpo2-tool` (canary 62276760 → full 62276761): tool RL on 2,000 multi-turn next-action rows
+  (`scripts/leonardo_a4b_tool_data.sh`: 1,200 Nemotron conversational tool use with Qwen3-235B pass rate 0.1–0.8,
+  500 Nemotron function calling, 300 xlam irrelevance; CC-BY-4.0; prompts ≤ 4,096 tokens, median 3.5K), reward
+  `tool_call`. Questions: learning signal (A4 had none) and repair of v2's tool regression. ~250 local-h.
+- Evals chained in Slurm on the newest checkpoint (`eval_latest_rl.sh`): P1 quick (62276764); A4b tool held-out
+  (62276766) and quick (62276768). A cleanup job cancels A4b and its evals if the canary fails.
+
 Next:
-1. ✅ Language policy decided (A1 section): traces any language, answer in the prompt language. Pending: 16K re-eval 62021559.
+1. ✅ Language policy decided (A1 section): traces any language, answer in the prompt language. ✅ 16K re-eval done.
 2. A5 result + EvalPlus on its final export → decide code in W2 (or SFT top-up).
 3. Build A3 (per-row default mode) and A4 (tool reward); run both on Stage-3 v1.1 while DPO trains.
 4. Build W1 pools: oellm-math-rlvr EU24 (≥ 40 % non-English) + DeepMath 3–5, exam-MCQ (35 languages, letter answers),

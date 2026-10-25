@@ -39,10 +39,10 @@ Principles that every stage follows:
 | 1 Instruct SFT | ✅ done | `birgermoell/oellm-9b-256k-stage1-instruct-v1` `58e42ab4` | 3,276 | EUROPA Eval 0.600, Alignment 0.455 |
 | 2 Reasoning SFT | ✅ done | `…-stage2-reasoning-v1` `2db72459` | 2,811 | Eval 0.609, Align 0.605; thinking mode loops (53 % unfinished) |
 | 3 Tool-use SFT | ✅ done | `…-stage3-tooluse-v1` **v1.1 `88875629`** (tag-row repair) | 541 | Eval 0.616, Align 0.642; tool JSON 99.5 %, decision 0.87 |
-| 4 DPO | ⏳ running/queued | step 500 of 11,264 saved; resume job 61922663 waiting for 8 nodes | 1,035 so far | preference accuracy 0.80 at step ~400 |
-| 5 RL | 🔬 ablations | RL-0, RL-0b, A2a done; A1 language and A5 code running/queued | 926 so far | thinking accuracy 0.435 → 0.53, unfinished 49 % → 34 % |
+| 4 DPO | ⚠️ v2 trained, gate failed on tools | v2: 250K-pair subset, 1,954 steps (job 62116464) → `oellm-dpo/output/stage4-dpo-v2-250k-bf16`; Stage-3 ↔ v2 merges α 0.5/0.75 under evaluation | ~4.4K | val loss 0.315, pref. acc 0.85; reasoning ≈ Stage 3; tool JSON 0.995 → 0.898 (runaway calls) |
+| 5 RL | 🔬 ablations | RL-0, RL-0b, A2a, A1, A3, A4, A5 done; P1 (A3 recipe from DPO v2) and A4b (multi-turn tool RL from DPO v2) queued | ~1.9K | thinking accuracy 0.435 → 0.53, unfinished 49 % → 34 % |
 
-Budget: **9.34K of ~50K local-h** spent since 2026-10-20 (`sacct`, own jobs; account total 400K is shared).
+Budget: **~13.6K of ~50K local-h** spent since 2026-10-20 (10.2K measured 10-24 + DPO v2 ~3.2K + evals; `scripts/leonardo_budget.py`).
 
 ## 3. Decisions log (dated, with reasons)
 
@@ -101,7 +101,23 @@ on the partition). Health at step ~400: loss 0.43, preference accuracy 0.80, mar
 **Estimate:** 35–45 h on 8 nodes, ~9–11K local-h for the full epoch (to be replaced by the measured speed after the
 first 30 min of the resumed job). The user approved the full set (10-23).
 
-**Still to do in Stage 4:**
+**Update 10-24/25 — DPO v2 instead of the full set.** The resumed 4-node run at 2 pairs/GPU ran out of memory at step
+1 (four times, the chain repeated the crash; ~106 local-h; chains now stop after a crash). The full epoch at the
+measured 25.3 s/step would cost ~19K local-h, so v2 trains one epoch on a stratified **249,996-pair subset**
+(`scripts/build_oellm_dpo_subset.py`, config `configs/dpo_oellm_stage4_v2_250k_leonardo.yaml`): all 14,769
+format-compliance pairs (the planned follow-up format pass folded in), all 28,935 HelpSteer3, 30,000 UltraFeedback,
+14,691 Dolci-translated per language (12). 1 pair/GPU on 4 nodes, 44 s/step, 23 h, ~3.2K local-h. Validation loss
+0.369 → 0.315, preference accuracy 0.85, margin 2.2.
+**Gate result:** quick reasoning eval ≈ Stage 3 (thinking 0.440 vs 0.435, unfinished 47 % vs 49 %, default 0.558 vs
+0.581); default-mode replies ~2.6× longer (generation check median 39 → 115 tokens). **Held-out tool check regressed**:
+decision 0.870 → 0.831, names 0.734 → 0.654, JSON 0.995 → 0.898, arguments 0.981 → 0.849, finished 98 % → 90 % — mostly
+runaway generation inside tool calls (30 of 36 unfinished stop mid call, repeated near-identical calls or looping
+argument text), not tag errors. Cause: tool-free, default-mode pairs plus DPO's length push.
+**Next:** (1) Stage-3 ↔ v2 linear merges at α 0.5 / 0.75 (`slurm/merge_interpolate_leonardo.sbatch`) with tool and
+reasoning evals; (2) P1 and A4b RL runs from v2 (RL program); (3) EUROPA Eval/Alignment on the selected candidate
+(private HF upload); (4) if neither merge nor A4b restores tools, DPO v3 with tool-call and thinking-mode pairs.
+
+**Still to do in Stage 4 (original list):**
 1. **Format-compliance pairs** (builder `scripts/build_oellm_format_pairs.py`, launcher
    `slurm/build_oellm_format_pairs_leonardo.sbatch`; first build 10-23 night: 18,062 prompts — 11,500 math
    final-answer-only in 23 languages, 6,562 letter-only MCQ in 10 languages from `exams_qa` + `slovak_financial_exam` —
