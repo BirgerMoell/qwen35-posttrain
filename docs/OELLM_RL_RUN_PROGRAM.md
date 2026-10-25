@@ -1,6 +1,6 @@
 # Stage 5 — RL run program
 
-Status 2026-10-23 (evening): RL-0, RL-0b, A2a done; A1 running; A5 (code) queued; A3/A4 not yet built. This is the **run-by-run** plan for Stage 5: which RL runs we make, in what order, what each one
+Status 2026-10-25: RL-0, RL-0b, A2a, A1, A3, A4, A5 done (results below); Stage-4 DPO v2 trained, evals running. This is the **run-by-run** plan for Stage 5: which RL runs we make, in what order, what each one
 must answer, what it costs, and how its result changes the next run. The data pools, rewards and environment tiers are
 specified in [`OELLM_STAGE5_RL_PLAN.md`](OELLM_STAGE5_RL_PLAN.md); results go into the
 [playbook](OELLM_POST_TRAINING_PLAYBOOK.md) §10 as each run finishes.
@@ -131,6 +131,10 @@ is concentrated in the smaller languages and looks like a token-budget/terminati
 reasoning. Check: the 114 unfinished native-language items re-generated at 16,384 tokens (job 62021559,
 `eval/reasoning-quick/think-lang-step48-unfinished-native-16k`). If most of them finish and are correct, native
 reasoning becomes a per-language budget/SFT question (option b) rather than a capability limit.
+**16K result (job 62244120, 10-25):** with 16,384 tokens only 22 % of the 114 items finish and 8.8 % are correct
+(de/fr best: 33–44 % unfinished, 22 % correct; sv/nl 100 % unfinished at 16,384 tokens). Native traces run away or loop
+rather than running out of budget, so a larger budget does not rescue them; this supports option (a). Native reasoning
+needs good native-trace SFT data first.
 
 **Decision (2026-10-23): option (a) with an answer-language check.** W1–W3 allow traces in any language; the
 EU-language math rows use `multilingual_math` with label `"check": "answer"` (oellm-rlvr `f6552b6`): reward 1 only if
@@ -167,9 +171,9 @@ Each runs 32–48 updates at 16 prompts × 8 samples, 6K max response, against t
 | A1 language (arm c, `think-lang`, job 61928425) | ✅ done | not adopted; **answer-language check (arm b) adopted for W1–W3** without its own run (it binds on < 10 % of correct answers); 16K re-eval of unfinished native items queued (62021559) |
 | A2a non-stop penalty (`think-nonstop`, job 61923004) | ✅ done | fewest unfinished (34 %), best MATH-500; **adopted for W1–W3** |
 | A2b loop penalty | not needed yet | revisit if loops persist at 8K/16K |
-| A3 both modes (`think-mixed`, canary 61969304 → full 61969305) | submitted 10-23 night | template `templates/oellm_qwen3_two_stage_v2_1_rl_mixed.jinja` (thinking by default, no thinking block for rows with `rl_mode: default`); verifiers `math_direct` / `mcq_letter_direct` (bare correct answer only, no think tags; `OELLM_PATCH_DIRECT_MODE_VERIFIERS`); pool `oellm-rlvr/scripts/leonardo_a3_mixed_mode_data.sh` = RL-0 rows + 430 math + 430 letter-only default-mode rows (letter rows mostly bg/hr: the format pairs used most other exams_qa rows); A2a recipe |
-| A4 tool single-turn (`think-tool`, canary 61968632 → full 61968633) | submitted 10-23 night | verifier `tool_call` (`OELLM_PATCH_TOOL_CALL_VERIFIER`): 0.2 well-formed + 0.3 tool names + 0.5 arguments, no-call rows 1 only without a call, scored after exactly one closed trace; pool `scripts/leonardo_a4_tool_data.sh` = 1,000 English `grpo` + 500 non-English single-call + 500 no-call rows from the Stage-3 tool dataset (held-out bucket excluded), tool blocks re-rendered with our template |
-| **A5 code** (`think-code`, job 61949439) | queued | added 10-23: single-turn code RL with the contained `code_api` server; canary passed (16 % all-tests pass) |
+| A3 both modes (`think-mixed`, canary 61969304 → full 61969305) | ✅ done 10-24: training reward `mcq_letter_direct` 0.06 → 0.21, `math_direct` 0 throughout (the model never samples a bare answer; format DPO first). Quick eval: thinking 0.532 / unfinished 34 % (= best of A2a/RL-0b), default 0.593 (RL-0 0.593); mixing default-mode rows costs nothing; adopt per-row default-mode rows for W1 after the DPO format pass | template `templates/oellm_qwen3_two_stage_v2_1_rl_mixed.jinja` (thinking by default, no thinking block for rows with `rl_mode: default`); verifiers `math_direct` / `mcq_letter_direct` (bare correct answer only, no think tags; `OELLM_PATCH_DIRECT_MODE_VERIFIERS`); pool `oellm-rlvr/scripts/leonardo_a3_mixed_mode_data.sh` = RL-0 rows + 430 math + 430 letter-only default-mode rows (letter rows mostly bg/hr: the format pairs used most other exams_qa rows); A2a recipe |
+| A4 tool single-turn (`think-tool`, canary 61968632 → full 61968633) | ✅ done 10-24: no effect — training reward 0.58 → 0.52; held-out tool decision 0.867 (Stage 3: 0.870), JSON 0.994; thinking 0.432 / unfinished 46 %. Not adopted; tool RL needs a harder/curriculum pool (T1) | verifier `tool_call` (`OELLM_PATCH_TOOL_CALL_VERIFIER`): 0.2 well-formed + 0.3 tool names + 0.5 arguments, no-call rows 1 only without a call, scored after exactly one closed trace; pool `scripts/leonardo_a4_tool_data.sh` = 1,000 English `grpo` + 500 non-English single-call + 500 no-call rows from the Stage-3 tool dataset (held-out bucket excluded), tool blocks re-rendered with our template |
+| **A5 code** (`think-code`, job 61949439) | ✅ done 10-24 (walltime at ~step 30/48; evaluated step 24) | training: all-tests pass 0.16 → ~0.30, truncated 73 % → ~30 %. EvalPlus HumanEval+/MBPP+ thinking 0.256/0.265 (Stage 3 0.189/0.243, RL-0 0.250/0.251), closed 57/61 %; direct 0.323/0.344 (unchanged). Math thinking 0.481. Small gain, mostly closure; code in W2 with a longer walltime (~8 h for 48 updates) plus a code-reasoning SFT top-up |
 
 | Run | Question | Arms | Data | Cost | Decides |
 |---|---|---|---|---|---|
@@ -295,7 +299,7 @@ check) and is recorded with its recipe (inputs with revisions, method, weights, 
 
 ## 8. Order of work
 
-Done: RL-0 → RL-0b, A2a (results in §4); A1 and A5 submitted.
+Done: RL-0 → RL-0b, A2a, A1 (+16K re-eval), A3, A4, A5 (results in §4 and the status table).
 
 Next:
 1. ✅ Language policy decided (A1 section): traces any language, answer in the prompt language. Pending: 16K re-eval 62021559.
