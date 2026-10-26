@@ -12,7 +12,7 @@
 # Judge-labelled on-policy DPO data (scripts/judge_onpolicy_dpo.py): translate (Ollama gemma4:31b, once) -> sample
 # the POLICY in default mode (4 vLLM processes, one per GPU) -> judge (Ollama gemma4:31b, the EUROPA judge digest) ->
 # pairs -> pre-tokenize with the main DPO guards. Resumable phase by phase.
-#   POLICY=<model dir> [WORK=<dir with prompts.jsonl>] [PHASES="translate sample judge pairs pretok"] [SMOKE=1] sbatch ...
+#   POLICY=<model dir> [DATA_DIR=<dir with prompts.jsonl>] [PHASES="translate sample judge pairs pretok"] [SMOKE=1] sbatch ...
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
 root=$OELLM_WORK/sft-migration-preflight
@@ -20,26 +20,28 @@ tools=$OELLM_WORK/tools
 C=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
 VLLM_PY=$OELLM_SCRATCH/oellm-rl/tmax-reproduction/.venv/bin/python
 : "${POLICY:?policy model dir}"
-WORK=${WORK:-$OELLM_SCRATCH/oellm-dpo/safety-v1}
+# Not $DATA_DIR: Leonardo already defines it (the project work area).
+DATA_DIR=${DATA_DIR:-$OELLM_SCRATCH/oellm-dpo/safety-v1}
 PHASES=${PHASES:-translate sample judge pairs pretok}
 JREV=sha256:6316f0629137b426c9d9b853ffc4c8209589f30ee39aebede6285096c0ff47e7
 if [[ "${SMOKE:-0}" == 1 ]]; then  # 12 prompts per behaviour/category, separate work dir
-  src=$WORK; WORK=$WORK-smoke; mkdir -p $WORK
+  src=$DATA_DIR; WORK=$DATA_DIR-smoke; mkdir -p $DATA_DIR
   python3 -c "
 import json,collections,sys
-c=collections.Counter(); out=open('$WORK/prompts.jsonl','w')
+c=collections.Counter(); out=open('$DATA_DIR/prompts.jsonl','w')
 for l in open('$src/prompts.jsonl'):
     r=json.loads(l); k=(r['behaviour'],r['category'] if r['behaviour']=='grounded' else '')
     if c[k]<12: out.write(l); c[k]+=1
 "
 fi
-test -s "$WORK/prompts.jsonl"
+test -s "$DATA_DIR/prompts.jsonl"
+NGPU=$(nvidia-smi -L | wc -l)  # 1-GPU jobs backfill on a full partition; everything adapts to the GPUs given
 py() { singularity exec --nv -B /leonardo_work,/leonardo_scratch "$C" env PYTHONPATH=$OELLM_WORK/europa/pylibs HF_HUB_OFFLINE=1 VLLM_NO_USAGE_STATS=1 "$@"; }
 endpoints=""
 start_ollama() {
   export OLLAMA_MODELS=$tools/ollama-models-baseline OLLAMA_NUM_PARALLEL=8 OLLAMA_KEEP_ALIVE=-1
   endpoints=""
-  for g in 0 1 2 3; do
+  for g in $(seq 0 $((NGPU - 1))); do
     port=$((32000 + SLURM_JOB_ID % 10000 + g))
     CUDA_VISIBLE_DEVICES=$g OLLAMA_HOST=127.0.0.1:$port $tools/ollama-0.32.8/bin/ollama serve > $root/logs/ollama-safety-$SLURM_JOB_ID-$g.log 2>&1 &
     endpoints="$endpoints${endpoints:+,}http://127.0.0.1:$port"
@@ -53,10 +55,10 @@ J="$root/judge_onpolicy_dpo.py"
 for phase in $PHASES; do
   echo "== $phase $(date)"
   case $phase in
-    translate|judge) start_ollama; py python "$J" $phase --work "$WORK" --endpoints "$endpoints" --judge-revision "$JREV" --threads 32; stop_ollama ;;
-    sample) for g in 0 1 2 3; do CUDA_VISIBLE_DEVICES=$g py "$VLLM_PY" "$J" sample --work "$WORK" --policy "$POLICY" --shard $g --shards 4 > "$WORK/sample-$g.log" 2>&1 & done; wait ;;
-    pairs) py python "$J" pairs --work "$WORK" --policy "$POLICY" --judge-revision "$JREV" ;;
-    pretok) py python "$root/build_oellm_dpo_v1_pretok.py" --staged "$WORK/staged" --tokenizer "$root/output/stage3-tooluse-v1.1-bf16" \
-              --template "$root/oellm_qwen3_two_stage_v2_1.jinja" --out "$WORK/pretok" --workers 8 ;;
+    translate|judge) start_ollama; py python "$J" $phase --work "$DATA_DIR" --endpoints "$endpoints" --judge-revision "$JREV" --threads $((NGPU * 8)); stop_ollama ;;
+    sample) for g in $(seq 0 $((NGPU - 1))); do CUDA_VISIBLE_DEVICES=$g py "$VLLM_PY" "$J" sample --work "$DATA_DIR" --policy "$POLICY" --shard $g --shards $NGPU > "$DATA_DIR/sample-$g.log" 2>&1 & done; wait ;;
+    pairs) py python "$J" pairs --work "$DATA_DIR" --policy "$POLICY" --judge-revision "$JREV" ;;
+    pretok) py python "$root/build_oellm_dpo_v1_pretok.py" --staged "$DATA_DIR/staged" --tokenizer "$root/output/stage3-tooluse-v1.1-bf16" \
+              --template "$root/oellm_qwen3_two_stage_v2_1.jinja" --out "$DATA_DIR/pretok" --workers 8 ;;
   esac
 done
