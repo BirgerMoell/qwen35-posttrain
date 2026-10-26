@@ -360,7 +360,7 @@ were cancelled before they started once the merge restored tool use (roadmap §5
   - Pool `scripts/leonardo_w2_data.sh` and config `configs/leonardo-grpo-math-oellm9b-w2.yaml`: 2,560 prompts —
     896 profiled math (solved 1–7 of 8), 192 `math_direct_shaped` + 192 `mcq_letter_direct`, 256 `ifeval_direct` + 128
     `ifeval_think`, 384 code, 512 tools (translated slice first); 7K responses, tool prompts ≤ 3K, concave length
-    penalty + non-stop penalty, 160 updates, ~700–900 local-h. Canary first, as always.
+    penalty + non-stop penalty, 160 updates; ~400–550 local-h from W1a's measured 2.1 min/update (walltime 12 h caps it at ~770). Canary first, as always.
 - Each canary (256 episodes, 1 h) gates its full run (`afterok`); a cleanup job cancels the full run and its evals if
   the canary fails.
 
