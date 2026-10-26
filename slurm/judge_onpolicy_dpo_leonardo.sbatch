@@ -56,7 +56,7 @@ for phase in $PHASES; do
     translate|judge) start_ollama; py python "$J" $phase --work "$WORK" --endpoints "$endpoints" --judge-revision "$JREV" --threads 32; stop_ollama ;;
     sample) for g in 0 1 2 3; do CUDA_VISIBLE_DEVICES=$g py "$VLLM_PY" "$J" sample --work "$WORK" --policy "$POLICY" --shard $g --shards 4 > "$WORK/sample-$g.log" 2>&1 & done; wait ;;
     pairs) py python "$J" pairs --work "$WORK" --policy "$POLICY" --judge-revision "$JREV" ;;
-    pretok) py python "$root/build_oellm_dpo_v1_pretok.py" --staged "$WORK/staged" --tokenizer "$POLICY" \
+    pretok) py python "$root/build_oellm_dpo_v1_pretok.py" --staged "$WORK/staged" --tokenizer "$root/output/stage3-tooluse-v1.1-bf16" \
               --template "$root/oellm_qwen3_two_stage_v2_1.jinja" --out "$WORK/pretok" --workers 8 ;;
   esac
 done
