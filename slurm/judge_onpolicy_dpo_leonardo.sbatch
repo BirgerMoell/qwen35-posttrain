@@ -25,7 +25,7 @@ DATA_DIR=${DATA_DIR:-$OELLM_SCRATCH/oellm-dpo/safety-v1}
 PHASES=${PHASES:-translate sample judge pairs pretok}
 JREV=sha256:6316f0629137b426c9d9b853ffc4c8209589f30ee39aebede6285096c0ff47e7
 if [[ "${SMOKE:-0}" == 1 ]]; then  # 12 prompts per behaviour/category, separate work dir
-  src=$DATA_DIR; WORK=$DATA_DIR-smoke; mkdir -p $DATA_DIR
+  src=$DATA_DIR; DATA_DIR=$DATA_DIR-smoke; mkdir -p $DATA_DIR
   python3 -c "
 import json,collections,sys
 c=collections.Counter(); out=open('$DATA_DIR/prompts.jsonl','w')
