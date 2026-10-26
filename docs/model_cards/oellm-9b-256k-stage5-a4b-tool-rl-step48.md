@@ -35,6 +35,44 @@ code, strict formats) are still in progress.
   (RL control plane, verifiers, data builders). Plan and record:
   [project page](https://birgermoell.github.io/qwen35-posttrain/).
 
+<!-- glance:start -->
+## At a glance
+
+> **This model** is step 6 of the pipeline below (tool-call RL). In every figure it is the **red star** or the
+> **red box**; earlier checkpoints of the same lineage are blue, other models are grey diamonds. All scores are
+> on a 0–1 scale, higher is better.
+
+![Per-domain scores of this model and its earlier checkpoints](https://huggingface.co/birgermoell/oellm-9b-256k-stage5-a4b-tool-rl-step48/resolve/main/assets/overview.png)
+
+| Domain | Measured by | This model | Tool-use SFT (step 3) | Change |
+|---|---|---|---|---|
+| Chat capabilities in 36 European languages | EUROPA Eval | **0.670** | 0.616 | ▲ +0.054 |
+| Safety and behaviour | EUROPA Alignment | **0.670** | 0.642 | ▲ +0.028 |
+| Math, step by step (thinking mode) | quick reasoning eval | **0.442** | 0.435 | ≈ same |
+| Math, direct answers | quick reasoning eval | **0.577** | 0.581 | ≈ same |
+| Thinking traces that finish | share of traces closed within 6K tokens | **0.511** | 0.511 | ≈ same |
+| Tool calling: right call or no call | held-out tool check | **0.881** | 0.870 | ▲ +0.011 |
+| Tool calling: correct tool names | held-out tool check | **0.784** | 0.734 | ▲ +0.050 |
+| Tool calling: valid arguments | held-out tool check | **0.969** | 0.981 | ▼ -0.012 |
+| Code | HumanEval+ (direct mode) | *running* | 0.335 |  |
+| Reading comprehension | Belebele | *running* | 0.820 |  |
+| Knowledge | Global-MMLU | *running* | 0.584 |  |
+| Regional knowledge | INCLUDE | *running* | 0.539 |  |
+| Grammar | MultiBLiMP | *running* | 0.930 |  |
+
+**In short.**
+- **Strongest:** tool calling (the best call decisions and tool names in the lineage, valid JSON 99.5 %);
+  reading comprehension and grammar in European languages (Belebele 0.82, MultiBLiMP 0.93 at step 3); safe and
+  well-formed behaviour overall (EUROPA Alignment 0.67, the best in the lineage).
+- **Improved by DPO, merge and RL:** EUROPA Eval 0.62 → 0.67, mostly from quantitative answers (0.04 → 0.31),
+  agentic control and fewer malformed answers (122 → 100).
+- **Weakest:** thinking mode often does not finish (about half the traces hit the 6K-token limit), so thinking
+  mode is less accurate than direct mode; code is weak (HumanEval+ ≈ 0.34 at step 3); grounding & safety (0.70 →
+  0.58), refusal calibration (0.44 → 0.35) and direct-mode EU-language math (0.45 → 0.31) regressed after DPO.
+- **Compared with other models:** above Apertus-8B-Instruct on EUROPA Eval (0.57) but below the project's
+  instruct SFT (0.76) and DPO (0.84) models, which come from a different SFT lineage.
+<!-- glance:end -->
+
 ## How it was made
 
 All stages ran on the CINECA Leonardo booster (NVIDIA A100 64 GB) in an EuroHPC AI Factory allocation. Every data
@@ -105,70 +143,122 @@ vLLM 0.19.1 and DeepSpeed ZeRO-3 for RL.
 
 ## Evaluation
 
-All numbers are from our own harnesses (scripts in the repositories above) and use greedy decoding.
+Every number below was produced with the scripts in the repositories linked above, with greedy decoding.
+The checkpoints are the stages of this model's own lineage:
 
-**Held-out tool check** (361 rows of the stage-3 tool dataset, never trained on; direct mode):
+| Checkpoint | What it is |
+|---|---|
+| Base | the pretrained OpenEuroLLM 9B 256K base (no chat ability) |
+| 1 Instruct SFT | instruction tuning (direct mode only) |
+| 2 Reasoning SFT | adds the opt-in thinking mode |
+| 3 Tool-use SFT | adds tool calling (v1.1, after the tag-row repair) |
+| 4 DPO v2 | preference tuning on 250K pairs |
+| 5 Merge | 0.5 × step 3 + 0.5 × step 4 (restores tool use) |
+| **6 Tool-call RL (this model)** | 48 updates of multi-turn tool-call RL from the merge |
 
-| Model | Call decision | Tool names | Valid JSON | Valid arguments | Finished |
+**What each evaluation measures:**
+
+| Evaluation | What it measures | Size | Languages | Notes |
+|---|---|---|---|---|
+| EUROPA Eval | practical capabilities: digital agency, grounding & safety, language understanding, practical communication, quantitative reasoning | 432 items | 36 European | direct mode; judged by gemma4:31b; [BirgerMoell/europa-eval](https://github.com/BirgerMoell/europa-eval) |
+| EUROPA Alignment | behaviour: agentic control, dangerous capabilities, fairness, wellbeing, privacy, refusal calibration | 576 items | 36 European | direct mode; judged by gemma4:31b; [BirgerMoell/europa-alignment](https://github.com/BirgerMoell/europa-alignment) |
+| Quick reasoning eval | math word problems and competition math, final answer checked | 570 items (GSM8K 150, MGSM 200, MATH-500 100, EU-language math 120) | MGSM en/de/es/fr; EU math in 15 languages | both modes; thinking budget 6,144 tokens |
+| Held-out tool check | call or no call, tool names, JSON and argument validity, finishing | 361 conversations | 17 | direct mode; never trained on |
+| EvalPlus | code correctness on extended hidden tests (pass@1, plus) | HumanEval+ 164, MBPP+ 378 | en | code runs in a contained sandbox |
+| oellm-eval v0.3.0 | knowledge and language competence, few-shot without chat template | Belebele 20, Global-MMLU 11, INCLUDE 11, MultiBLiMP 28 tasks | many European | project harness [OpenEuroLLM/oellm-eval](https://github.com/OpenEuroLLM/oellm-eval) |
+
+![Every evaluation on every checkpoint](https://huggingface.co/birgermoell/oellm-9b-256k-stage5-a4b-tool-rl-step48/resolve/main/assets/scorecard.png)
+
+'–' means the evaluation was not run at that stage, and *running* means it is in progress for this
+model. The card will be updated when it finishes.
+
+### EUROPA Eval and Alignment
+
+![EUROPA scores along the pipeline](https://huggingface.co/birgermoell/oellm-9b-256k-stage5-a4b-tool-rl-step48/resolve/main/assets/europa_progress.png)
+
+| Model | EUROPA Eval | malformed answers | EUROPA Alignment | malformed answers |
+|---|---|---|---|---|
+| 1 Instruct SFT | 0.600 | 120 | 0.455 | 72 |
+| 2 Reasoning SFT | 0.609 | 132 | 0.605 | 72 |
+| 3 Tool-use SFT | 0.616 | 122 | 0.642 | 72 |
+| 5 Merge | 0.655 | 111 | 0.660 | 57 |
+| **6 Tool-call RL (this model)** | **0.670** | 100 | **0.670** | 43 |
+| *Reference: OpenEuroLLM instruct SFT (Neonkraft)* | 0.762 | 38 | 0.773 | 41 |
+| *Reference: OpenEuroLLM threeway DPO* | 0.840 | 9 | – | – |
+| *Reference: Apertus-8B-Instruct-2509* | 0.573 | 116 | – | – |
+
+![EUROPA domains](https://huggingface.co/birgermoell/oellm-9b-256k-stage5-a4b-tool-rl-step48/resolve/main/assets/europa_domains.png)
+
+**EUROPA Eval by domain**
+
+| Domain | 1 Instruct SFT | 2 Reasoning SFT | 3 Tool-use SFT | 5 Merge | **6 Tool-call RL (this model)** |
 |---|---|---|---|---|---|
-| Stage 3 v1.1 (tool SFT) | 0.870 | 0.734 | 0.995 | 0.981 | 98.3 % |
-| DPO v2 | 0.831 | 0.654 | 0.898 | 0.849 | 90.0 % |
-| Merge (0.5 / 0.5) | 0.878 | 0.767 | 0.985 | 0.951 | 98.1 % |
-| **This checkpoint** | **0.881** | **0.784** | **0.995** | 0.969 | 98.3 % |
+| digital agency | 0.727 | 0.708 | 0.736 | 0.782 | **0.815** |
+| grounding safety | 0.560 | 0.710 | 0.700 | 0.573 | **0.580** |
+| language understanding | 0.761 | 0.731 | 0.747 | 0.782 | **0.803** |
+| practical communication | 0.754 | 0.800 | 0.811 | 0.821 | **0.826** |
+| quantitative reasoning | 0.153 | 0.030 | 0.041 | 0.312 | **0.310** |
 
-**Quick reasoning eval** (GSM8K 150, MGSM en/de/es/fr 200, MATH-500 100, EU-language math 120; thinking mode has a
-6,144-token budget):
+**EUROPA Alignment by domain**
 
-| Model | Direct acc. | Thinking acc. | Thinking unfinished | MATH-500 (thinking) | EU math (thinking) |
+| Domain | 1 Instruct SFT | 2 Reasoning SFT | 3 Tool-use SFT | 5 Merge | **6 Tool-call RL (this model)** |
 |---|---|---|---|---|---|
-| Stage 3 v1.1 | 0.581 | 0.435 | 48.9 % | 0.160 | 0.108 |
-| Merge (0.5 / 0.5) | 0.568 | 0.426 | 47.4 % | 0.160 | 0.158 |
-| **This checkpoint** | 0.577 | 0.442 | 48.9 % | 0.140 | 0.133 |
+| agentic control | 0.425 | 0.500 | 0.485 | 0.617 | **0.678** |
+| dangerous capabilities | 0.095 | 0.447 | 0.510 | 0.479 | **0.481** |
+| high stakes fairness | 0.761 | 0.738 | 0.747 | 0.765 | **0.753** |
+| human wellbeing | 0.490 | 0.751 | 0.826 | 0.866 | **0.859** |
+| privacy security | 0.549 | 0.667 | 0.709 | 0.686 | **0.696** |
+| refusal calibration | 0.344 | 0.402 | 0.438 | 0.347 | **0.346** |
 
-**Knowledge retention** ([oellm-eval](https://github.com/OpenEuroLLM/oellm-eval) v0.3.0, few-shot without chat
-template; measured on stage 3, which this checkpoint descends from; DPO and RL did not target these skills):
+### Reasoning (quick eval)
+
+| Model | direct: all | thinking: all | thinking traces finished | GSM8K (d / t) | MGSM (d / t) | MATH-500 (d / t) | EU-language math (d / t) |
+|---|---|---|---|---|---|---|---|
+| 2 Reasoning SFT | 0.588 | 0.402 | 46% | 0.71 / 0.64 | 0.71 / 0.58 | 0.34 / 0.09 | 0.43 / 0.06 |
+| 3 Tool-use SFT | 0.581 | 0.435 | 51% | 0.70 / 0.67 | 0.68 / 0.59 | 0.36 / 0.16 | 0.45 / 0.11 |
+| 4 DPO v2 | 0.558 | 0.440 | 53% | 0.83 / 0.62 | 0.71 / 0.62 | 0.31 / 0.16 | 0.17 / 0.14 |
+| 5 Merge | 0.568 | 0.426 | 53% | 0.80 / 0.61 | 0.70 / 0.58 | 0.28 / 0.16 | 0.29 / 0.16 |
+| **6 Tool-call RL (this model)** | **0.577** | **0.442** | 51% | 0.77 / 0.67 | 0.74 / 0.60 | 0.28 / 0.14 | 0.31 / 0.13 |
+
+d = direct mode, t = thinking mode. Thinking mode is weaker than direct mode on these checkpoints because about
+half of the traces do not finish within the budget.
+
+### Tool calling (held-out check, 361 rows)
+
+| Model | call decision | tool names | valid JSON | valid arguments | finished |
+|---|---|---|---|---|---|
+| 3 Tool-use SFT v1 (before the tag-row repair) | 0.496 | 0.496 | 0.000 | 0.000 | 98.1% |
+| 3 Tool-use SFT | 0.870 | 0.734 | 0.995 | 0.981 | 98.3% |
+| 4 DPO v2 | 0.831 | 0.654 | 0.898 | 0.849 | 90.0% |
+| 5 Merge | 0.878 | 0.767 | 0.985 | 0.951 | 98.1% |
+| **6 Tool-call RL (this model)** | **0.881** | **0.784** | **0.995** | **0.969** | 98.3% |
+
+### Code (EvalPlus, pass@1 on the extended tests)
+
+| Model | HumanEval+ direct | MBPP+ direct | HumanEval+ thinking | MBPP+ thinking |
+|---|---|---|---|---|
+| 3 Tool-use SFT | 0.335 | 0.357 | 0.189 | 0.243 |
+| **6 Tool-call RL (this model)** | *running* | *running* | – | – |
+
+### Knowledge and language (oellm-eval v0.3.0)
 
 | Model | Belebele | Global-MMLU | INCLUDE | MultiBLiMP |
 |---|---|---|---|---|
 | Base | 0.737 | 0.547 | 0.422 | 0.935 |
-| Stage 3 v1.1 | 0.820 | 0.584 | 0.539 | 0.930 |
+| 3 Tool-use SFT | 0.820 | 0.584 | 0.539 | 0.930 |
+| **6 Tool-call RL (this model)** | *running* | *running* | *running* | *running* |
+| *Reference: OpenEuroLLM instruct SFT (Neonkraft)* | 0.808 | 0.573 | 0.546 | 0.931 |
+| *Reference: Apertus-8B-Instruct-2509* | 0.792 | 0.560 | 0.578 | 0.924 |
+| *Reference: Qwen3-8B* | 0.865 | 0.663 | 0.587 | 0.866 |
 
-These are means over the task subsets in the project documentation (Belebele 20, Global-MMLU 11, INCLUDE 11 and
-MultiBLiMP 28 tasks).
+Means over the tasks every compared model completed. These benchmarks run few-shot without a chat template,
+so they measure knowledge and language, not chat behaviour.
 
-**EUROPA Eval** (432 items, 12 capabilities in 36 European languages) and **EUROPA Alignment** (576 items, 16
-scenarios). Settings: greedy, direct mode, seed 42; judge `gemma4:31b`; 95 % confidence intervals in brackets.
-
-| Model | EUROPA Eval | malformed | EUROPA Alignment | malformed |
-|---|---|---|---|---|
-| Stage 3 v1.1 | 0.616 [0.577–0.656] | 122 | 0.642 [0.614–0.670] | 72 |
-| Merge (0.5 / 0.5) | 0.655 [0.617–0.693] | 111 | 0.660 [0.629–0.690] | 57 |
-| **This checkpoint** | **0.670** [0.632–0.708] | **100** | **0.670** [0.639–0.700] | **43** |
-
-EUROPA Eval by domain, Stage 3 → this checkpoint:
-
-| Domain | Stage 3 | This checkpoint |
-|---|---|---|
-| Quantitative reasoning | 0.041 | **0.310** |
-| Digital agency | 0.736 | 0.815 |
-| Language understanding | 0.747 | 0.803 |
-| Practical communication | 0.811 | 0.826 |
-| Grounding and safety | 0.700 | **0.580** (regression) |
-
-EUROPA Alignment by domain, Stage 3 → this checkpoint:
-
-| Domain | Stage 3 | This checkpoint |
-|---|---|---|
-| Agentic control | 0.485 | 0.678 |
-| Human wellbeing | 0.826 | 0.859 |
-| High-stakes fairness | 0.747 | 0.753 |
-| Privacy and security | 0.709 | 0.696 |
-| Dangerous capabilities | 0.510 | 0.481 |
-| Refusal calibration | 0.438 | **0.346** (regression) |
-
-DPO and the merge improved format compliance and quantitative answers. Grounding and safety, and refusal
-calibration, got worse. A reference DPO model of the project (a different SFT lineage) scores 0.840 on EUROPA Eval,
-so there is a large gap left, mainly in format compliance, grounding and language understanding.
+**Measurement notes.**
+- The EUROPA and quick-eval numbers for step 3 were measured on its first revision (`0dc97efa`). Revision v1.1,
+  which this lineage uses, differs only in the 8 output rows of the tool/think tag tokens.
+- The EUROPA judge is gemma4:31b, run locally with a pinned digest. Scores have 95 % confidence intervals of about
+  ±0.03–0.04. The numbers behind every figure are in [`assets/evals.json`](https://huggingface.co/birgermoell/oellm-9b-256k-stage5-a4b-tool-rl-step48/blob/main/assets/evals.json).
 
 ## Usage
 
