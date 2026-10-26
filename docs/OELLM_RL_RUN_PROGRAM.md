@@ -325,6 +325,20 @@ were cancelled before they started once the merge restored tool use (roadmap §5
   math prompts **none** is bare (median ~290 characters of working before the `\boxed{}`), so RL has nothing to
   reinforce. Not a verifier bug (checked the decoded rollouts). Next lever: a shaped reward for these rows (correct
   final `\boxed{}` scaled by brevity, full credit only when bare) or more bare-answer DPO/SFT data.
+- **W1a result (10-26, job 62278866, 128 updates, 4 h 26 min, ~280 local-h; step 128):**
+
+  | Model | default | thinking acc. | unfinished | MATH-500 | EU math | MGSM | GSM8K |
+  |---|---|---|---|---|---|---|---|
+  | Stage-3 v1.1 | 0.581 | 0.435 | 48.9 % | 0.160 | 0.108 | — | — |
+  | merge α 0.5 | 0.568 | 0.426 | 47.4 % | 0.160 | 0.158 | 0.585 | 0.607 |
+  | A3 (best ablation) | 0.593 | 0.532 | 34.2 % | 0.180 | 0.283 | 0.700 | 0.740 |
+  | **W1a** | 0.574 | **0.619** | **15.4 %** | **0.270** | **0.433** | **0.780** | **0.787** |
+
+  EvalPlus (pass@1 plus, HumanEval+ / MBPP+): thinking **0.348 / 0.328**, traces closed 94 % / 86 % (Stage 3: 0.189 /
+  0.243, ~45 % closed; A5: 0.256 / 0.265); direct 0.372 / 0.362 (Stage 3: 0.335 / 0.357). Held-out tool check held
+  (decision 0.878, names 0.778, JSON 0.991, args 0.958, finished 99.2 %). Training: code 0.06 → 0.28, `math_direct`
+  0.01 → 0.09 (bare answers appear late), letters 0.44 → 0.50. The combined window is far better than any single
+  ablation: thinking mode now beats direct mode, and unfinished traces fell from 49 % to 15 %.
 - **Combination (queued after W1a, job 62324489):** task arithmetic `merge + (A4b − merge) + (W1a − merge)`
   (`slurm/merge_task_arithmetic_leonardo.sbatch`; all three share 399 tensors, bf16), then quick (62324491), tool
   (62324492), EvalPlus (62324493) and EUROPA (62324496); EUROPA also on W1a's final step (62324495). The W2 base is
