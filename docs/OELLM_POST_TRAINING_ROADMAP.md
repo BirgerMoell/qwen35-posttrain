@@ -130,6 +130,24 @@ Stage-4 candidate pending EUROPA Eval/Alignment (does it keep DPO's chat-quality
 reasoning evals; (2) P1 and A4b RL runs from v2 (RL program); (3) EUROPA Eval/Alignment on the selected candidate
 (private HF upload); (4) if neither merge nor A4b restores tools, DPO v3 with tool-call and thinking-mode pairs.
 
+**Stage 4b — judge-labelled on-policy DPO for refusal calibration and grounding (planned after W2, user decision
+10-26).** EUROPA showed regressions after DPO v2 + merge: grounding & safety 0.70 → 0.58 (A4b; 0.62 at W1a) and
+refusal calibration 0.44 → 0.35. Pipeline (`scripts/build_oellm_safety_dpo_prompts.py`, `scripts/judge_onpolicy_dpo.py`,
+`slurm/judge_onpolicy_dpo_leonardo.sbatch`):
+- 4,200 English prompts with an expected behaviour, open licenses only: **refuse** 1,400 (Aegis 2.0 unsafe @ `d86bb8be`
+  CC-BY-4.0, do-not-answer @ `74e74f2e` Apache-2.0, OR-Bench toxic @ `e36d8b80` CC-BY-4.0); **comply** 1,600 (OR-Bench
+  80k minus its hard-1k eval subset, Aegis safe); **grounded** 1,200 (SQuAD v2 @ `3ffb306f` CC-BY-SA-4.0, 600 answerable /
+  600 unanswerable, four "answer from the text" phrasings). Decontaminated against all EUROPA Eval/Alignment items
+  (8-gram overlap); ~1/3 translated into 16 languages by gemma4:31b.
+- The policy (W2's final checkpoint) samples 6 default-mode answers per prompt; **gemma4:31b scores each 1–10** with a
+  behaviour rubric (refuse kindly with an alternative / help without moralising / answer only from the passage or say
+  it is not there; wrong language ≤ 3). Pair = best (ties → shorter) vs worst, kept if best ≥ 7 and gap ≥ 3.
+- **Caveat:** the judge is the EUROPA judge (same model and digest, user decision), so EUROPA Alignment is not an
+  independent check of this pass; the oellm-eval retention suite, the quick evals and a human spot check of ~50 pairs
+  are the guards.
+- Then a short DPO from W2 (β 0.1, LR 5e-7, the pairs plus a sample of general and format pairs against drift).
+- Smoke test of the whole pipeline on W1a with 60 prompts: job 62332012.
+
 **Still to do in Stage 4 (original list):**
 1. **Format-compliance pairs** (builder `scripts/build_oellm_format_pairs.py`, launcher
    `slurm/build_oellm_format_pairs_leonardo.sbatch`; first build 10-23 night: 18,062 prompts — 11,500 math
