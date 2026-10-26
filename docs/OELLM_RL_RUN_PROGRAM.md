@@ -316,6 +316,15 @@ were cancelled before they started once the merge restored tool use (roadmap §5
 - **A4b** `merge-tool` (canary 62278867 → full 62278868): the multi-turn tool pool (`leonardo_a4b_tool_data.sh`) from
   the merge, ~250 local-h; evals tool held-out (62278872) and quick (62278873). Question: learning signal and held-out
   tool check above the merge (decision 0.878, JSON 0.985, args 0.951).
+- **A4b result (10-26, job 62278868, 48 updates, 1 h 51 min):** training reward 0.35 → 0.42 (correct 0.60 → 0.65) —
+  a learning signal, unlike A4. Held-out tool check (step 48) vs the merge: decision 0.878 → 0.881, names 0.767 →
+  **0.784** (best of all models), JSON 0.985 → **0.995**, arguments 0.951 → 0.969, finished 98 %; reasoning held
+  (thinking 0.442 / unfinished 49 %, default 0.577). **Adopt the A4b pool for the tool share of W2.**
+- **W1a in progress (10-26 morning):** update 73/128 after 3 h; letter-only default answers 0.39 → 0.53, thinking math
+  0.55 → 0.57, code 0.07 → 0.12. `math_direct` stays 0: of 2,784 sampled default-mode replies to "final answer only"
+  math prompts **none** is bare (median ~290 characters of working before the `\boxed{}`), so RL has nothing to
+  reinforce. Not a verifier bug (checked the decoded rollouts). Next lever: a shaped reward for these rows (correct
+  final `\boxed{}` scaled by brevity, full credit only when bare) or more bare-answer DPO/SFT data.
 - Each canary (256 episodes, 1 h) gates its full run (`afterok`); a cleanup job cancels the full run and its evals if
   the canary fails.
 
