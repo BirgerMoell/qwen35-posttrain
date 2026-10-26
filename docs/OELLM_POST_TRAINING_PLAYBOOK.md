@@ -510,6 +510,8 @@ rollouts passed all hidden tests, 71 % hit the 6K cap.
 | `birgermoell/oellm-9b-256k-stage1-instruct-v1` | private | `58e42ab4` |
 | `birgermoell/oellm-9b-256k-stage2-reasoning-v1` | private | `2db72459` |
 | `birgermoell/oellm-9b-256k-stage3-tooluse-v1` | private | `88875629` (v1.1); `0dc97efa` (v1, do not use for tools) |
+| `birgermoell/oellm-9b-256k-stage4-dpo-v2-merge-a05` (0.5 × stage 3 + 0.5 × DPO v2) | private | `538a104e` |
+| **`birgermoell/oellm-9b-256k-stage5-a4b-tool-rl-step48`** (merge + 48 updates of multi-turn tool RL; card: `docs/model_cards/`) | **public** | `35e92f8a` |
 | `birgermoell/openeurollm-instruct-sft-v1` (dataset) | private | `d12df83` |
 | `birgermoell/openeurollm-reasoning-instruct-v1` (dataset) | public | `9273ba4` |
 | `birgermoell/openeurollm-tool-use-v1` (dataset) | public | `e30b5449` |
