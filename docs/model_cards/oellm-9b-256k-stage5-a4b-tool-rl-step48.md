@@ -54,20 +54,23 @@ code, strict formats) are still in progress.
 | Tool calling: right call or no call | held-out tool check | **0.881** | 0.870 | ▲ +0.011 |
 | Tool calling: correct tool names | held-out tool check | **0.784** | 0.734 | ▲ +0.050 |
 | Tool calling: valid arguments | held-out tool check | **0.969** | 0.981 | ▼ -0.012 |
-| Code | HumanEval+ (direct mode) | *running* | 0.335 |  |
-| Reading comprehension | Belebele | *running* | 0.820 |  |
-| Knowledge | Global-MMLU | *running* | 0.584 |  |
-| Regional knowledge | INCLUDE | *running* | 0.539 |  |
-| Grammar | MultiBLiMP | *running* | 0.930 |  |
+| Code | HumanEval+ (direct mode) | **0.354** | 0.335 | ▲ +0.019 |
+| Reading comprehension | Belebele | **0.824** | 0.821 | ≈ same |
+| Knowledge | Global-MMLU | **0.587** | 0.584 | ≈ same |
+| Regional knowledge | INCLUDE | **0.542** | 0.539 | ≈ same |
+| Grammar | MultiBLiMP | **0.932** | 0.930 | ≈ same |
 
 **In short.**
 - **Strongest:** tool calling (the best call decisions and tool names in the lineage, valid JSON 99.5 %);
-  reading comprehension and grammar in European languages (Belebele 0.82, MultiBLiMP 0.93 at step 3); safe and
-  well-formed behaviour overall (EUROPA Alignment 0.67, the best in the lineage).
+  reading comprehension and grammar in European languages (Belebele 0.82, MultiBLiMP 0.93, above the project's
+  other SFT and DPO models); safe and well-formed behaviour overall (EUROPA Alignment 0.67, best in the lineage).
+- **Knowledge kept:** DPO, merging and RL left Belebele, Global-MMLU, INCLUDE and MultiBLiMP within ±0.005 of
+  the tool-use SFT, +4 to +12 points above the base.
 - **Improved by DPO, merge and RL:** EUROPA Eval 0.62 → 0.67, mostly from quantitative answers (0.04 → 0.31),
   agentic control and fewer malformed answers (122 → 100).
 - **Weakest:** thinking mode often does not finish (about half the traces hit the 6K-token limit), so thinking
-  mode is less accurate than direct mode; code is weak (HumanEval+ ≈ 0.34 at step 3); grounding & safety (0.70 →
+  mode is less accurate than direct mode; code is weak (HumanEval+ 0.35 / MBPP+ 0.36 direct, lower in thinking
+  mode where many traces do not finish); grounding & safety (0.70 →
   0.58), refusal calibration (0.44 → 0.35) and direct-mode EU-language math (0.45 → 0.31) regressed after DPO.
 - **Compared with other models:** above Apertus-8B-Instruct on EUROPA Eval (0.57) but below the project's
   instruct SFT (0.76) and DPO (0.84) models, which come from a different SFT lineage.
@@ -169,8 +172,7 @@ The checkpoints are the stages of this model's own lineage:
 
 ![Every evaluation on every checkpoint](https://huggingface.co/birgermoell/oellm-9b-256k-stage5-a4b-tool-rl-step48/resolve/main/assets/scorecard.png)
 
-'–' means the evaluation was not run at that stage, and *running* means it is in progress for this
-model. The card will be updated when it finishes.
+'–' means the evaluation was not run at that stage.
 
 ### EUROPA Eval and Alignment
 
@@ -238,15 +240,18 @@ half of the traces do not finish within the budget.
 | Model | HumanEval+ direct | MBPP+ direct | HumanEval+ thinking | MBPP+ thinking |
 |---|---|---|---|---|
 | 3 Tool-use SFT | 0.335 | 0.357 | 0.189 | 0.243 |
-| **6 Tool-call RL (this model)** | *running* | *running* | – | – |
+| **6 Tool-call RL (this model)** | **0.354** | **0.362** | **0.165** | **0.254** |
+
+Thinking mode scores lower than direct mode because many traces do not finish within 8,192 tokens (this model:
+34 % of HumanEval+ and 55 % of MBPP+ traces close). Code is read only after a closed trace.
 
 ### Knowledge and language (oellm-eval v0.3.0)
 
 | Model | Belebele | Global-MMLU | INCLUDE | MultiBLiMP |
 |---|---|---|---|---|
 | Base | 0.737 | 0.547 | 0.422 | 0.935 |
-| 3 Tool-use SFT | 0.820 | 0.584 | 0.539 | 0.930 |
-| **6 Tool-call RL (this model)** | *running* | *running* | *running* | *running* |
+| 3 Tool-use SFT | 0.821 | 0.584 | 0.539 | 0.930 |
+| **6 Tool-call RL (this model)** | **0.824** | **0.587** | **0.542** | **0.932** |
 | *Reference: OpenEuroLLM instruct SFT (Neonkraft)* | 0.808 | 0.573 | 0.546 | 0.931 |
 | *Reference: Apertus-8B-Instruct-2509* | 0.792 | 0.560 | 0.578 | 0.924 |
 | *Reference: Qwen3-8B* | 0.865 | 0.663 | 0.587 | 0.866 |

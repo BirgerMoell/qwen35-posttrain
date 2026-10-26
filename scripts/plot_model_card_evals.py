@@ -36,9 +36,12 @@ KEYS = {  # checkpoint -> result names in the raw collection
 }
 # oellm-eval v0.3.0 means over the tasks all compared models completed (playbook 8.1) and EvalPlus pass@1 (plus).
 OELLM_EVAL = {"Base": {"belebele": 0.737, "global_mmlu": 0.547, "include": 0.422, "multiblimp": 0.935},
-              "3 Tool-use SFT": {"belebele": 0.820, "global_mmlu": 0.584, "include": 0.539, "multiblimp": 0.930}}
+              "3 Tool-use SFT": {"belebele": 0.821, "global_mmlu": 0.584, "include": 0.539, "multiblimp": 0.930},
+              THIS: {"belebele": 0.824, "global_mmlu": 0.587, "include": 0.542, "multiblimp": 0.932}}  # run 2026-10-26-16-27-08
 CODE = {"3 Tool-use SFT": {"humaneval_plus_direct": 0.335, "mbpp_plus_direct": 0.357,
-                           "humaneval_plus_thinking": 0.189, "mbpp_plus_thinking": 0.243}}
+                           "humaneval_plus_thinking": 0.189, "mbpp_plus_thinking": 0.243},
+        THIS: {"humaneval_plus_direct": 0.354, "mbpp_plus_direct": 0.362,  # EvalPlus job 62360803
+               "humaneval_plus_thinking": 0.165, "mbpp_plus_thinking": 0.254}}
 REFERENCES = {  # other models on the same EUROPA protocol / oellm-eval tasks
     "OpenEuroLLM instruct SFT (Neonkraft)": {"europa_eval": 0.762, "europa_alignment": 0.773,
                                               "belebele": 0.808, "global_mmlu": 0.573, "include": 0.546, "multiblimp": 0.931},
