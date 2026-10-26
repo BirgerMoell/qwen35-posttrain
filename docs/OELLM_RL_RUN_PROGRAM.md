@@ -325,6 +325,28 @@ were cancelled before they started once the merge restored tool use (roadmap §5
   math prompts **none** is bare (median ~290 characters of working before the `\boxed{}`), so RL has nothing to
   reinforce. Not a verifier bug (checked the decoded rollouts). Next lever: a shaped reward for these rows (correct
   final `\boxed{}` scaled by brevity, full credit only when bare) or more bare-answer DPO/SFT data.
+- **Combination (queued after W1a, job 62324489):** task arithmetic `merge + (A4b − merge) + (W1a − merge)`
+  (`slurm/merge_task_arithmetic_leonardo.sbatch`; all three share 399 tensors, bf16), then quick (62324491), tool
+  (62324492), EvalPlus (62324493) and EUROPA (62324496); EUROPA also on W1a's final step (62324495). The W2 base is
+  the best of merge / W1a / A4b / combination on these (tools ≥ merge, thinking accuracy and closure ≥ W1a, EUROPA ≥
+  merge).
+- **W2 pieces built 10-26** (oellm-rlvr):
+  - `math_direct_shaped` verifier: bare correct answer 1.0; correct last `\boxed{}` after working 0.2–0.6 by length
+    (0.2 + 0.4·max(0, 1 − chars/800)); wrong 0. Gives RL a gradient towards bare answers.
+  - `ifeval_direct` / `ifeval_think`: TMAX's IFEval/IFBench constraint checkers on the whole default-mode reply or on
+    the answer after one closed trace (upstream `ifeval` empties default-mode replies under the closed-trace contract
+    and cannot parse JSON `null` in labels). Integration-tested against the real TMAX module.
+  - IF pool `scripts/leonardo_w2_if_data.sh`: 1,500 rows of nvidia/Nemotron-RL-instruction_following @ `bcdec57a`
+    (ODC-BY), constraints validated against TMAX's registry (80 dropped), sha `ceac22cb`.
+  - Multilingual tool slice: `qwen35-posttrain/scripts/translate_rl_tool_pool.py` (user turns only, protected argument
+    strings, langid; gemma4:31b), job 62325109, 640 sampled A4b rows.
+  - Math profiling `scripts/leonardo_w2_math_profile.sbatch` on the combination (job 62325199): ~1,160 oellm-math-rlvr
+    level-3–5 prompts (40 per non-English language + 240 English) not in any pool or eval, 8 samples at 8K tokens,
+    banded by solves out of 8.
+  - Pool `scripts/leonardo_w2_data.sh` and config `configs/leonardo-grpo-math-oellm9b-w2.yaml`: 2,560 prompts —
+    896 profiled math (solved 1–7 of 8), 192 `math_direct_shaped` + 192 `mcq_letter_direct`, 256 `ifeval_direct` + 128
+    `ifeval_think`, 384 code, 512 tools (translated slice first); 7K responses, tool prompts ≤ 3K, concave length
+    penalty + non-stop penalty, 160 updates, ~700–900 local-h. Canary first, as always.
 - Each canary (256 episodes, 1 h) gates its full run (`afterok`); a cleanup job cancels the full run and its evals if
   the canary fails.
 
