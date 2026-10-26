@@ -320,6 +320,11 @@ EUROPA Eval 0.616, Alignment 0.642. Quick reasoning (thinking): accuracy 0.402 â
   | threeway DPO (from Neonkraft; our tokenizer) | 0.810 | 0.574 | 0.546 | 0.926 |
   | Apertus-8B-Instruct-2509 | 0.792 | 0.560 | 0.578 | 0.924 |
   | Qwen3-8B | 0.865 | 0.663 | 0.587 | 0.866 |
+  | **W1a (RL window 1, 10-26; run `2026-10-26-16-16-26`)** | **0.826** | **0.589** | 0.539 | 0.932 |
+  | openeurollm/OpenEuroLLM-Prelude-SFT-Excellent-Instructions @ `6551e54c` (128K Prelude base) | 0.781 | 0.543 | 0.486 | 0.844 |
+
+  W1a vs the Prelude SFT (10-26, same common tasks): +4.5 Belebele, +4.6 Global-MMLU, +5.3 INCLUDE, +8.8 MultiBLiMP;
+  W1a is at or slightly above Stage 3, so DPO + RL kept the knowledge SFT added. 2 of 128 tasks failed (container).
 
   Readings: post-training added +8.3 (Belebele), +3.7 (Global-MMLU) and +11.7 (INCLUDE) points over our base and kept
   grammar (MultiBLiMP) intact; Stage 3 is on par with the Neonkraft SFT and the threeway DPO (DPO did not change these
