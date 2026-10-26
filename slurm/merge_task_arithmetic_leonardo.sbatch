@@ -15,6 +15,9 @@
 # must share BASE's parameter names and shapes (same base, tokenizer and architecture). A model given as an RL run's
 # outputs directory resolves to its newest step_* checkpoint at run time.
 #   BASE=<dir> DELTAS="1.0:<dir or run outputs dir> 1.0:<dir>" DST=<dir> [TEMPLATE=<jinja>] sbatch ...
+# MODE=ties (TIES-merging, Yadav et al. 2023): per tensor, keep each weighted delta's top DENSITY fraction by magnitude
+# (default 0.2; threshold estimated on a 2M-element sample for large tensors), elect the sign of the summed trimmed
+# deltas, average only the entries that agree with it, and add LAMBDA (default 1.0) times the result to BASE.
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
 container=/leonardo_work/OELLM_prod2026/container_images/post-training-25.10-transformers-olmo3-patch.sif
@@ -29,7 +32,8 @@ for item in $DELTAS; do
   resolved="$resolved $weight:$path"
 done
 echo "base=$BASE deltas=$resolved"
-srun singularity exec --nv -B /leonardo_work,/leonardo_scratch "$container" python - "$BASE" "$DST" "$TEMPLATE" $resolved <<'PY'
+srun singularity exec --nv -B /leonardo_work,/leonardo_scratch "$container" env MODE="${MODE:-task}" DENSITY="${DENSITY:-0.2}" LAMBDA="${LAMBDA:-1.0}" \
+  python - "$BASE" "$DST" "$TEMPLATE" $resolved <<'PY'
 import json, os, shutil, sys
 from pathlib import Path
 import torch
@@ -37,6 +41,16 @@ from safetensors import safe_open
 from safetensors.torch import save_file
 
 base, dst, template = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
+mode, density, lam = os.environ["MODE"], float(os.environ["DENSITY"]), float(os.environ["LAMBDA"])
+assert mode in ("task", "ties"), mode
+
+def trim(delta):
+    flat = delta.abs().flatten()
+    if flat.numel() > 2_000_000:
+        flat = flat[torch.randint(0, flat.numel(), (2_000_000,))]
+    k = max(1, int(flat.numel() * (1 - density)))
+    threshold = flat.kthvalue(k).values
+    return torch.where(delta.abs() >= threshold, delta, torch.zeros_like(delta))
 deltas = [(float(item.split(":", 1)[0]), Path(item.split(":", 1)[1])) for item in sys.argv[4:]]
 
 def weight_map(path):
@@ -72,18 +86,29 @@ for shard, keys in sorted(by_shard.items()):
     for key in keys:
         b = tensor(base, base_map, key).float()
         acc = b.clone()
+        trimmed = []
         for (w, path), mapping in zip(deltas, maps):
             t = tensor(path, mapping, key)
             if t.shape != b.shape:
                 raise SystemExit(f"{key}: shape {tuple(t.shape)} vs {tuple(b.shape)} in {path}")
             d = t.float() - b
             norms[str(path)] += float(d.pow(2).sum())
-            acc += w * d
+            if mode == "task":
+                acc += w * d
+            else:
+                trimmed.append(trim(w * d))
+        if mode == "ties":
+            stack = torch.stack(trimmed)
+            sign = torch.sign(stack.sum(0))
+            agree = (torch.sign(stack) == sign) & (stack != 0)
+            merged = (stack * agree).sum(0) / agree.sum(0).clamp(min=1)
+            acc += lam * merged
         out[key] = acc.to(torch.bfloat16)
     save_file(out, str(dst / shard), metadata={"format": "pt"})
     print("wrote", shard, len(keys), flush=True)
 record = {"base": str(base), "deltas": [{"weight": w, "model": str(p), "delta_l2": norms[str(p)] ** 0.5} for w, p in deltas],
-          "formula": "base + sum_i w_i * (model_i - base)", "template": str(template)}
+          "formula": "base + sum_i w_i * (model_i - base)" if mode == "task" else f"TIES: base + {lam} * disjoint-mean(trim_{density}(w_i * (model_i - base)))",
+          "mode": mode, "template": str(template)}
 (dst / "merge.json").write_text(json.dumps(record, indent=1) + "\n")
 print(json.dumps(record, indent=1))
 PY
