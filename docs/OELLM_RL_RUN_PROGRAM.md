@@ -372,6 +372,15 @@ were cancelled before they started once the merge restored tool use (roadmap §5
   separately; a crash in W2 itself surfaces equally early), and the build no longer waits for the translation (the
   translated tool slice is optional). The partition was full all day
   (≈ 7,900 pending jobs), so the chain was queued early to accumulate priority.
+- **Specialist-and-merge test (queued 10-26 evening).** Question: can parallel specialists + merging match a joint
+  window (useful on a full partition, where two 2-node runs schedule more easily than one long run)? Evidence so far:
+  joint W1a ≫ single-skill ablations; the naive merge + ΔW1a + ΔA4b kept W1a's level but not A4b's tool gain.
+  - **T1** `t1-tool` (62358554): the A4b tool recipe from W1a step 128 (same base as W2), 96 updates on the A4b pool +
+    translated slice (translation 62358480 as a 1-GPU job, 480 rows; build 62358553). ~240 local-h. Evals tool / quick.
+  - **Merges** after W2 and T1 (`slurm/merge_task_arithmetic_leonardo.sbatch`, base W1a step 128):
+    W1a + ΔW2 + w·ΔT1 for w = 1.0 / 1.5 / 2.0 (62358559 / 62358562 / 62358566) and TIES (density 0.2, λ 1; 62358570),
+    each with quick + tool evals. Compare with W2 alone: if a merge holds W2's reasoning/code and reaches T1's tool
+    scores, specialists + merging become a parallel training mode; otherwise tools stay inside the joint windows.
 - Each canary (256 episodes, 1 h) gates its full run (`afterok`); a cleanup job cancels the full run and its evals if
   the canary fails.
 
