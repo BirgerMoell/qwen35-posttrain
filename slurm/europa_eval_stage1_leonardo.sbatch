@@ -33,7 +33,7 @@ got=$(curl -s http://$OLLAMA_HOST/api/tags | python3 -c "import json,sys; print(
 echo "judge ok: $JUDGE $got"
 
 run() {  # $1 = repo dir, $2 = cli name
-  (cd "$E/$1" && singularity exec --nv -B /leonardo_work "$C" env \
+  (cd "$E/$1" && singularity exec --nv -B /leonardo_work,/leonardo_scratch "$C" env \
     PYTHONPATH="$E/pylibs:$E/$1/src" HF_HOME="$E/hf-cache" HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
     python -m "$2" run --backend huggingface --model "$MODEL" --revision "$REV" --device cuda:0 --dtype bfloat16 \
       --seed 42 --judge-backend ollama --judge-model "$JUDGE" --judge-revision "$JREV" \
