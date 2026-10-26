@@ -110,7 +110,8 @@ def main() -> None:
     aegis = json.load(open(s / "Aegis-AI-Content-Safety-Dataset-2.0/train.json", encoding="utf-8"))
     def aegis_ok(r):
         p = (r.get("prompt") or "").strip()
-        return 15 <= len(p) <= 2000 and "REDACTED" not in p and not r.get("reconstruction_id_if_redacted")
+        return (15 <= len(p) <= 2000 and "REDACTED" not in p and not r.get("reconstruction_id_if_redacted")
+                and not re.search(r"\[(PROMPT|TARGETLANGUAGE|TARGET LANGUAGE|INSERT[^\]]*)\]", p, flags=re.IGNORECASE))
     unsafe = [{"id": f"aegis-{r['id']}", "behaviour": "refuse", "source": "nvidia/Aegis-AI-Content-Safety-Dataset-2.0@d86bb8be",
                "license": "CC-BY-4.0", "prompt": r["prompt"].strip(), "category": r.get("violated_categories") or "", "reference": None}
               for r in aegis if aegis_ok(r) and r.get("prompt_label") == "unsafe"
