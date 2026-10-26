@@ -367,8 +367,10 @@ were cancelled before they started once the merge restored tool use (roadmap §5
     penalty + non-stop penalty, 160 updates; ~400–550 local-h from W1a's measured 2.1 min/update (walltime 12 h caps it at ~770). Canary first, as always.
 - **W2 queued 10-26 15:30 from W1a step 128** (`models/w2-base-mixed`; combination was a tie: EUROPA 0.733/0.733 vs
   W1a 0.735/0.711, thinking 0.598 vs 0.619): pool build on `lrd_all_serial` after profiling 62329893 and translation
-  62325109 (62346864; falls back to unprofiled math if profiling fails) → canary 62346866 → W2 62346870 → quick /
-  tool / EvalPlus 62346873 / 62346877 / 62346880; cleanup 62346884 if the canary fails. The partition was full all day
+  62325109 (62346864; falls back to unprofiled math if profiling fails) → W2 62346870 → quick / tool / EvalPlus
+  62346873 / 62346877 / 62346880. The canary was dropped at 15:55 (full partition: every chained job queues
+  separately; a crash in W2 itself surfaces equally early), and the build no longer waits for the translation (the
+  translated tool slice is optional). The partition was full all day
   (≈ 7,900 pending jobs), so the chain was queued early to accumulate priority.
 - Each canary (256 episodes, 1 h) gates its full run (`afterok`); a cleanup job cancels the full run and its evals if
   the canary fails.
