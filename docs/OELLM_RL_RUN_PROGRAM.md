@@ -339,6 +339,10 @@ were cancelled before they started once the merge restored tool use (roadmap §5
   (decision 0.878, names 0.778, JSON 0.991, args 0.958, finished 99.2 %). Training: code 0.06 → 0.28, `math_direct`
   0.01 → 0.09 (bare answers appear late), letters 0.44 → 0.50. The combined window is far better than any single
   ablation: thinking mode now beats direct mode, and unfinished traces fell from 49 % to 15 %.
+- **EUROPA (10-26, jobs 62323272/62323274):** Eval / Alignment — Stage 3 0.616 / 0.642 (malformed 122 / 72); merge
+  0.655 / 0.660 (111 / 57); **A4b 0.670 / 0.670 (100 / 43)**. Quantitative reasoning 0.04 → 0.31, agentic control
+  0.49 → 0.68; regressions: grounding & safety 0.70 → 0.58, refusal calibration 0.44 → 0.35. Reference threeway DPO
+  0.840 (malformed 9). Next levers: refusal-calibration and grounding preference/RL data; strict-format IF in W2.
 - **Combination (queued after W1a, job 62324489):** task arithmetic `merge + (A4b − merge) + (W1a − merge)`
   (`slurm/merge_task_arithmetic_leonardo.sbatch`; all three share 399 tensors, bf16), then quick (62324491), tool
   (62324492), EvalPlus (62324493) and EUROPA (62324496); EUROPA also on W1a's final step (62324495). The W2 base is

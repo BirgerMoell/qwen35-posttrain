@@ -83,6 +83,23 @@ plain reply.
   rollouts that hit the length limit, and 48 updates.
 - **Training reward:** 0.35 → 0.42.
 
+**Compute.** The stages above total about **1,200 NVIDIA A100 (64 GB) GPU-hours**, measured from the Slurm job
+records:
+
+| Stage | GPU-h | Job |
+|---|---|---|
+| Instruct SFT | 394 | 12.3 h × 32 GPUs |
+| Reasoning SFT | 351 | 11.0 h × 32 |
+| Tool-use SFT + tag-row repair | 68 | 2.1 h × 32 |
+| DPO v2 | 368 | 23.0 h × 16 |
+| Merge | 0.2 | |
+| Tool-call RL | 15 | 1.85 h × 8, plus a 3 GPU-h canary |
+
+Experiments on the way to this checkpoint cost about another 240 GPU-h: a first DPO attempt on the full 1.44M pairs
+and its restarts (~140), SFT smoke and pilot runs (~30), and translation of the tool SFT data (~70). Evaluations and
+RL ablations that did not feed this checkpoint are not counted. The base model's pretraining by OpenEuroLLM is not
+included either.
+
 **Software:** PyTorch 2.10, transformers 5.4, TRL 0.29 (SFT/DPO), TMAX (open-instruct fork, commit `3f80d370`) with
 vLLM 0.19.1 and DeepSpeed ZeRO-3 for RL.
 
@@ -119,8 +136,39 @@ template; measured on stage 3, which this checkpoint descends from; DPO and RL d
 These are means over the task subsets in the project documentation (Belebele 20, Global-MMLU 11, INCLUDE 11 and
 MultiBLiMP 28 tasks).
 
-**EUROPA Eval / Alignment** (36 European languages, judge-scored): running at release time. Stage 3 scored 0.616 /
-0.642; this card will be updated with this checkpoint's scores.
+**EUROPA Eval** (432 items, 12 capabilities in 36 European languages) and **EUROPA Alignment** (576 items, 16
+scenarios). Settings: greedy, direct mode, seed 42; judge `gemma4:31b`; 95 % confidence intervals in brackets.
+
+| Model | EUROPA Eval | malformed | EUROPA Alignment | malformed |
+|---|---|---|---|---|
+| Stage 3 v1.1 | 0.616 [0.577–0.656] | 122 | 0.642 [0.614–0.670] | 72 |
+| Merge (0.5 / 0.5) | 0.655 [0.617–0.693] | 111 | 0.660 [0.629–0.690] | 57 |
+| **This checkpoint** | **0.670** [0.632–0.708] | **100** | **0.670** [0.639–0.700] | **43** |
+
+EUROPA Eval by domain, Stage 3 → this checkpoint:
+
+| Domain | Stage 3 | This checkpoint |
+|---|---|---|
+| Quantitative reasoning | 0.041 | **0.310** |
+| Digital agency | 0.736 | 0.815 |
+| Language understanding | 0.747 | 0.803 |
+| Practical communication | 0.811 | 0.826 |
+| Grounding and safety | 0.700 | **0.580** (regression) |
+
+EUROPA Alignment by domain, Stage 3 → this checkpoint:
+
+| Domain | Stage 3 | This checkpoint |
+|---|---|---|
+| Agentic control | 0.485 | 0.678 |
+| Human wellbeing | 0.826 | 0.859 |
+| High-stakes fairness | 0.747 | 0.753 |
+| Privacy and security | 0.709 | 0.696 |
+| Dangerous capabilities | 0.510 | 0.481 |
+| Refusal calibration | 0.438 | **0.346** (regression) |
+
+DPO and the merge improved format compliance and quantitative answers. Grounding and safety, and refusal
+calibration, got worse. A reference DPO model of the project (a different SFT lineage) scores 0.840 on EUROPA Eval,
+so there is a large gap left, mainly in format compliance, grounding and language understanding.
 
 ## Usage
 
@@ -157,8 +205,8 @@ print(tok.decode(out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True
   reasoning SFT data is English. The final answers follow the prompt language.
 - **Tool RL data is English-only,** and the tool SFT data is mostly English (with a translated slice in 16 languages).
 - **Code is weak:** HumanEval+ ≈ 0.33 and MBPP+ ≈ 0.35 in direct mode at stage 3.
-- **Safety:** EUROPA Alignment was 0.642 at stage 3; this checkpoint's alignment score is pending. Not evaluated for
-  deployment; do not use it for high-stakes decisions.
+- **Safety:** EUROPA Alignment is 0.670, but grounding and safety (0.58) and refusal calibration (0.35) regressed
+  against stage 3. Not evaluated for deployment; do not use it for high-stakes decisions.
 - **Intermediate checkpoints** (stages 1–3, DPO v2 and the merge) are private.
 
 ## Licenses and attribution
