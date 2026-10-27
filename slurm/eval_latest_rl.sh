@@ -1,6 +1,6 @@
 #!/bin/bash
 # Evaluate the newest step_* checkpoint of an RL run inside the current allocation (1 node x 4 GPUs).
-#   eval_latest_rl.sh <outputs dir> <name> quick|tool|code
+#   eval_latest_rl.sh <outputs dir> <name> quick|tool|code|eu   (eu: EU task suites, 1 GPU is enough)
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"
 out=$1; name=$2; kind=$3
@@ -12,4 +12,5 @@ case "$kind" in
   quick) MODEL=$model NAME=$name-$step bash eval_reasoning_quick_leonardo.sbatch ;;
   tool)  MODEL=$model NAME=$name-$step bash eval_tool_calling_heldout_leonardo.sbatch ;;
   code)  MODELS="$name-$step=$model" bash eval_code_evalplus_leonardo.sbatch ;;
+  eu)    MODEL=$model NAME=$name-$step bash eval_eu_tasks_leonardo.sbatch ;;
 esac

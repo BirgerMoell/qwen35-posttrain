@@ -381,6 +381,41 @@ were cancelled before they started once the merge restored tool use (roadmap §5
     W1a + ΔW2 + w·ΔT1 for w = 1.0 / 1.5 / 2.0 (62358559 / 62358562 / 62358566) and TIES (density 0.2, λ 1; 62358570),
     each with quick + tool evals. Compare with W2 alone: if a merge holds W2's reasoning/code and reaches T1's tool
     scores, specialists + merging become a parallel training mode; otherwise tools stay inside the joint windows.
+- **T1 result (10-27, job 62358554):** 96 updates in 3 h 09 min (~200 local-h); training reward ~0.35-0.40 → ~0.45-0.50,
+  mean solved length 290 → 480 tokens. Evals queued (62358557 / 62358558).
+- **W2 started 10-27 ~12:30** (62354506): update 63 / 160 after 1 h 37 min (~1.5 min/update), truncation ~0-1 %,
+  mean response 600-900 tokens (length penalty active), reward ~0.38 → ~0.45.
+- **EU task suites (new evals and RL pools, 10-27)** in the spirit of the Artificial Analysis index, sized for a 9B
+  model; generator + programmatic check in `oellm-rlvr/src/oellm_rlvr/eu_tasks.py`, so eval and RL reward are the
+  same code (`eu_qa`, `eu_doc`; `OELLM_PATCH_EU_TASK_VERIFIERS`). Eval `scripts/eval_eu_tasks.py` +
+  `slurm/eval_eu_tasks_leonardo.sbatch` (1 GPU, both modes, ~16 min).
+  - `eu_qa` (AA-Omniscience spirit): Wikidata (CC0) facts about European people, places, works and organisations,
+    7 question types x 17 countries x 3 popularity bands (subject sitelinks >= 30 / 10-29 / 3-9), 10 languages;
+    reward +1 correct, 0 `ANSWER: UNKNOWN`, -1 wrong. Eval 600 (60 per language, 200 per band), RL 30,791.
+  - `eu_doc` (GDP.pdf / AA-Briefcase spirit): generated invoices (VAT), staff tables, contracts (end dates), room
+    bookings (clashes, minutes) and letters -> JSON, locale-formatted numbers and dates; one question variant per family
+    held out of RL. Eval 500 (120 held-out variants), RL 6,000.
+  - Baselines (strict `ANSWER:` line; in brackets: localized answer keywords accepted):
+
+    | Model / mode | QA acc. | head acc. | abstain | halluc. | QA index | doc score |
+    |---|---|---|---|---|---|---|
+    | W1a default | 0.273 | 0.515 | 3 % | 95 % | -42.0 | 0.378 (0.464) |
+    | W1a thinking | 0.270 | 0.505 | 5 % | 93 % | -40.8 | 0.351 (0.399) |
+    | A4b default | 0.265 | 0.500 | 3 % | 96 % | -43.7 | 0.360 |
+    | A4b thinking | 0.238 | 0.460 | 3 % | 96 % | -49.0 | 0.289 (30 % unfinished) |
+    | Qwen3-8B default | 0.157 | 0.310 | 15 % | 82 % | -53.3 | 0.742 |
+    | Qwen3-8B thinking | 0.205 | 0.425 | 24 % | 70 % | **-35.5** | **0.947** |
+
+    Our models know more European facts (head 0.51 vs 0.31-0.43) but almost never abstain; on documents they lose to
+    Qwen3-8B on format (the `ANSWER:` keyword is translated: "Respuesta:", "Odpowiedź:") and on multi-step table
+    arithmetic, and our thinking mode is below default mode there.
+- **W3 queued 10-27** (`configs/leonardo-grpo-math-oellm9b-w3.yaml`): the W2 recipe from W2's final checkpoint
+  (staging + pool job 62430100 after W2, `scripts/leonardo_w3_stage.sbatch` → `models/w3-base-mixed`), 160 updates on
+  2,560 prompts (`scripts/leonardo_w3_data.sh`, dry-run sha `e019c61d`): 512 eu_qa (171/171/170 by band), 640 eu_doc
+  (128 per family), 512 math, 256 IF, 256 code, 384 tools; ~40 % of the EU slices in thinking mode. Training 62430101;
+  evals quick / tool / code 62430102 / 62430104 / 62430105, EU suites 62430250 (and W2 on the EU suites 62430244).
+  Estimate ~300 local-h. Questions: does the QA index rise through abstention without losing head accuracy (watch for
+  over-abstaining), does the doc score close the gap to Qwen3-8B (incl. held-out variants), do W2's skills hold?
 - Each canary (256 episodes, 1 h) gates its full run (`afterok`); a cleanup job cancels the full run and its evals if
   the canary fails.
 
