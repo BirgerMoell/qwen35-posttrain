@@ -395,6 +395,7 @@ were cancelled before they started once the merge restored tool use (roadmap §5
   - `eu_doc` (GDP.pdf / AA-Briefcase spirit): generated invoices (VAT), staff tables, contracts (end dates), room
     bookings (clashes, minutes) and letters -> JSON, locale-formatted numbers and dates; one question variant per family
     held out of RL. Eval 500 (120 held-out variants), RL 6,000.
+  - Published (public, CC BY 4.0): `birgermoell/oellm-eu-tasks` @ `50092422` (configs `qa` / `doc`, splits test / train).
   - Baselines (strict `ANSWER:` line; in brackets: localized answer keywords accepted):
 
     | Model / mode | QA acc. | head acc. | abstain | halluc. | QA index | doc score |
