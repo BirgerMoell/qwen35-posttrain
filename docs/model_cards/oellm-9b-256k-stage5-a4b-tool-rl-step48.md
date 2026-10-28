@@ -20,6 +20,11 @@ datasets:
 
 # OpenEuroLLM 9B 256K — post-training checkpoint after tool-call RL (A4b, step 48)
 
+> **Newer checkpoint available:** [`birgermoell/oellm-9b-256k-stage5-w2-rl-step160`](https://huggingface.co/birgermoell/oellm-9b-256k-stage5-w2-rl-step160)
+> (two RL windows on math, code, strict formats, instruction following and tool calls) scores higher on reasoning
+> (thinking-mode math 0.44 → 0.63), EUROPA (Eval 0.67 → 0.73, Alignment 0.67 → 0.72), code and tool calling. Use that
+> one unless you need this exact checkpoint.
+
 **Research preview.** An intermediate checkpoint of the OpenEuroLLM 9B post-training pipeline: instruct SFT →
 reasoning SFT → tool-use SFT → DPO → weight merge → reinforcement learning on tool calls. It is released so that the
 steps, data and evaluations can be inspected and reproduced; it is not a finished assistant. Later RL windows (math,
