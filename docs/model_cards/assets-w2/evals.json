@@ -1,0 +1,419 @@
+{
+ "checkpoints": {
+  "Base": {
+   "belebele": 0.737,
+   "global_mmlu": 0.547,
+   "include": 0.422,
+   "multiblimp": 0.935
+  },
+  "1 Instruct SFT": {
+   "europa_eval": 0.6000013684115781,
+   "europa_eval_malformed": 120,
+   "europa_eval_domains": {
+    "digital_agency": 0.7268518518518519,
+    "grounding_safety": 0.5601851851851852,
+    "language_understanding": 0.7609953703703703,
+    "practical_communication": 0.7535714285714286,
+    "quantitative_reasoning": 0.15330680257486348
+   },
+   "europa_alignment": 0.4549262152777778,
+   "europa_alignment_malformed": 72,
+   "europa_alignment_domains": {
+    "agentic_control": 0.42476851851851855,
+    "dangerous_capabilities": 0.09461805555555555,
+    "high_stakes_fairness": 0.7612847222222222,
+    "human_wellbeing": 0.48984374999999997,
+    "privacy_security": 0.5486111111111112,
+    "refusal_calibration": 0.34375
+   }
+  },
+  "2 Reasoning SFT": {
+   "europa_eval": 0.6089393573672041,
+   "europa_eval_malformed": 132,
+   "europa_eval_domains": {
+    "digital_agency": 0.7083333333333334,
+    "grounding_safety": 0.7098765432098766,
+    "language_understanding": 0.7309027777777778,
+    "practical_communication": 0.8003472222222222,
+    "quantitative_reasoning": 0.029793551610632112
+   },
+   "europa_alignment": 0.6047526041666667,
+   "europa_alignment_malformed": 72,
+   "europa_alignment_domains": {
+    "agentic_control": 0.5,
+    "dangerous_capabilities": 0.4470486111111111,
+    "high_stakes_fairness": 0.7378472222222222,
+    "human_wellbeing": 0.7506076388888889,
+    "privacy_security": 0.6666666666666666,
+    "refusal_calibration": 0.4019097222222222
+   },
+   "thinking_acc": 0.4017543859649123,
+   "thinking_finished": 0.4649122807017544,
+   "direct_acc": 0.5877192982456141,
+   "quick_subsets": {
+    "gsm8k": {
+     "default": 0.7133333333333334,
+     "thinking": 0.64
+    },
+    "math500": {
+     "default": 0.34,
+     "thinking": 0.09
+    },
+    "mgsm": {
+     "default": 0.71,
+     "thinking": 0.585
+    },
+    "oellm_math_eu": {
+     "default": 0.43333333333333335,
+     "thinking": 0.058333333333333334
+    }
+   }
+  },
+  "3 Tool-use SFT": {
+   "europa_eval": 0.6163892601392601,
+   "europa_eval_malformed": 122,
+   "europa_eval_domains": {
+    "digital_agency": 0.7361111111111112,
+    "grounding_safety": 0.7003205128205128,
+    "language_understanding": 0.7469951923076923,
+    "practical_communication": 0.810546875,
+    "quantitative_reasoning": 0.04062716562716563
+   },
+   "europa_alignment": 0.6421874999999999,
+   "europa_alignment_malformed": 72,
+   "europa_alignment_domains": {
+    "agentic_control": 0.4849537037037037,
+    "dangerous_capabilities": 0.5104166666666666,
+    "high_stakes_fairness": 0.7473958333333334,
+    "human_wellbeing": 0.8256944444444445,
+    "privacy_security": 0.7089120370370371,
+    "refusal_calibration": 0.4375
+   },
+   "thinking_acc": 0.43508771929824563,
+   "thinking_finished": 0.5105263157894737,
+   "direct_acc": 0.5807017543859649,
+   "quick_subsets": {
+    "gsm8k": {
+     "default": 0.7,
+     "thinking": 0.6733333333333333
+    },
+    "math500": {
+     "default": 0.36,
+     "thinking": 0.16
+    },
+    "mgsm": {
+     "default": 0.68,
+     "thinking": 0.59
+    },
+    "oellm_math_eu": {
+     "default": 0.45,
+     "thinking": 0.10833333333333334
+    }
+   },
+   "tool_decision": 0.8698060941828255,
+   "tool_names": 0.7340720221606648,
+   "tool_json": 0.995260663507109,
+   "tool_args": 0.981042654028436,
+   "tool_finished": 0.9833795013850416,
+   "belebele": 0.821,
+   "global_mmlu": 0.584,
+   "include": 0.539,
+   "multiblimp": 0.93,
+   "humaneval_plus_direct": 0.335,
+   "mbpp_plus_direct": 0.357,
+   "humaneval_plus_thinking": 0.189,
+   "mbpp_plus_thinking": 0.243
+  },
+  "4 DPO v2": {
+   "thinking_acc": 0.44035087719298244,
+   "thinking_finished": 0.5280701754385965,
+   "direct_acc": 0.5578947368421052,
+   "quick_subsets": {
+    "gsm8k": {
+     "default": 0.8333333333333334,
+     "thinking": 0.62
+    },
+    "math500": {
+     "default": 0.31,
+     "thinking": 0.16
+    },
+    "mgsm": {
+     "default": 0.71,
+     "thinking": 0.625
+    },
+    "oellm_math_eu": {
+     "default": 0.16666666666666666,
+     "thinking": 0.14166666666666666
+    }
+   },
+   "tool_decision": 0.8310249307479224,
+   "tool_names": 0.6537396121883656,
+   "tool_json": 0.8977777777777778,
+   "tool_args": 0.8488888888888889,
+   "tool_finished": 0.9002770083102493
+  },
+  "5 Merge": {
+   "europa_eval": 0.6550138379565462,
+   "europa_eval_malformed": 111,
+   "europa_eval_domains": {
+    "digital_agency": 0.7824074074074074,
+    "grounding_safety": 0.5733024691358024,
+    "language_understanding": 0.7824074074074074,
+    "practical_communication": 0.8211805555555556,
+    "quantitative_reasoning": 0.31231682403557404
+   },
+   "europa_alignment": 0.6597439236111111,
+   "europa_alignment_malformed": 57,
+   "europa_alignment_domains": {
+    "agentic_control": 0.6168981481481481,
+    "dangerous_capabilities": 0.4791666666666667,
+    "high_stakes_fairness": 0.7647569444444444,
+    "human_wellbeing": 0.8659722222222223,
+    "privacy_security": 0.6863425925925926,
+    "refusal_calibration": 0.3472222222222222
+   },
+   "thinking_acc": 0.4263157894736842,
+   "thinking_finished": 0.5263157894736843,
+   "direct_acc": 0.5684210526315789,
+   "quick_subsets": {
+    "gsm8k": {
+     "default": 0.8,
+     "thinking": 0.6066666666666667
+    },
+    "math500": {
+     "default": 0.28,
+     "thinking": 0.16
+    },
+    "mgsm": {
+     "default": 0.705,
+     "thinking": 0.585
+    },
+    "oellm_math_eu": {
+     "default": 0.2916666666666667,
+     "thinking": 0.15833333333333333
+    }
+   },
+   "tool_decision": 0.8781163434903048,
+   "tool_names": 0.7673130193905817,
+   "tool_json": 0.9852941176470589,
+   "tool_args": 0.9509803921568627,
+   "tool_finished": 0.9806094182825484
+  },
+  "6 RL window W1a": {
+   "europa_eval": 0.7347654249167943,
+   "europa_eval_malformed": 47,
+   "europa_eval_domains": {
+    "digital_agency": 0.8981481481481481,
+    "grounding_safety": 0.6203703703703703,
+    "language_understanding": 0.8761574074074074,
+    "practical_communication": 0.8263888888888888,
+    "quantitative_reasoning": 0.40338421616743264
+   },
+   "europa_alignment": 0.7114366319444445,
+   "europa_alignment_malformed": 4,
+   "europa_alignment_domains": {
+    "agentic_control": 0.8344907407407407,
+    "dangerous_capabilities": 0.4661458333333333,
+    "high_stakes_fairness": 0.8055555555555556,
+    "human_wellbeing": 0.8904513888888889,
+    "privacy_security": 0.6909722222222222,
+    "refusal_calibration": 0.3506944444444444
+   },
+   "thinking_acc": 0.6192982456140351,
+   "thinking_finished": 0.8456140350877193,
+   "direct_acc": 0.5736842105263158,
+   "quick_subsets": {
+    "gsm8k": {
+     "default": 0.7733333333333333,
+     "thinking": 0.7866666666666666
+    },
+    "math500": {
+     "default": 0.28,
+     "thinking": 0.27
+    },
+    "mgsm": {
+     "default": 0.745,
+     "thinking": 0.78
+    },
+    "oellm_math_eu": {
+     "default": 0.2833333333333333,
+     "thinking": 0.43333333333333335
+    }
+   },
+   "tool_decision": 0.8781163434903048,
+   "tool_names": 0.778393351800554,
+   "tool_json": 0.9905660377358491,
+   "tool_args": 0.9575471698113207,
+   "tool_finished": 0.9916897506925207,
+   "belebele": 0.826,
+   "global_mmlu": 0.589,
+   "include": 0.539,
+   "multiblimp": 0.932,
+   "humaneval_plus_direct": 0.372,
+   "mbpp_plus_direct": 0.362,
+   "humaneval_plus_thinking": 0.348,
+   "mbpp_plus_thinking": 0.328,
+   "eu_qa_acc": 0.273,
+   "eu_qa_index": -42.0,
+   "eu_doc": 0.378
+  },
+  "7 RL window W2\n(this model)": {
+   "europa_eval": 0.7273365696785028,
+   "europa_eval_malformed": 53,
+   "europa_eval_domains": {
+    "digital_agency": 0.8981481481481481,
+    "grounding_safety": 0.6003086419753086,
+    "language_understanding": 0.8958333333333334,
+    "practical_communication": 0.8315972222222222,
+    "quantitative_reasoning": 0.3567856217747206
+   },
+   "europa_alignment": 0.7172526041666667,
+   "europa_alignment_malformed": 2,
+   "europa_alignment_domains": {
+    "agentic_control": 0.8645833333333334,
+    "dangerous_capabilities": 0.4930555555555556,
+    "high_stakes_fairness": 0.7630208333333334,
+    "human_wellbeing": 0.8859375,
+    "privacy_security": 0.7100694444444444,
+    "refusal_calibration": 0.3480902777777778
+   },
+   "thinking_acc": 0.6298245614035087,
+   "thinking_finished": 0.8596491228070176,
+   "direct_acc": 0.5754385964912281,
+   "quick_subsets": {
+    "gsm8k": {
+     "default": 0.76,
+     "thinking": 0.7933333333333333
+    },
+    "math500": {
+     "default": 0.29,
+     "thinking": 0.31
+    },
+    "mgsm": {
+     "default": 0.745,
+     "thinking": 0.745
+    },
+    "oellm_math_eu": {
+     "default": 0.3,
+     "thinking": 0.5
+    }
+   },
+   "tool_decision": 0.8864265927977839,
+   "tool_names": 0.7894736842105263,
+   "tool_json": 1.0,
+   "tool_args": 0.9720670391061452,
+   "tool_finished": 0.9806094182825484,
+   "humaneval_plus_direct": 0.39,
+   "mbpp_plus_direct": 0.365,
+   "humaneval_plus_thinking": 0.299,
+   "mbpp_plus_thinking": 0.333,
+   "eu_qa_acc": 0.28,
+   "eu_qa_index": -39.3,
+   "eu_doc": 0.376,
+   "belebele": "pending",
+   "global_mmlu": "pending",
+   "include": "pending",
+   "multiblimp": "pending"
+  },
+  "A4b tool RL (previous release)": {
+   "europa_eval": 0.6701324722158055,
+   "europa_eval_malformed": 100,
+   "europa_eval_domains": {
+    "digital_agency": 0.8148148148148148,
+    "grounding_safety": 0.5802469135802469,
+    "language_understanding": 0.8032407407407407,
+    "practical_communication": 0.8263888888888888,
+    "quantitative_reasoning": 0.31014668514668514
+   },
+   "europa_alignment": 0.6698784722222223,
+   "europa_alignment_malformed": 43,
+   "europa_alignment_domains": {
+    "agentic_control": 0.6776620370370371,
+    "dangerous_capabilities": 0.4809027777777778,
+    "high_stakes_fairness": 0.7534722222222222,
+    "human_wellbeing": 0.8587673611111111,
+    "privacy_security": 0.6961805555555556,
+    "refusal_calibration": 0.3463541666666667
+   },
+   "thinking_acc": 0.4421052631578947,
+   "thinking_finished": 0.5105263157894737,
+   "direct_acc": 0.5771929824561404,
+   "quick_subsets": {
+    "gsm8k": {
+     "default": 0.7733333333333333,
+     "thinking": 0.6733333333333333
+    },
+    "math500": {
+     "default": 0.28,
+     "thinking": 0.14
+    },
+    "mgsm": {
+     "default": 0.74,
+     "thinking": 0.605
+    },
+    "oellm_math_eu": {
+     "default": 0.30833333333333335,
+     "thinking": 0.13333333333333333
+    }
+   },
+   "tool_decision": 0.8808864265927978,
+   "tool_names": 0.7839335180055401,
+   "tool_json": 0.9948717948717949,
+   "tool_args": 0.9692307692307692,
+   "tool_finished": 0.9833795013850416,
+   "belebele": 0.824,
+   "global_mmlu": 0.587,
+   "include": 0.542,
+   "multiblimp": 0.932,
+   "humaneval_plus_direct": 0.354,
+   "mbpp_plus_direct": 0.362,
+   "humaneval_plus_thinking": 0.165,
+   "mbpp_plus_thinking": 0.254,
+   "eu_qa_acc": 0.265,
+   "eu_qa_index": -43.7,
+   "eu_doc": 0.36
+  }
+ },
+ "references": {
+  "OpenEuroLLM instruct SFT (Neonkraft)": {
+   "europa_eval": 0.762,
+   "europa_alignment": 0.773,
+   "belebele": 0.808,
+   "global_mmlu": 0.573,
+   "include": 0.546,
+   "multiblimp": 0.931
+  },
+  "OpenEuroLLM threeway DPO": {
+   "europa_eval": 0.84
+  },
+  "Apertus-8B-Instruct-2509": {
+   "europa_eval": 0.573,
+   "belebele": 0.792,
+   "global_mmlu": 0.56,
+   "include": 0.578,
+   "multiblimp": 0.924
+  },
+  "Qwen3-8B": {
+   "belebele": 0.865,
+   "global_mmlu": 0.663,
+   "include": 0.587,
+   "multiblimp": 0.866,
+   "eu_qa_acc": 0.157,
+   "eu_doc": 0.742
+  }
+ },
+ "this_model": "7 RL window W2\n(this model)",
+ "lineage": [
+  "Base",
+  "1 Instruct SFT",
+  "2 Reasoning SFT",
+  "3 Tool-use SFT",
+  "4 DPO v2",
+  "5 Merge",
+  "6 RL window W1a",
+  "7 RL window W2\n(this model)"
+ ],
+ "siblings": [
+  "A4b tool RL (previous release)"
+ ]
+}
