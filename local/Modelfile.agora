@@ -1,8 +1,9 @@
-# OpenEuroLLM 9B W2 (birgermoell/oellm-9b-256k-stage5-w2-rl-step160) for Ollama.
+# Agora 9B = OpenEuroLLM 9B W2 (birgermoell/oellm-9b-256k-stage5-w2-rl-step160) for Ollama.
 # The template reproduces chat_template.jinja (oellm_qwen3_two_stage_v2_1): direct mode by default; with thinking on
 # (the "think" toggle / `ollama run --think`) the prompt ends in "<think>\n" and the model closes the trace itself.
 # Tools use the Qwen3/Hermes format the model was trained on. No BOS token (training sequences start with <|im_start|>).
-FROM ./oellm-9b-w2-Q6_K.gguf
+# GGUF: https://huggingface.co/birgermoell/agora-9b-GGUF (or simply: ollama run birgermoell/agora)
+FROM ./agora-9b-Q6_K.gguf
 
 TEMPLATE """{{- if .Tools }}<|im_start|>system
 {{ if .System }}{{ .System }}
