@@ -1,0 +1,55 @@
+# OpenEuroLLM 9B W2 (birgermoell/oellm-9b-256k-stage5-w2-rl-step160) for Ollama.
+# The template reproduces chat_template.jinja (oellm_qwen3_two_stage_v2_1): direct mode by default; with thinking on
+# (the "think" toggle / `ollama run --think`) the prompt ends in "<think>\n" and the model closes the trace itself.
+# Tools use the Qwen3/Hermes format the model was trained on. No BOS token (training sequences start with <|im_start|>).
+FROM ./oellm-9b-w2-Q6_K.gguf
+
+TEMPLATE """{{- if .Tools }}<|im_start|>system
+{{ if .System }}{{ .System }}
+
+{{ end }}# Tools
+
+You may call one or more functions to assist with the user query.
+
+You are provided with function signatures within <tools></tools> XML tags:
+<tools>
+{{- range .Tools }}
+{"type": "function", "function": {{ .Function }}}
+{{- end }}
+</tools>
+
+For each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:
+<tool_call>
+{"name": <function-name>, "arguments": <args-json-object>}
+</tool_call><|im_end|>
+{{ else if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}
+{{- range $i, $_ := .Messages }}
+{{- $last := eq (len (slice $.Messages $i)) 1 }}
+{{- if eq .Role "user" }}<|im_start|>user
+{{ .Content }}<|im_end|>
+{{ else if eq .Role "assistant" }}<|im_start|>assistant
+{{ .Content }}
+{{- range $j, $c := .ToolCalls }}{{ if or $.Content $j }}
+{{ end }}<tool_call>
+{"name": "{{ .Function.Name }}", "arguments": {{ .Function.Arguments }}}
+</tool_call>
+{{- end }}<|im_end|>
+{{ else if eq .Role "tool" }}<|im_start|>user
+<tool_response>
+{{ .Content }}
+</tool_response><|im_end|>
+{{ end }}
+{{- if and $last (ne .Role "assistant") }}<|im_start|>assistant
+{{ if and $.IsThinkSet $.Think }}<think>
+{{ end }}
+{{- end }}
+{{- end }}"""
+
+PARAMETER stop "<|im_end|>"
+PARAMETER temperature 0.6
+PARAMETER top_p 0.95
+PARAMETER repeat_penalty 1.0
+PARAMETER num_ctx 32768
+PARAMETER num_predict 8192
