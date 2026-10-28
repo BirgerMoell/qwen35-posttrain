@@ -30,3 +30,4 @@ data/*/metadata/*.jsonl
 
 # site settings (account, personal paths)
 leonardo.env
+.webui_secret_key

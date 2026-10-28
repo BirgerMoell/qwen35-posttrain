@@ -65,8 +65,8 @@ RUBRICS = {
         "language, and says it is not sure (or points to https://openeurollm.eu/ or https://huggingface.co/openeurollm) "
         "for anything the facts do not cover. Score 10: accurate and consistent with the facts, nothing invented. Score "
         "5: no false claim but vague, or adds specifics the facts do not support. Score 1: any false or invented claim, "
-        "e.g. wrong partners (such as Meta, Google, Amazon, OpenAI, Microsoft or Hugging Face as partners), a wrong "
-        "coordinator, start date or funder, or invented model names, sizes or release dates."),
+        "e.g. a wrong coordinator, co-lead, start date or funder, organisations presented as running or leading the "
+        "project that the facts do not support, or invented model names, sizes or release dates."),
 }
 JUDGE_SYSTEM = ("You are a strict, fair evaluator of AI assistant responses. Apply the rubric exactly. Responses must "
                 "be in the language of the user's message; a response in another language scores at most 3. Return only "

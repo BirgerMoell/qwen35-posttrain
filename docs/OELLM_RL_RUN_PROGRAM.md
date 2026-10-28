@@ -459,3 +459,73 @@ End evaluation: holdouts and retention suite, both modes
 Decision rule: what result leads to which next run
 Result: numbers, selected checkpoint, decision taken
 ```
+
+## 10. Continual improvement loop (from W4)
+
+Status 2026-10-29. After W3 the model improves in repeated rounds instead of a fixed run sequence. More data is not
+the constraint (open verifiable data and our own generators are effectively unlimited); **difficulty fit, coverage
+and release gates are.** W2 left 69 % of its prompts unsolved at k = 8 (no GRPO signal), so every round re-profiles
+its pool on the checkpoint it will train.
+
+### 10.1 One round
+
+1. **Measure** the current checkpoint: the eval suite (knowledge, EU task suites, IF, tools, code, identity, safety,
+   both modes) plus environment baselines: svenska-rl (`slurm/svenska_rl_baseline_leonardo.sbatch`) and NeMo Gym
+   (`slurm/nemo_gym_baseline_leonardo.sbatch`).
+2. **Diagnose** 2–3 weak areas from per-task scores, solve rates and the previous run's filtered/unsolved ratios.
+3. **Build the pool by pass rate** on that checkpoint (`oellm-rlvr` `pass-rate-sample/-score/-select`,
+   `scripts/leonardo_pass_rate.sbatch`): k = 8 samples with the RL template, the training verifiers per `dataset`
+   (same `OELLM_PATCH_*` flags), keep prompts whose reward varies within the group (optionally a solve-rate band),
+   cap per dataset, decontaminate against every eval. Record the profile and the model in the pool manifest.
+4. **Train** one RL window (~150–250 updates, the W2 recipe: DAPO, async, non-stop and length penalties). Behaviours
+   RL cannot reach go to targeted DPO/SFT (identity, safety: Stage 4b).
+5. **Gate the release:** the targeted areas improve and nothing on the guard set (knowledge, identity, safety, IF,
+   multilingual, both modes) regresses beyond its margin. Then model card, HF/Ollama release.
+6. **Record** the round in this document (run card §9) and update the next round's candidates.
+
+### 10.2 Candidate data
+
+| Source | Adds | Status / requirement |
+|---|---|---|
+| EU task suites (`eu_qa`, `eu_doc`) | calibrated knowledge with UNKNOWN, EU document tasks | in W3 |
+| svenska-rl (8 environments, contract v0.2) | Swedish office work: invoices, payment matching, scheduling, redaction, procurement, stock | baseline done (below); typed ones need a `svrl_typed` verifier in compat |
+| Translated verifiable prompts (math, logic, tool tasks into the 12 EU languages) | multilingual reasoning; answers language-independent, verifiers unchanged | qwen3.6 translation pipeline exists; spot-check |
+| NVIDIA Nemotron-RL (CC-BY/ODC-BY): instruction following, Structured Outputs, QA-Abstention, SysBench, ReasoningGym | schema/format compliance, system-prompt following, abstention against hallucination | NeMo Gym baseline in progress; judge-based ones use the local Gemma judge |
+| Procedural puzzles (ReasoningGym-style) | logic, planning, counting with difficulty knobs | unlimited |
+| Long-context synthetic tasks (32K–128K retrieval/aggregation) | uses the 256K context in RL | needs long-rollout throughput tests |
+| Multi-turn tool environments (svenska-rl tool episodes, Workplace Assistant) | agentic work over several steps | needs a multi-turn RL runtime (SkyRL/Harbor adapter or NeMo RL); T1 showed single-call tool RL saturated |
+| Rubric-judged writing (EU-language e-mails, summaries, plain language) | quality without an exact answer | later; reward-hacking audit first |
+
+### 10.3 Order
+
+| Round | Content | Requirement |
+|---|---|---|
+| W3 | EU task suites + the W2 mix | queued (2 nodes); move to 1 node if it keeps waiting |
+| Stage 4b DPO | identity (v2.1 on-policy pairs) + safety pairs | identity judging finishing 10-29 |
+| W4 | + Structured Outputs, QA-Abstention, SysBench, svenska-rl typed tasks, translated math/logic; pool by pass rate | `svrl_typed` verifier patch; baselines |
+| W5 | multi-turn tool RL (svenska-rl tool episodes, Workplace Assistant) | multi-turn runtime |
+| W6 | long-context RL | throughput tests |
+| later | rubric RL for writing quality | judge audit |
+
+Cost: one 2-node window of ~24 h ≈ 190 GPU-h ≈ 1.5K local-h; measurement and pool building add ~100–200 local-h per
+round. Compute is not the bottleneck (§2); curation and the multi-turn runtime are.
+
+### 10.4 First measurements
+
+**svenska-rl L1 baseline, W2 (= Agora 9B), 64 eval tasks per environment, greedy, job 62626669 (17 min, 1 GPU),
+svenska-rl a8a81dc; re-scored after the answer-parsing fix in the next commit (JSON keys without diacritics,
+markdown around `SVAR:`).**
+
+| Environment | Mean reward | Solved | Note |
+|---|---|---|---|
+| `document_redaction` | 0.79 | 0.25 | finds most items; exact lists are rare |
+| `payment_matching` | 0.66 | 0.36 | good candidate band |
+| `inventory_reorder` | 0.21 | 0.00 | answers 0 for every article: equals the all-zero shortcut (0.22) |
+| `payment_registration` (tools) | 0.15 | 0.02 | often stops after one tool call |
+| `invoice_amount_due` | 0.11 | 0.11 | arithmetic over many lines, rounding to whole kronor wrong |
+| `meeting_slot` | 0.11 | 0.11 | |
+| `supplier_quotes` | 0.09 | 0.09 | |
+| `meeting_reschedule` (tools) | 0.06 | 0.03 | |
+
+Most environments sit in or near the useful band for GRPO; the low ones need a pass-rate profile at k = 8 (greedy
+accuracy understates sampled variance) before they go into a pool.
