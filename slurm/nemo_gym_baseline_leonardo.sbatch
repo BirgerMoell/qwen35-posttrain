@@ -121,13 +121,19 @@ out = sys.argv[1]
 summary = {}
 for path in sorted(glob.glob(f"{out}/rollouts_*.jsonl")):
     name = os.path.basename(path)[len("rollouts_"):-len(".jsonl")]
+    if name.endswith("_materialized_inputs"):
+        continue
     rows = [json.loads(l) for l in open(path)]
+    # Rows NeMo Gym's own schema check rejects (dataset/verifier version mismatch, e.g. CFBench instructions missing a
+    # required argument) are data errors, not model failures: count them separately.
+    invalid = [r for r in rows if "'instruction': 'schema_validation', 'status': 'Failed'" in str(r.get("validation_results"))]
+    rows = [r for r in rows if r not in invalid]
     rewards = [r.get("reward") for r in rows if isinstance(r.get("reward"), (int, float))]
     by_cat = collections.defaultdict(list)
     for r in rows:
         if isinstance(r.get("reward"), (int, float)):
             by_cat[str(r.get("category") or r.get("domain") or r.get("schema_type") or "-")].append(r["reward"])
-    summary[name] = {"n": len(rows), "scored": len(rewards), "mean_reward": sum(rewards) / max(1, len(rewards)),
+    summary[name] = {"n": len(rows), "scored": len(rewards), "invalid_rows": len(invalid), "mean_reward": sum(rewards) / max(1, len(rewards)),
                      "solved_share": sum(1 for x in rewards if x >= 0.999) / max(1, len(rewards)),
                      "by_category": {k: round(sum(v) / len(v), 3) for k, v in sorted(by_cat.items())}}
 json.dump(summary, open(f"{out}/summary.json", "w"), indent=1)

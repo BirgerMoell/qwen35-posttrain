@@ -19,7 +19,7 @@ judge_model:
       api_key: ollama
       model: gemma4:31b
       return_token_id_information: false
-      uses_reasoning_parser: false
+      uses_reasoning_parser: true    # gemma4 returns a reasoning field via Ollama; false makes NeMo Gym assert
       uses_interleaved_reasoning: false
       use_completions_api: false
       chat_template_kwargs: null
