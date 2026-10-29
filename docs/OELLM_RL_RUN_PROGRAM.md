@@ -501,7 +501,7 @@ its pool on the checkpoint it will train.
 | Round | Content | Requirement |
 |---|---|---|
 | W3 | EU task suites + the W2 mix | queued (2 nodes); move to 1 node if it keeps waiting |
-| Stage 4b DPO | identity (v2.1 on-policy pairs) + safety pairs | identity judging finishing 10-29 |
+| Stage 4b DPO | identity (v2.1) + safety pairs (reduced: ~2,000 prompts × 4 samples), **both sampled on the W3 checkpoint** (on-policy; the 711 W2 identity pairs are a pilot) | after W3 lands (decided 10-29); gate on EUROPA refusal calibration (0.35) and grounding & safety (0.60), which regressed in the merge, not in RL |
 | W4 | + Structured Outputs, QA-Abstention, SysBench, svenska-rl typed tasks, translated math/logic; pool by pass rate | `svrl_typed` verifier patch; baselines |
 | W5 | multi-turn tool RL (svenska-rl tool episodes, Workplace Assistant) | multi-turn runtime |
 | W6 | long-context RL | throughput tests |
