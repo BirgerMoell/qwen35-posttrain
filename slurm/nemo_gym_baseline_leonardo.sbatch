@@ -66,7 +66,11 @@ CUDA_VISIBLE_DEVICES=0 singularity exec --nv -B /leonardo_work,/leonardo_scratch
   env PYTHONPATH=$OELLM_WORK/europa/pylibs VLLM_WORKER_MULTIPROC_METHOD=fork "$VLLM_PY" -m vllm.entrypoints.openai.api_server \
   --model "$POLICY" --served-model-name agora --host 127.0.0.1 --port 8000 --dtype bfloat16 --max-model-len 32768 \
   --gpu-memory-utilization 0.88 --enable-auto-tool-choice --tool-call-parser hermes --enforce-eager > "$OUT/vllm.log" 2>&1 &
+# Ollama 0.32 uses the Vulkan backend here, which ignores CUDA_VISIBLE_DEVICES, sees both GPUs and picks a 262K default
+# context: loading the judge then fails next to vLLM on GPU 0 (HTTP 500 on every OpenAI-style judge call). Hide GPU 0
+# from Vulkan and cap the context (judge prompts are short).
 export OLLAMA_MODELS=$tools/ollama-models-baseline OLLAMA_HOST=127.0.0.1:11434 OLLAMA_NUM_PARALLEL=8 OLLAMA_KEEP_ALIVE=-1
+export OLLAMA_CONTEXT_LENGTH=16384 GGML_VK_VISIBLE_DEVICES=1
 CUDA_VISIBLE_DEVICES=1 $tools/ollama-0.32.8/bin/ollama serve > "$OUT/ollama.log" 2>&1 &
 until curl -sf http://127.0.0.1:11434/api/version > /dev/null; do sleep 2; done
 got=$(curl -s http://127.0.0.1:11434/api/tags | python3 -c "import json,sys; print([m['digest'] for m in json.load(sys.stdin)['models'] if m['name']=='gemma4:31b'][0])")
