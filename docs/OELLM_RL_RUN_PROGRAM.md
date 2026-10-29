@@ -529,3 +529,17 @@ markdown around `SVAR:`).**
 
 Most environments sit in or near the useful band for GRPO; the low ones need a pass-rate profile at k = 8 (greedy
 accuracy understates sampled variance) before they go into a pool.
+
+### 10.5 Reward-coverage bug in W1a/W2 (found 10-29, fixed before W3)
+
+Building the pass-rate filter showed that several verifier patches never took effect in training. Each
+`OELLM_PATCH_*` flag installed its own post-import hook on `open_instruct.ground_truth_utils`; the first hook on
+`sys.meta_path` loaded the module and ran only its own patch, so only the last-registered verifier patch applied.
+Separately, `ifeval_think` subclassed `ifeval_direct` and `build_all_verifiers` only instantiates direct subclasses.
+Training logs ("No reward function found for dataset …"): **W1a** skipped `multilingual_math` (6,305); **W2** skipped
+`ifeval_direct`, `ifeval_think`, `math_direct_shaped`, `mcq_letter_direct`, `multilingual_math` (22,993), and the
+closed-trace check was off. Those rows got no task reward, so their groups mostly carried no signal: wasted samples,
+not wrong gradients (the non-stop penalty still applied). **W2's "69 % unsolved" includes these unscored rows and
+overstates the difficulty problem**; re-measure with the pass-rate filter. Fixed in oellm-rlvr `bfcdb83` and
+`089ce7b` (regression tests); a compute-node check and the pass-rate scoring smoke (job 62637819: all W3 datasets
+scored, 0 errors) passed, then W3 (62430101) was released. W3 is the first window with every verifier active.
