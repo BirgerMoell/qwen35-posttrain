@@ -6,7 +6,7 @@
 #SBATCH --gpus-per-node=2
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=200G
-#SBATCH --time=03:00:00
+#SBATCH --time=08:00:00
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 # Baseline of a checkpoint on NVIDIA NeMo Gym RL environments (HF "rl-environment" datasets), scored by NeMo Gym's own
@@ -20,6 +20,8 @@
 # NeMo Gym (github.com/NVIDIA-NeMo/Gym) is installed in $GYM with per-server .venv links to its own venv (offline nodes:
 # skip_venv_if_present). Data was downloaded to $GYM/oellm-baseline/data on the login node.
 #   POLICY=<model dir> NAME=<run name> sbatch slurm/nemo_gym_baseline_leonardo.sbatch
+# ENVS restricts the run to some environments (e.g. resuming in the same NAME after a timeout; the judge-bound VerifIF
+# sets take ~2 h per 200 rows, so the full set needs --time=08:00:00).
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
 : "${POLICY:?policy model dir}" "${NAME:?run name}"
@@ -83,9 +85,11 @@ echo "servers up $(date)"
 # 3. One NeMo Gym evaluation per environment. A custom input file needs --no-serve, so the Gym servers (resources
 # server, agent, model proxy) are started per environment with `gym env start`, awaited via the head server's
 # /readyz (port 11000), used by `gym eval run --no-serve`, then stopped.
+ENVS=${ENVS:-workplace_assistant structured_outputs sysbench cfbench abstention}
 cd "$GYM"
 run_env() {  # name config agent input
   local name=$1 config=$2 agent=$3 input=$4
+  [[ " $ENVS " == *" $name "* ]] || return 0
   echo "== $name $(date)"
   setsid .venv/bin/gym env start --config "$config" --config "$B/oellm.yaml" --model-type vllm_model \
     > "$OUT/serve_$name.log" 2>&1 &
