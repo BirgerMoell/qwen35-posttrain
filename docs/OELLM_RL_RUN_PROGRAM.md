@@ -555,56 +555,17 @@ Activating every verifier exposed two launch failures, both fixed:
   - With the fix, 80/80 ifeval samples score.
   - W3 was resubmitted as 63215513.
 
-### 10.6 Hallucination: measurement and plan (11-02)
+### 10.6 Hallucination (11-02)
 
-**Measured on W2 (from the W3 pass-rate profile):** the eu_qa prompts are long-tail Wikidata facts in ten languages.
-Results are over 4,096 samples (k=8). Wrong includes rows with no `ANSWER:` line.
+Plan, measurements and experiments are in `OELLM_HALLUCINATION_PLAN.md`.
 
-| | Correct | Abstain | Wrong |
-|---|---|---|---|
-| Overall | 10 % | 7 % | 82 % |
-| sv | 10 % | 3 % | 86 % |
-| fi | 5 % | 6 % | 89 % |
-| pl | 5 % | 4 % | 91 % |
+**Findings so far:**
+- W2 knows more than Qwen3-8B on eu_qa (accuracy 0.28 vs 0.16) but almost never abstains: its hallucination rate is
+  0.94.
+- Its own self-consistency predicts correctness well (AUROC 0.87), so abstention training has large headroom.
 
-- The model almost never says it doesn't know. It guesses, and the guess is usually wrong.
-- This matches the literature: binary RLVR and SFT reward guessing. Reasoning and RL fine-tuning lower abstention:
-  - Kalai et al. 2025, arXiv 2509.04664.
-  - AbstentionBench, arXiv 2506.09038.
-  - The "hallucination tax" of RFT, arXiv 2505.13988.
-
-**Plan, in order of evidence per cost:**
-1. **Ternary reward with unanswerable items in every RL window.**
-   - Reward +1 correct, 0 abstain, −1 wrong. TruthRL (arXiv 2509.25760) reports hallucination 39.5 % → 19.4 % vs
-     binary RL at −3.7 points accuracy.
-   - eu_qa already uses this reward (W3 is the first window that trains on it).
-   - From W4, keep 10–20 % of each batch as eu_qa plus unanswerable prompts (nonexistent entities, false premises,
-     generated from Wikidata per language).
-   - Gate abstention on known facts so the model can't collapse into always abstaining. TruthRL saw that collapse
-     with a rule-based verifier.
-   - Optionally, state the risk threshold in the prompt (Kalai: wrong costs t/(1−t)) to set the trade-off.
-2. **Calibration term (RLCR, arXiv 2507.16806).**
-   - Brier reward on stated confidence: ECE 0.37 → 0.03 at equal accuracy, and calibration holds out of domain where
-     binary RLVR degrades it.
-   - Pilot it on eu_qa in a W4 arm.
-3. **Knowledge-aware data for the next SFT/DPO (Gekhman et al., arXiv 2405.05904).**
-   - Fine-tuning on facts the base model doesn't know raises hallucination.
-   - Probe each fact-seeking SFT item per language with k samples. Drop the unknown ones or relabel them as
-     abstentions, and keep the "maybe known" ones.
-4. **Factuality DPO in Stage 4b or later.**
-   - Mask-DPO (arXiv 2503.02846) and FactTune (arXiv 2311.08401) build pairs by verifying atomic claims (gemma4
-     judge plus Wikipedia per language).
-   - FactTune cut the factual error rate by 40–58 % at 7B.
-   - Watch for the model learning to make fewer claims.
-5. **Grounded faithfulness for eu_doc:** Context-DPO / SSFO-style pairs, built by comparing answers with and without
-   the context.
-6. **Long-form factuality RL** (VeriScore reward, arXiv 2508.05618): −23 pp hallucination, but costly in judge
-   compute. Only if long-form hallucination remains after 1–5.
-
-**Measurement every round:**
-- Report correct / abstain / wrong per language on eu_qa held-out, plus a nonexistent-entity refusal set (HalluLens
-  style).
-- Track abstention on known facts (over-refusal) and EUROPA refusal calibration.
-- External anchors: Multilingual SimpleQA Verified (de, fr, es, it, nl, pl, cs, da), swedish-facts-v1
-  (arXiv 2510.21360) and SimpleQA Verified (en).
-- First check: W3 vs W2 on the same eu_qa split, to see whether the ternary reward already moved abstention.
+**Consequences for this program:**
+- RL windows from W4 keep eu_qa plus fabricated-entity prompts at 10–20 %, with "known" prompts as a guard against
+  over-abstention.
+- Stage 4b adds on-policy abstention pairs (sampled on W3) to the identity and safety pairs.
+- The hallucination gate (plan §5) joins the standard gates.
