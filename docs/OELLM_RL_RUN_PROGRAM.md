@@ -597,6 +597,12 @@ Activating every verifier exposed two launch failures, both fixed:
        63255374, search QA 63255375.
 
     Estimate ~275 local-h after the data jobs.
+  - **Requeued 11-02 21:00:** identity finished (689 pairs), but safety (63249024) hit its 5 h limit in the judge
+    phase. It judged 1,000 of 10,512 samples (about 250 per hour; finishing would cost ~1,200 local-h). Safety pairs
+    are built from the ~250 prompts judged so far (pairs + pretok, 63281619), and the chain is requeued: assemble
+    63281620 → DPO 63281621 → export 63281622 → evals hallu-v1 63281624, EU 63281625, quick 63281627, tools
+    63281628, EvalPlus 63281630, EUROPA 63281642, search QA 63281644. Speeding up the judge (Ollama parallelism or
+    vLLM serving) is a precondition for a full safety refresh.
   - **4b gate, vs W3 and W2:**
     - eu_qa head-band accuracy ≥ 0.50 and abstention ≤ 0.10 in both modes;
     - standard hallucination rate below W2's 0.94;

@@ -211,6 +211,8 @@ than replacing it:
   - Lessons for 4b and later: more known pairs (≥ 50 %), a lower LR (5e-7), thinking-mode pairs, and stop on the
     head-band gate.
   - In the opposite direction, the same strength makes DPO a plausible repair for W3's collapse.
+  - EUROPA Alignment (63236602) is unchanged: macro 67.6 % vs W2's 67.7 %, refusal calibration 35.1 % vs 34.8 %,
+    dangerous capabilities 52.0 % vs 49.3 %, failed critical items 140 vs 151. Abstention DPO does not cost safety.
 
 - **11-02 E3 (W3 vs W2): abstention collapse.** eu_qa default mode: accuracy 0.28 → 0.003, abstain 0.05 → 0.995;
   thinking: accuracy 0.26 → 0.18, abstain 0.04 → 0.67, head-band abstain 0.01 → 0.42. The ternary reward alone, on a
