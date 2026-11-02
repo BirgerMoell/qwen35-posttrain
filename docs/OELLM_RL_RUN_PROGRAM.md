@@ -586,6 +586,23 @@ Activating every verifier exposed two launch failures, both fixed:
 
     Estimate for the data: ~200 local-h. The 4b DPO mixes these with general Stage-4 pairs (~100 local-h on
     2 nodes). Its pair mix is set after the W2 abstention pilot reports.
+  - **Abstention repair pairs built (63254527):** 2,222 pairs. 1,333 are known (chosen = a correct answer, rejected
+    = W3's UNKNOWN; W2 knew 1,431 of the questions), 862 unknown (UNKNOWN over a wrong guess) and 27 fabricated (W3
+    already abstains on nearly all of them).
+  - **Chain queued 11-02 (all afterok):**
+    1. assemble 63255365 (repair + identity + safety + 4,000 general pairs; waits for 63249021 and 63249024);
+    2. DPO 63255366 (2 nodes, LR 5e-7, 1 epoch; config `dpo_stage4b_w3_leonardo.yaml`);
+    3. export 63255367;
+    4. evals: hallu-v1 63255368, EU suites 63255369, quick 63255370, tools 63255372, EvalPlus 63255373, EUROPA
+       63255374, search QA 63255375.
+
+    Estimate ~275 local-h after the data jobs.
+  - **4b gate, vs W3 and W2:**
+    - eu_qa head-band accuracy ≥ 0.50 and abstention ≤ 0.10 in both modes;
+    - standard hallucination rate below W2's 0.94;
+    - fabricated inventions below W2's 0.79;
+    - eu_doc, code and reasoning within 0.02 of W3;
+    - tools and EUROPA no worse than W2.
 
 ### 10.6 Hallucination (11-02)
 
