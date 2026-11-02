@@ -8,7 +8,7 @@ eu_tasks.py is copied next to this script on the cluster, so the eval scores exa
 generates greedily and writes <out>/<mode>.jsonl. `score` reports, per mode:
 - eu_qa: accuracy, abstention, wrong (incl. no ANSWER line), hallucination rate = wrong / (n - correct) and the
   knowledge index 100 * (correct - wrong) / n (AA-Omniscience style; 0 = always abstain), by popularity band, type
-  and language;
+  and language, and per `condition` when rows carry one (hallucination eval, oellm-rlvr build_hallucination_evals.py);
 - eu_doc: mean score (JSON: field fraction), exact rate, by family, variant (held-out variants marked), level and
   language; plus the rate of replies without a final answer.
 """
@@ -59,7 +59,10 @@ def score(a) -> None:
             if r["suite"] == "qa":
                 g = E.grade_qa(r["raw"], label)
                 g = "wrong" if g == "no_answer" else g
-                for key in ("ALL", f"band:{r['band']}", f"type:{r['subset']}", f"lang:{r['language']}"):
+                # Rows with a `condition` (hallucination eval hallu-v1: standard / t50 / t75 / t90 / fabricated)
+                # are reported per condition, as "<condition>/ALL", "<condition>/lang:sv", ...
+                pre = f"{r['condition']}/" if r.get("condition") else ""
+                for key in (f"{pre}ALL", f"{pre}band:{r['band']}", f"{pre}type:{r['subset']}", f"{pre}lang:{r['language']}"):
                     qa[key][g] += 1
                     qa[key]["no_answer"] += E.final_answer(E.answer_part(r["raw"], mode) or "") is None
             else:
@@ -83,7 +86,7 @@ def score(a) -> None:
         print(f"== {mode}  (finished {report[mode]['finished']:.3f})")
         print(f"  {'eu_qa':<28}{'n':>5}{'acc':>7}{'abst':>7}{'wrong':>7}{'halluc':>8}{'index':>8}")
         for key, m in report[mode]["qa"].items():
-            if key == "ALL" or key.startswith(("band:", "type:")):
+            if key.rsplit("/", 1)[-1] == "ALL" or key.rsplit("/", 1)[-1].startswith(("band:", "type:")):
                 print(f"  {key:<28}{m['n']:>5}{m['accuracy']:>7.3f}{m['abstain']:>7.3f}{m['wrong']:>7.3f}{m['hallucination_rate']:>8.3f}{m['index']:>8.1f}")
         print(f"  {'eu_doc':<28}{'n':>5}{'score':>7}{'exact':>7}{'noans':>7}{'tokens':>8}")
         for key, m in report[mode]["doc"].items():
