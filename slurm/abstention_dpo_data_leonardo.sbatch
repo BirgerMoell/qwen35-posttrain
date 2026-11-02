@@ -12,7 +12,9 @@
 # Abstention DPO data (hallucination plan E4; scripts/build_abstention_dpo.py): eu_qa train + fabricated prompts,
 # k=8 default-mode samples from POLICY, self-consistency pairs, pre-tokenized with the v2.1 template, plus GENERAL
 # pre-tokenized Stage-4 pairs from pretok-v1 (same tokenizer and template) so DPO does not train on abstention alone.
-#   POLICY=<model dir> WORK=<dir> [QA=0 (all)] [FABRICATED=600] [GENERAL=3000] sbatch slurm/abstention_dpo_data_leonardo.sbatch
+#   POLICY=<model dir> WORK=<dir> [QA=0 (all)] [FABRICATED=600] [GENERAL=3000] [REFERENCE_WORK=<parent work dir>]
+#   [KNOWN_SHARE=0.3333] sbatch slurm/abstention_dpo_data_leonardo.sbatch
+# A WORK that already holds prompts.jsonl (e.g. copied from the parent's) is sampled as is.
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"
 root=$OELLM_WORK/sft-migration-preflight
@@ -28,12 +30,13 @@ mkdir -p "$WORK"
   --rl-qa "$OELLM_SCRATCH/oellm-rl/data/eu-tasks/rl_qa.parquet" --eval "$root/data/hallu-v1/eval.jsonl" \
   --qa "${QA:-0}" --fabricated "${FABRICATED:-600}"
 [[ -s $WORK/samples.jsonl ]] || run "$root/build_abstention_dpo.py" sample --work "$WORK" --policy "$POLICY" --k 8
-run "$root/build_abstention_dpo.py" pairs --work "$WORK"
+run "$root/build_abstention_dpo.py" pairs --work "$WORK" ${REFERENCE_WORK:+--reference-work "$REFERENCE_WORK"} \
+  --known-share "${KNOWN_SHARE:-0.3333}"
 rm -rf "$WORK/pretok"
 run "$root/build_oellm_dpo_v1_pretok.py" --staged "$WORK/staged" --tokenizer "$POLICY" --template "$template" \
   --out "$WORK/pretok" --workers 8
 # General pairs: a fixed random sample of pretok-v1 train rows (tokenizer and template hashes must match).
-run - "$OELLM_SCRATCH/oellm-dpo/pretok-v1" "$WORK/pretok" "${GENERAL:-3000}" <<'PY'
+[[ ${GENERAL:-3000} == 0 ]] || run - "$OELLM_SCRATCH/oellm-dpo/pretok-v1" "$WORK/pretok" "${GENERAL:-3000}" <<'PY'
 import json, sys, random
 from pathlib import Path
 import pyarrow.parquet as pq

@@ -14,6 +14,8 @@ Default mode only (the Stage-4 DPO pipeline renders without think tokens). Phase
                         chosen = a correct reply; rejected = a sampled abstention, else "ANSWER: UNKNOWN"
            known pairs make up --known-share of the total (abstention pairs are capped to match); writes staged/abstention-{train,validation}
            .jsonl.gz in the stage_oellm_dpo_v1 schema and pairs-manifest.json.
+           --reference-work (the parent's work dir, same prompts): questions the parent answered consistently and
+           correctly are "known" even if the policy now abstains (chosen = a correct reply, the policy's own if any).
   python build_abstention_dpo.py prompts --work W --rl-qa rl_qa.parquet --eval hallu-v1/eval.jsonl --qa 2400 --fabricated 600
   python build_abstention_dpo.py sample  --work W --policy MODEL_DIR --k 8
   python build_abstention_dpo.py pairs   --work W
@@ -88,10 +90,33 @@ def phase_sample(a) -> None:
     print(f"sampled {len(rows)} prompts x {a.k}")
 
 
+def reference_known(prompts: dict, ref_work: Path, min_agreement: float) -> dict[str, list[str]]:
+    """Questions a reference checkpoint answered correctly and consistently, with its correct replies.
+
+    Used when the policy itself abstains on almost everything (W3 after the abstention collapse): its own samples no
+    longer show what it knows, but the parent's do, and RL does not delete facts.
+    """
+    known = {}
+    for g in map(json.loads, (ref_work / "samples.jsonl").read_text().splitlines()):
+        p = prompts.get(g["id"])
+        if not p or p["kind"] != "qa":
+            continue
+        graded = [(t.strip(), E.grade_qa(t, p["label"]), answer_key(t, p["label"])) for t in g["replies"]]
+        answered = Counter(k for _, _, k in graded if k not in (ABSTAIN_KEY, NO_ANSWER_KEY))
+        if not answered:
+            continue
+        top_key, top_n = answered.most_common(1)[0]
+        correct = [t for t, grade, k in graded if grade == "correct" and k == top_key]
+        if correct and top_n / len(g["replies"]) >= min_agreement:
+            known[g["id"]] = correct
+    return known
+
+
 def phase_pairs(a) -> None:
     rng = random.Random(a.seed)
     prompts = {r["id"]: r for r in map(json.loads, (a.work / "prompts.jsonl").read_text().splitlines())}
     groups = [json.loads(line) for line in (a.work / "samples.jsonl").read_text().splitlines()]
+    ref_known = reference_known(prompts, a.reference_work, a.known_min_agreement) if a.reference_work else {}
     pairs = {"unknown": [], "fabricated": [], "known": []}
     stats = Counter()
     for g in groups:
@@ -120,6 +145,11 @@ def phase_pairs(a) -> None:
         elif top_grade == "correct" and agreement >= a.known_min_agreement and correct:
             case = "known"
             pairs["known"].append((p, rng.choice(correct), abstain_reply))
+        elif g["id"] in ref_known and (abstains or wrong):
+            # The reference knew it; the policy abstains or guesses wrong. Prefer the policy's own correct reply.
+            case = "known_ref"
+            pairs["known"].append((p, rng.choice(correct or ref_known[g["id"]]),
+                                   abstain_reply if abstains else rng.choice(wrong)))
         else:
             case = "no_pair"
         stats[f"{p['kind']}|{case}"] += 1
@@ -132,7 +162,8 @@ def phase_pairs(a) -> None:
     abstain_total = min(len(pairs["unknown"]) + len(pairs["fabricated"]), a.max_abstain,
                         round(len(known) * (1 - a.known_share) / a.known_share))
     known = known[: round(abstain_total * a.known_share / (1 - a.known_share))]
-    fabricated = pairs["fabricated"][: round(abstain_total * a.fabricated_share)]
+    # fabricated_share is a cap only while there are enough unknown pairs to fill the rest
+    fabricated = pairs["fabricated"][: max(round(abstain_total * a.fabricated_share), abstain_total - len(pairs["unknown"]))]
     unknown = pairs["unknown"][: abstain_total - len(fabricated)]
     rows = []
     for kind, items in (("unknown", unknown), ("fabricated", fabricated), ("known", known)):
@@ -154,6 +185,7 @@ def phase_pairs(a) -> None:
                 "pairs": len(rows), "by_kind": dict(Counter(r["source"].split(":")[1] for r in rows)),
                 "available": {k: len(v) for k, v in pairs.items()}, "known_share_target": a.known_share,
                 "known_min_agreement": a.known_min_agreement,
+                "reference_work": str(a.reference_work or ""), "reference_known": len(ref_known),
                 "splits": {k: len(v) for k, v in split.items()},
                 "chosen_constructed_unknown_reply": sum(1 for r in rows if UNKNOWN_REPLY == r["chosen"][0]["content"]),
                 "by_language": dict(Counter(r["language"] for r in rows)), "stats": dict(sorted(stats.items()))}
@@ -176,6 +208,8 @@ def main() -> None:
     ap.add_argument("--known-min-agreement", type=float, default=5 / 8, help="5/8: answered correctly ~77 %% of the time (E1)")
     ap.add_argument("--fabricated-share", type=float, default=0.3)
     ap.add_argument("--max-abstain", type=int, default=2400)
+    ap.add_argument("--reference-work", type=Path, help="work dir of the parent checkpoint (same prompts.jsonl): "
+                    "its consistent correct answers define known questions for a policy that abstains")
     ap.add_argument("--seed", type=int, default=20261103)
     a = ap.parse_args()
     {"prompts": phase_prompts, "sample": phase_sample, "pairs": phase_pairs}[a.phase](a)

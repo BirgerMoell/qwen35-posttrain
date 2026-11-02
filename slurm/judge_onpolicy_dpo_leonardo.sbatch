@@ -12,7 +12,7 @@
 # Judge-labelled on-policy DPO data (scripts/judge_onpolicy_dpo.py): translate (Ollama gemma4:31b, once) -> sample
 # the POLICY in default mode (4 vLLM processes, one per GPU) -> judge (Ollama gemma4:31b, the EUROPA judge digest) ->
 # pairs -> pre-tokenize with the main DPO guards. Resumable phase by phase.
-#   POLICY=<model dir> [DATA_DIR=<dir with prompts.jsonl>] [PHASES="translate sample judge pairs pretok"] [SMOKE=1] sbatch ...
+#   POLICY=<model dir> [DATA_DIR=<dir with prompts.jsonl>] [PHASES="translate sample judge pairs pretok"] [K=6] [SMOKE=1] sbatch ...
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"  # site settings: account, paths (leonardo.env.example)
 root=$OELLM_WORK/sft-migration-preflight
@@ -56,8 +56,8 @@ for phase in $PHASES; do
   echo "== $phase $(date)"
   case $phase in
     translate|judge) start_ollama; py python "$J" $phase --work "$DATA_DIR" --endpoints "$endpoints" --judge-revision "$JREV" --threads $((NGPU * 8)); stop_ollama ;;
-    sample) for g in $(seq 0 $((NGPU - 1))); do CUDA_VISIBLE_DEVICES=$g py "$VLLM_PY" "$J" sample --work "$DATA_DIR" --policy "$POLICY" --shard $g --shards $NGPU > "$DATA_DIR/sample-$g.log" 2>&1 & done; wait ;;
-    pairs) py python "$J" pairs --work "$DATA_DIR" --policy "$POLICY" --judge-revision "$JREV" ;;
+    sample) for g in $(seq 0 $((NGPU - 1))); do CUDA_VISIBLE_DEVICES=$g py "$VLLM_PY" "$J" sample --work "$DATA_DIR" --policy "$POLICY" --shard $g --shards $NGPU --k "${K:-6}" > "$DATA_DIR/sample-$g.log" 2>&1 & done; wait ;;
+    pairs) py python "$J" pairs --work "$DATA_DIR" --policy "$POLICY" --judge-revision "$JREV" --k "${K:-6}" ;;
     pretok) py python "$root/build_oellm_dpo_v1_pretok.py" --staged "$DATA_DIR/staged" --tokenizer "$root/output/stage3-tooluse-v1.1-bf16" \
               --template "$root/oellm_qwen3_two_stage_v2_1.jinja" --out "$DATA_DIR/pretok" --workers 8 ;;
   esac
