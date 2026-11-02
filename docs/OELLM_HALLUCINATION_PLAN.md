@@ -127,7 +127,7 @@ averages suggest.
 |---|---|---|---|
 | E0 | eu_qa baselines across checkpoints (§2) | done | 0 (existing) |
 | E1 | Self-consistency headroom on W2 (§2) | done | 0 (existing samples) |
-| E2 | hallu-v1 on W2, Qwen3-8B, Apertus-8B: do stated thresholds move abstention; fabricated-entity abstention | running | ~24 |
+| E2 | hallu-v1 on W2, Qwen3-8B, Apertus-8B: do stated thresholds move abstention; fabricated-entity abstention | done (§6) | 8 |
 | E3 | hallu-v1 + eu_qa three-way on W3, against W2: did the ternary eu_qa reward in RL already move abstention? | after W3 | ~8 |
 | E4 | Abstention-DPO pairs from W3 samples (below), as part of Stage 4b with identity and safety | after W3 | ~25 sampling + the 4b DPO |
 | E5 | W4-H RL arm: ternary eu_qa + 15 % fabricated + "known" prompts; optional RLCR confidence variant; vs W4 without | after E3/E4 | estimate before launch (~400 for a 1-node 12 h arm) |
@@ -153,3 +153,23 @@ gates):
 ## 6. Results log
 
 - **11-02 E0, E1:** see §2.
+- **11-02 E2** (hallu-v1, greedy; `eval/eu-tasks/hallu-v1-*`; jobs 63218034–36). Columns are the rate of invented
+  answers to fabricated entities, standard eu_qa results, and abstention under each stated threshold:
+
+  | Model | Mode | Fabricated: invents an answer | Standard acc | Standard halluc. rate | Abstain t50 / t75 / t90 |
+  |---|---|---|---|---|---|
+  | W2 | default | **0.79** | 0.28 | 0.94 | 0.11 / 0.09 / 0.07 |
+  | W2 | thinking | **0.73** | 0.28 | 0.94 | 0.04 / 0.04 / 0.03 |
+  | Qwen3-8B | default | 0.43 | 0.16 | 0.82 | 0.09 / 0.09 / 0.09 |
+  | Qwen3-8B | thinking | 0.14 | 0.20 | 0.70 | 0.26 / 0.25 / 0.26 |
+  | Apertus-8B-Instruct | default | 0.55 | 0.26 | 0.77 | 0.13 / 0.14 / 0.13 |
+
+  Apertus has no thinking mode; its thinking-mode rows are invalid and not shown.
+
+  - **W2 invents details for most nonexistent people, films and companies:** 4 in 5, against 1 in 7 for Qwen3-8B
+    thinking.
+  - **No model's abstention follows the stated stakes.** Abstention does not rise from t50 to t90, and the
+    threshold prompt often lowers it relative to `standard`. The prompt alone cannot fix this. It needs training
+    (methods 1–2), and the threshold-monotonicity gate is a target none of the tested models meets yet.
+  - Thinking helps Qwen3 a lot on fabricated entities (0.43 → 0.14) but helps W2 little (0.79 → 0.73). Our closed-
+    trace thinking does not yet check whether an entity exists.
