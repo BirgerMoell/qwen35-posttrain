@@ -10,9 +10,9 @@ Default mode only (the Stage-4 DPO pipeline renders without think tokens). Phase
              unknown    agreement of the majority answer <= 2/8 and the majority answer wrong:
                         chosen = a sampled abstention, else "ANSWER: UNKNOWN"; rejected = a sampled wrong reply
              fabricated chosen = a sampled abstention, else "ANSWER: UNKNOWN"; rejected = an invented answer
-             known      majority answer correct with agreement >= 6/8 (the over-refusal guard):
+             known      majority answer correct with agreement >= 5/8 (the over-refusal guard):
                         chosen = a correct reply; rejected = a sampled abstention, else "ANSWER: UNKNOWN"
-           known pairs are capped/filled to --known-share of the total; writes staged/abstention-{train,validation}
+           known pairs make up --known-share of the total (abstention pairs are capped to match); writes staged/abstention-{train,validation}
            .jsonl.gz in the stage_oellm_dpo_v1 schema and pairs-manifest.json.
   python build_abstention_dpo.py prompts --work W --rl-qa rl_qa.parquet --eval hallu-v1/eval.jsonl --qa 2400 --fabricated 600
   python build_abstention_dpo.py sample  --work W --policy MODEL_DIR --k 8
@@ -49,7 +49,7 @@ def phase_prompts(a) -> None:
     qa = [r for r in qa if r["id"].rsplit("-", 1)[0] not in eval_ids]
     rng.shuffle(qa)
     rows = []
-    for r in qa[: a.qa]:
+    for r in (qa[: a.qa] if a.qa else qa):  # --qa 0: every train question (known facts are rare in the tail-heavy pool)
         label = json.loads(r["ground_truth"])
         rows.append({"id": r["id"], "kind": "qa", "language": r["language"], "prompt": r["messages"][-1]["content"],
                      "label": {**label, "mode": "default"}})
@@ -117,20 +117,25 @@ def phase_pairs(a) -> None:
         elif top_grade == "wrong" and agreement <= 2 / 8 and wrong:
             case = "unknown"
             pairs["unknown"].append((p, abstain_reply, rng.choice(wrong)))
-        elif top_grade == "correct" and agreement >= 6 / 8 and correct:
+        elif top_grade == "correct" and agreement >= a.known_min_agreement and correct:
             case = "known"
             pairs["known"].append((p, rng.choice(correct), abstain_reply))
         else:
             case = "no_pair"
         stats[f"{p['kind']}|{case}"] += 1
         stats[f"{p['kind']}|abstain_sampled_{bool(abstains)}"] += 1
-    # Known pairs: about known_share of all pairs (fewer if there are not enough known prompts).
-    abstain_pairs = pairs["unknown"] + pairs["fabricated"]
-    want_known = round(a.known_share / (1 - a.known_share) * len(abstain_pairs))
-    rng.shuffle(pairs["known"])
-    known = pairs["known"][:want_known]
+    # Balance: known pairs make up known_share of the total, so the abstention pairs are capped by the known pairs
+    # available (and by --max-abstain); fabricated pairs take at most fabricated_share of the abstention pairs.
+    for v in pairs.values():
+        rng.shuffle(v)
+    known = pairs["known"]
+    abstain_total = min(len(pairs["unknown"]) + len(pairs["fabricated"]), a.max_abstain,
+                        round(len(known) * (1 - a.known_share) / a.known_share))
+    known = known[: round(abstain_total * a.known_share / (1 - a.known_share))]
+    fabricated = pairs["fabricated"][: round(abstain_total * a.fabricated_share)]
+    unknown = pairs["unknown"][: abstain_total - len(fabricated)]
     rows = []
-    for kind, items in (("unknown", pairs["unknown"]), ("fabricated", pairs["fabricated"]), ("known", known)):
+    for kind, items in (("unknown", unknown), ("fabricated", fabricated), ("known", known)):
         for p, chosen, rejected in items:
             rows.append({"id": f"abstention-{kind}-{p['id']}", "prompt": [{"role": "user", "content": p["prompt"]}],
                          "chosen": [{"role": "assistant", "content": chosen}],
@@ -147,7 +152,8 @@ def phase_pairs(a) -> None:
     manifest = {"kind": "oellm_abstention_onpolicy_pairs_v1", "work": str(a.work),
                 "sample": json.loads((a.work / "sample-manifest.json").read_text()),
                 "pairs": len(rows), "by_kind": dict(Counter(r["source"].split(":")[1] for r in rows)),
-                "known_available": len(pairs["known"]), "known_share_target": a.known_share,
+                "available": {k: len(v) for k, v in pairs.items()}, "known_share_target": a.known_share,
+                "known_min_agreement": a.known_min_agreement,
                 "splits": {k: len(v) for k, v in split.items()},
                 "chosen_constructed_unknown_reply": sum(1 for r in rows if UNKNOWN_REPLY == r["chosen"][0]["content"]),
                 "by_language": dict(Counter(r["language"] for r in rows)), "stats": dict(sorted(stats.items()))}
@@ -167,6 +173,9 @@ def main() -> None:
     ap.add_argument("--k", type=int, default=8)
     ap.add_argument("--max-tokens", type=int, default=384)
     ap.add_argument("--known-share", type=float, default=1 / 3)
+    ap.add_argument("--known-min-agreement", type=float, default=5 / 8, help="5/8: answered correctly ~77 %% of the time (E1)")
+    ap.add_argument("--fabricated-share", type=float, default=0.3)
+    ap.add_argument("--max-abstain", type=int, default=2400)
     ap.add_argument("--seed", type=int, default=20261103)
     a = ap.parse_args()
     {"prompts": phase_prompts, "sample": phase_sample, "pairs": phase_pairs}[a.phase](a)

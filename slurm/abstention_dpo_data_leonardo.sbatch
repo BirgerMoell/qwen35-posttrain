@@ -6,13 +6,13 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=120G
-#SBATCH --time=01:50:00
+#SBATCH --time=03:00:00
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 # Abstention DPO data (hallucination plan E4; scripts/build_abstention_dpo.py): eu_qa train + fabricated prompts,
 # k=8 default-mode samples from POLICY, self-consistency pairs, pre-tokenized with the v2.1 template, plus GENERAL
 # pre-tokenized Stage-4 pairs from pretok-v1 (same tokenizer and template) so DPO does not train on abstention alone.
-#   POLICY=<model dir> WORK=<dir> [QA=2400] [FABRICATED=600] [GENERAL=3000] sbatch slurm/abstention_dpo_data_leonardo.sbatch
+#   POLICY=<model dir> WORK=<dir> [QA=0 (all)] [FABRICATED=600] [GENERAL=3000] sbatch slurm/abstention_dpo_data_leonardo.sbatch
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"
 root=$OELLM_WORK/sft-migration-preflight
@@ -26,7 +26,7 @@ run() { singularity exec --nv -B /leonardo_work,/leonardo_scratch "$C" env HF_HU
 mkdir -p "$WORK"
 [[ -s $WORK/prompts.jsonl ]] || run "$root/build_abstention_dpo.py" prompts --work "$WORK" \
   --rl-qa "$OELLM_SCRATCH/oellm-rl/data/eu-tasks/rl_qa.parquet" --eval "$root/data/hallu-v1/eval.jsonl" \
-  --qa "${QA:-2400}" --fabricated "${FABRICATED:-600}"
+  --qa "${QA:-0}" --fabricated "${FABRICATED:-600}"
 [[ -s $WORK/samples.jsonl ]] || run "$root/build_abstention_dpo.py" sample --work "$WORK" --policy "$POLICY" --k 8
 run "$root/build_abstention_dpo.py" pairs --work "$WORK"
 rm -rf "$WORK/pretok"
