@@ -26,8 +26,13 @@ mkdir -p "$out"
   --preload en de fr es it nl sv pl pt fi > "$out/search_server.log" 2>&1 &
 server=$!
 trap 'kill $server 2>/dev/null || true' EXIT
-for i in $(seq 1 180); do curl -sf -o /dev/null http://127.0.0.1:18090/health && break; sleep 5; done
-curl -sf http://127.0.0.1:18090/health || { echo "search server did not start" >&2; tail -20 "$out/search_server.log" >&2; exit 2; }
+# Wait until every language is loaded (the server loads them in the background and reports them on /health).
+for i in $(seq 1 360); do
+  n=$(curl -sf http://127.0.0.1:18090/health | python3 -c 'import json,sys; print(len(json.load(sys.stdin)["loaded"]))' 2>/dev/null || echo 0)
+  [[ $n == 10 ]] && break; kill -0 $server 2>/dev/null || break; sleep 5
+done
+[[ $n == 10 ]] || { echo "search server not ready (loaded $n/10)" >&2; tail -20 "$out/search_server.log" >&2; exit 2; }
+cat "$out/search_server.log"
 for q in '{"query": "Selma Lagerlöf född", "language": "sv"}' '{"query": "Ingmar Bergman", "language": "en", "k": 2}'; do
   curl -s -X POST -H 'Content-Type: application/json' -d "$q" http://127.0.0.1:18090/search | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["runtime"], "s"); print(d["text"][:500])'
 done
