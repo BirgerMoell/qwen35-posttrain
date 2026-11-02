@@ -133,6 +133,8 @@ averages suggest.
 | E4 | Abstention-DPO pairs from W3 samples (below), as part of Stage 4b with identity and safety | after W3 and E4-pilot | ~25 sampling + the 4b DPO |
 | E5 | W4-H RL arm: ternary eu_qa + 15 % fabricated + "known" prompts; optional RLCR confidence variant; vs W4 without | after E3/E4 | estimate before launch (~400 for a 1-node 12 h arm) |
 | E6 | Knowledge probe of the fact-seeking part of the SFT mix (per language) | next SFT round | ~50 |
+| E7 | **Search baseline**: W2 with an offline Wikipedia `wiki_search` tool on hallu-v1 (standard + fabricated), both modes. Does it search when unsure, and does it answer from the results? | index 63227897 → eval 63229550 | ~40 |
+| E8 | **Search RL window** (T-search): eu_qa + fabricated prompts with the search tool in rollouts, ternary reward, from W3 (or W3 + 4b) | after E7 | estimate before launch (~400 for 1 node × 12 h) |
 
 **E4 pair construction** (on-policy, from the checkpoint being trained; eu_qa train pool and fabricated prompts
 only, disjoint from hallu-v1 by subject):
@@ -150,6 +152,34 @@ gates):
 - `fabricated` abstention ≥ 0.7;
 - abstention increases monotonically t50 → t75 → t90;
 - no regression on EUROPA refusal calibration, the safety gate or the oellm-eval knowledge benchmarks.
+
+### Search (E7, E8)
+
+Retrieval is the only fix for long-tail facts: tail accuracy is 7–9 %, and pre-training or RL will not teach a 9B
+model those facts (Kandpal et al. arXiv 2211.08411; PopQA arXiv 2212.10511). Search complements abstention rather
+than replacing it:
+- Deciding *when* to search needs the same calibration as abstaining.
+- A search-using model hallucinates in new ways: it misreads results, or answers when the search finds nothing.
+- The model often runs offline (Ollama, MLX), where it still has to abstain.
+
+**Setup.** Leonardo's compute nodes are offline, so the search is local, in the style of Search-R1 (arXiv
+2503.09516):
+- **Index:** BM25 over the lead sections of Wikipedia (wikimedia/wikipedia 20231101 @ `b04c8d1c`, CC BY-SA), one
+  index per language (en, de, fr, es, it, nl, sv, pl, pt, fi).
+  - Built by oellm-rlvr `scripts/leonardo_wiki_search_index.sbatch`.
+  - Served by `scripts/wiki_search.py serve` from its own venv.
+- **Tool in RL rollouts:** `wiki_search(query, language)` through open-instruct's tool support
+  (`OELLM_PATCH_WIKI_SEARCH_TOOL=1`, hermes parser).
+- **Eval:** `scripts/eval_search_qa.py`.
+
+**E8 design (if E7 shows the model can use the tool):**
+- **Pool:**
+  - about 60 % eu_qa train questions not used before;
+  - about 15 % fabricated entities, where the search finds nothing and the right answer is UNKNOWN;
+  - about 25 % W3 slices, so other skills hold.
+- **Reward:** +1 / 0 / −1 on the final answer, at most 3 searches, tool output masked from the loss.
+- **What to watch:** search rate on head-band questions (it should stay low when the model knows), answers that
+  contradict the retrieved text, and accuracy without the tool (it must not drop).
 
 ## 6. Results log
 
