@@ -1,0 +1,36 @@
+# Hallucination pilot (OELLM_HALLUCINATION_PLAN.md, E4 on W2): abstention DPO from W2's own samples.
+# ~3,000 on-policy abstention pairs (scripts/build_abstention_dpo.py) + ~3,000 general Stage-4 pairs (pretok-v1) so
+# other behaviour does not drift; one epoch, ~45 steps at global batch 128 on 2 nodes. Stage-4 v1 recipe otherwise,
+# with a higher LR (1e-6, 10 % warmup) because the run is ~250x shorter. Throwaway: the recipe, not the checkpoint,
+# goes into Stage 4b on W3.
+model_name_or_path: ${OELLM_SCRATCH}/oellm-upload/oellm-9b-256k-stage5-w2-rl-step160
+dtype: bfloat16
+attn_implementation: flash_attention_2
+output_dir: ${OELLM_SCRATCH}/oellm-dpo/output/hallu-pilot-w2
+loss_type: [sigmoid]
+beta: 0.1
+max_length: 2048
+num_train_epochs: 1
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 2
+gradient_accumulation_steps: 2
+learning_rate: 1.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+weight_decay: 0.0
+max_grad_norm: 1.0
+bf16: true
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+seed: 42
+data_seed: 42
+logging_steps: 1
+eval_strategy: steps
+eval_steps: 10
+save_strategy: steps
+save_steps: 1000                # pilot: final save only
+save_total_limit: 1
+dataloader_num_workers: 2
+ddp_timeout: 7200
+report_to: none

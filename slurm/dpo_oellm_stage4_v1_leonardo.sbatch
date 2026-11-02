@@ -29,7 +29,7 @@ config="$root/${DPO_CONFIG:-dpo_oellm_stage4_v1_leonardo.yaml}"
 mkdir -p "$root/tmp"; rendered="$root/tmp/${SLURM_JOB_ID:-local}-$(basename "$config")"
 python3 "$root/render_site_config.py" "$config" > "$rendered"; config="$rendered"
 template="$root/oellm_qwen3_two_stage_v2_1.jinja"
-model="$root/output/stage3-tooluse-v1.1-bf16"
+model="${DPO_MODEL:-$root/output/stage3-tooluse-v1.1-bf16}"  # policy/tokenizer dir; DPO_MODEL for pilots (must match the config)
 output=$(awk '/^output_dir:/ {print $2}' "$config")
 [[ -n "$output" ]] || { echo "no output_dir in $config"; exit 1; }
 smoke="${DPO_SMOKE:-0}"
@@ -38,7 +38,7 @@ smoke="${DPO_SMOKE:-0}"
 if [[ -s "$output/model.safetensors.index.json" || -s "$output/model.safetensors" ]]; then
   echo "Final model already saved in $output; nothing to do"; exit 0
 fi
-test -s "$data/manifest.json" && test -s "$model/model.safetensors.index.json"
+test -s "$data/manifest.json" && { test -s "$model/model.safetensors.index.json" || test -s "$model/model.safetensors"; }
 cmp "$model/chat_template.jinja" "$template"
 gpus=$((SLURM_NNODES * 4))
 per_device=$(awk '/^per_device_train_batch_size:/ {print $2}' "$config")

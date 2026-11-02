@@ -129,7 +129,8 @@ averages suggest.
 | E1 | Self-consistency headroom on W2 (§2) | done | 0 (existing samples) |
 | E2 | hallu-v1 on W2, Qwen3-8B, Apertus-8B: do stated thresholds move abstention; fabricated-entity abstention | done (§6) | 8 |
 | E3 | hallu-v1 + eu_qa three-way on W3, against W2: did the ternary eu_qa reward in RL already move abstention? | after W3 | ~8 |
-| E4 | Abstention-DPO pairs from W3 samples (below), as part of Stage 4b with identity and safety | after W3 | ~25 sampling + the 4b DPO |
+| E4-pilot | The E4 recipe on **W2** as a throwaway pilot: about 3K abstention pairs (W2 samples) + 3K general Stage-4 pairs, 1 epoch DPO on 2 nodes. Chain: data 63225457 → DPO 63225458 → export 63225459 → hallu-v1 63225461 + EUROPA 63225462 | running (11-02) | ~115 |
+| E4 | Abstention-DPO pairs from W3 samples (below), as part of Stage 4b with identity and safety | after W3 and E4-pilot | ~25 sampling + the 4b DPO |
 | E5 | W4-H RL arm: ternary eu_qa + 15 % fabricated + "known" prompts; optional RLCR confidence variant; vs W4 without | after E3/E4 | estimate before launch (~400 for a 1-node 12 h arm) |
 | E6 | Knowledge probe of the fact-seeking part of the SFT mix (per language) | next SFT round | ~50 |
 
