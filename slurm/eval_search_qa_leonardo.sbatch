@@ -28,6 +28,9 @@ server=$!
 trap 'kill $server 2>/dev/null || true' EXIT
 for i in $(seq 1 180); do curl -sf -o /dev/null http://127.0.0.1:18090/health && break; sleep 5; done
 curl -sf http://127.0.0.1:18090/health || { echo "search server did not start" >&2; tail -20 "$out/search_server.log" >&2; exit 2; }
+for q in '{"query": "Selma Lagerlöf född", "language": "sv"}' '{"query": "Ingmar Bergman", "language": "en", "k": 2}'; do
+  curl -s -X POST -H 'Content-Type: application/json' -d "$q" http://127.0.0.1:18090/search | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["runtime"], "s"); print(d["text"][:500])'
+done
 singularity exec --nv -B /leonardo_work,/leonardo_scratch "$C" env HF_HUB_OFFLINE=1 VLLM_NO_USAGE_STATS=1 \
   PYTHONPATH=$CODE/src "$PY" "$root/eval_search_qa.py" --model "$MODEL" --data "${DATA:-$root/data/hallu-v1/eval.jsonl}" \
   --out "$out" --modes ${MODES:-default thinking}
