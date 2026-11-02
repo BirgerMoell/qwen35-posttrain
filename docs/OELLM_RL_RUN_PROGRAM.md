@@ -555,6 +555,27 @@ Activating every verifier exposed two launch failures, both fixed:
   - With the fix, 80/80 ifeval samples score.
   - W3 was resubmitted as 63215513.
 
+- **W3 result (11-02, job 63215513, 160 updates, 3 h 08 min on 1 node; step 160):**
+
+  | Metric | W2 | W3 |
+  |---|---|---|
+  | Quick reasoning, thinking / default | 0.630 / 0.575 | **0.632 / 0.595** |
+  | EvalPlus HumanEval+ / MBPP+ (thinking) | 0.299 / 0.333 | **0.360 / 0.341** |
+  | Held-out tools: decision / names / JSON / args | 0.886 / 0.789 / 1.000 / 0.972 | 0.850 / 0.776 / 1.000 / 0.978 |
+  | eu_doc score, default / thinking | 0.376 / 0.347 | **0.516 / 0.510** |
+  | eu_qa default: acc / abstain / wrong | 0.28 / 0.05 / 0.67 | **0.003 / 0.995 / 0.002** |
+  | eu_qa thinking: acc / abstain / wrong | 0.26 / 0.04 / 0.70 | 0.18 / 0.67 / 0.16 |
+  | eu_qa head band: acc / abstain (thinking) | 0.51 / 0.01 | 0.38 / 0.42 |
+
+  - **Abstention collapse.** In default mode W3 answers UNKNOWN to 99.5 % of the questions, including the
+    well-known ones. The ternary reward on a tail-heavy pool did this: 216 of 512 eu_qa prompts were never solved at
+    k=8, so UNKNOWN (0) beat guessing (expected about −0.8) almost everywhere. Nothing in the pool rewarded answering
+    known facts over abstaining, so the policy generalised to "always abstain". This is the failure TruthRL reports
+    for rule-based rewards.
+  - The thinking mode keeps some knowledge (index +1.8 vs −43.7), but head-band accuracy falls from 0.51 to 0.38.
+  - **The other skills improved or held:** documents +0.14, code +0.06, reasoning flat, tools −0.04 on decisions.
+  - **Decision pending:** W3 is not promoted as is.
+
 ### 10.6 Hallucination (11-02)
 
 Plan, measurements and experiments are in `OELLM_HALLUCINATION_PLAN.md`.

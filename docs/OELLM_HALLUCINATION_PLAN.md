@@ -183,6 +183,14 @@ than replacing it:
 
 ## 6. Results log
 
+- **11-02 E3 (W3 vs W2): abstention collapse.** eu_qa default mode: accuracy 0.28 → 0.003, abstain 0.05 → 0.995;
+  thinking: accuracy 0.26 → 0.18, abstain 0.04 → 0.67, head-band abstain 0.01 → 0.42. The ternary reward alone, on a
+  pool where most prompts are never solved, teaches "always UNKNOWN". The guard in §4 (known prompts where abstaining
+  loses reward) is necessary, not optional. Fixes for W4:
+  - balance eu_qa by pass rate on the current checkpoint: prompts solved ≥ 4/8 alongside the unknown ones;
+  - give an abstention on a known prompt a negative reward (e.g. −0.5);
+  - gate on head-band abstention.
+
 - **11-02 E0, E1:** see §2.
 - **11-02 E2** (hallu-v1, greedy; `eval/eu-tasks/hallu-v1-*`; jobs 63218034–36). Columns are the rate of invented
   answers to fabricated entities, standard eu_qa results, and abstention under each stated threshold:
