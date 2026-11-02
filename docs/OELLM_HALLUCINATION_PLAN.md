@@ -129,11 +129,11 @@ averages suggest.
 | E1 | Self-consistency headroom on W2 (§2) | done | 0 (existing samples) |
 | E2 | hallu-v1 on W2, Qwen3-8B, Apertus-8B: do stated thresholds move abstention; fabricated-entity abstention | done (§6) | 8 |
 | E3 | hallu-v1 + eu_qa three-way on W3, against W2: did the ternary eu_qa reward in RL already move abstention? | after W3 | ~8 |
-| E4-pilot | The E4 recipe on **W2** as a throwaway pilot: about 3K abstention pairs (W2 samples) + 3K general Stage-4 pairs, 1 epoch DPO on 2 nodes. Chain: data 63225457 → DPO 63225458 → export 63225459 → hallu-v1 63225461 + EUROPA 63225462 | running (11-02) | ~115 |
+| E4-pilot | The E4 recipe on **W2** as a throwaway pilot: 2,600 abstention pairs (W2 samples, 1/3 known) + 3K general Stage-4 pairs, 1 epoch DPO on 2 nodes (63236592) | done (§6): overshoots in default mode | ~130 |
 | E4 | Abstention-DPO pairs from W3 samples (below), as part of Stage 4b with identity and safety | after W3 and E4-pilot | ~25 sampling + the 4b DPO |
 | E5 | W4-H RL arm: ternary eu_qa + 15 % fabricated + "known" prompts; optional RLCR confidence variant; vs W4 without | after E3/E4 | estimate before launch (~400 for a 1-node 12 h arm) |
 | E6 | Knowledge probe of the fact-seeking part of the SFT mix (per language) | next SFT round | ~50 |
-| E7 | **Search baseline**: W2 with an offline Wikipedia `wiki_search` tool on hallu-v1 (standard + fabricated), both modes. Does it search when unsure, and does it answer from the results? | index 63227897 → eval 63229550 | ~40 |
+| E7 | **Search baseline**: W2 with an offline Wikipedia `wiki_search` tool on hallu-v1 (standard + fabricated), both modes | done (63246089, §6) | ~10 |
 | E8 | **Search RL window** (T-search): eu_qa + fabricated prompts with the search tool in rollouts, ternary reward, from W3 (or W3 + 4b) | after E7 | estimate before launch (~400 for 1 node × 12 h) |
 
 **E4 pair construction** (on-policy, from the checkpoint being trained; eu_qa train pool and fabricated prompts
@@ -182,6 +182,35 @@ than replacing it:
   contradict the retrieved text, and accuracy without the tool (it must not drop).
 
 ## 6. Results log
+
+- **11-02 E7 (W2 + offline Wikipedia search, no training):** the largest effect so far.
+
+  | W2 | Standard acc | Standard wrong | Head acc | Tail acc | Fabricated: invents | Searched |
+  |---|---|---|---|---|---|---|
+  | default, no tool | 0.28 | 0.67 | 0.53 | 0.09 | 0.79 | – |
+  | default, search | **0.51** | **0.33** | 0.64 | **0.34** | **0.25** | 86 % |
+  | thinking, no tool | 0.28 | 0.68 | 0.52 | 0.07 | 0.73 | – |
+  | thinking, search | **0.52** | **0.32** | 0.61 | **0.38** | **0.31** | 95 % |
+
+  - The model searches almost always and uses the results.
+  - When the search does not help, it still guesses more often than it abstains (hallucination rate 0.66).
+  - So E8 (search RL with the ternary reward, plus known and fabricated prompts) is the most promising next run.
+- **11-02 E4-pilot (W2 + 1-epoch abstention DPO, default-mode pairs, LR 1e-6; 2,600 abstention pairs with 1/3
+  known + 3,000 general):**
+
+  | | Standard acc | Abstain | Wrong | Halluc. rate | Head acc / abstain | Fabricated: invents |
+  |---|---|---|---|---|---|---|
+  | W2 default | 0.28 | 0.05 | 0.67 | 0.94 | 0.53 / 0.03 | 0.79 |
+  | pilot default | 0.15 | 0.65 | 0.21 | 0.24 | 0.30 / 0.44 | **0.12** |
+  | W2 thinking | 0.28 | 0.04 | 0.68 | 0.94 | 0.52 / 0.01 | 0.73 |
+  | pilot thinking | 0.27 | 0.07 | 0.67 | 0.91 | 0.48 / 0.03 | 0.62 |
+
+  - DPO moves abstention strongly but **overshoots** in default mode. Head-band abstention reaches 0.44 even with
+    1/3 known pairs, failing the gate (accuracy −0.13).
+  - It barely transfers to thinking mode, whose pairs were absent.
+  - Lessons for 4b and later: more known pairs (≥ 50 %), a lower LR (5e-7), thinking-mode pairs, and stop on the
+    head-band gate.
+  - In the opposite direction, the same strength makes DPO a plausible repair for W3's collapse.
 
 - **11-02 E3 (W3 vs W2): abstention collapse.** eu_qa default mode: accuracy 0.28 → 0.003, abstain 0.05 → 0.995;
   thinking: accuracy 0.26 → 0.18, abstain 0.04 → 0.67, head-band abstain 0.01 → 0.42. The ternary reward alone, on a
