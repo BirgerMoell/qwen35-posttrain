@@ -36,6 +36,10 @@ from oellm_rlvr.hallucination import ABSTAIN_KEY, NO_ANSWER_KEY, answer_key, fab
 UNKNOWN_REPLY = "ANSWER: UNKNOWN"
 
 
+# JSONL is split on "\n" only: str.splitlines() also breaks on U+2028, U+0085 and friends, which model replies
+# contain inside JSON strings (ensure_ascii=False), and cuts lines in half.
+
+
 def h(x: str) -> float:
     return int(hashlib.sha256(x.encode()).hexdigest()[:8], 16) / 0xFFFFFFFF
 
@@ -44,7 +48,7 @@ def phase_prompts(a) -> None:
     import pyarrow.parquet as pq
 
     rng = random.Random(a.seed)
-    eval_rows = [json.loads(line) for line in Path(a.eval).read_text().splitlines()]
+    eval_rows = [json.loads(line) for line in Path(a.eval).read_text(encoding="utf-8").split("\n") if line]
     eval_subjects = {r.get("subject") for r in eval_rows if r.get("subject")}
     eval_ids = {r["id"].rsplit("-", 1)[0] for r in eval_rows}
     qa = [r for r in pq.read_table(a.rl_qa).to_pylist() if r["dataset"] == "eu_qa"]
@@ -75,7 +79,7 @@ def phase_sample(a) -> None:
     from transformers import AutoTokenizer
     from vllm import LLM, SamplingParams
 
-    rows = [json.loads(line) for line in (a.work / "prompts.jsonl").read_text().splitlines()]
+    rows = [json.loads(line) for line in (a.work / "prompts.jsonl").read_text(encoding="utf-8").split("\n") if line]
     tok = AutoTokenizer.from_pretrained(a.policy)
     prompts = [tok.apply_chat_template([{"role": "user", "content": r["prompt"]}], tokenize=False,
                                        add_generation_prompt=True, enable_thinking=False) for r in rows]
@@ -97,7 +101,7 @@ def reference_known(prompts: dict, ref_work: Path, min_agreement: float) -> dict
     longer show what it knows, but the parent's do, and RL does not delete facts.
     """
     known = {}
-    for g in map(json.loads, (ref_work / "samples.jsonl").read_text().splitlines()):
+    for g in map(json.loads, filter(None, (ref_work / "samples.jsonl").read_text(encoding="utf-8").split("\n"))):
         p = prompts.get(g["id"])
         if not p or p["kind"] != "qa":
             continue
@@ -114,8 +118,8 @@ def reference_known(prompts: dict, ref_work: Path, min_agreement: float) -> dict
 
 def phase_pairs(a) -> None:
     rng = random.Random(a.seed)
-    prompts = {r["id"]: r for r in map(json.loads, (a.work / "prompts.jsonl").read_text().splitlines())}
-    groups = [json.loads(line) for line in (a.work / "samples.jsonl").read_text().splitlines()]
+    prompts = {r["id"]: r for r in map(json.loads, filter(None, (a.work / "prompts.jsonl").read_text(encoding="utf-8").split("\n")))}
+    groups = [json.loads(line) for line in (a.work / "samples.jsonl").read_text(encoding="utf-8").split("\n") if line]
     ref_known = reference_known(prompts, a.reference_work, a.known_min_agreement) if a.reference_work else {}
     pairs = {"unknown": [], "fabricated": [], "known": []}
     stats = Counter()
