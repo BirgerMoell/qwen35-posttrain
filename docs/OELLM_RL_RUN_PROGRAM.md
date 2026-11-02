@@ -574,7 +574,18 @@ Activating every verifier exposed two launch failures, both fixed:
     for rule-based rewards.
   - The thinking mode keeps some knowledge (index +1.8 vs −43.7), but head-band accuracy falls from 0.51 to 0.38.
   - **The other skills improved or held:** documents +0.14, code +0.06, reasoning flat, tools −0.04 on decisions.
-  - **Decision pending:** W3 is not promoted as is.
+  - **Decision (11-02):** keep W3 as the base for its document, code and reasoning gains, and repair the abstention
+    in **Stage 4b DPO on W3**. W3 is staged as `oellm-upload/oellm-9b-256k-stage5-w3-rl-step160` (the RL
+    checkpoint with the v2.1 template). Data jobs:
+    - **Abstention repair (63249019):** W3 samples k=8 on the 31K eu_qa train prompts plus 600 fabricated prompts.
+      "Known" means W2 answered the question consistently and correctly; for those, chosen = a correct answer and
+      rejected = W3's UNKNOWN. That is 60 % of the pairs, the rest being UNKNOWN over a wrong guess.
+    - **Identity (63249021):** the 768 identity-v2 prompts, re-sampled and judged on W3.
+    - **Reduced safety (63249024):** a 2,001-prompt stratified subset of safety-v1 (762 comply, 667 refuse,
+      572 grounded), k=4, judged by gemma4:31b.
+
+    Estimate for the data: ~200 local-h. The 4b DPO mixes these with general Stage-4 pairs (~100 local-h on
+    2 nodes). Its pair mix is set after the W2 abstention pilot reports.
 
 ### 10.6 Hallucination (11-02)
 
