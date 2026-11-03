@@ -633,6 +633,23 @@ Activating every verifier exposed two launch failures, both fixed:
       doc and code gains survive. The full suite runs on the winner only.
     - Search QA on 4b crashed on a stray think tag in a tool-call turn. The harness now strips it; rerun 63369113.
 
+  - **W2 × 4b merges and 4b search QA (11-03).**
+
+    | | default head acc / abstain | thinking head acc / abstain | eu_doc default / thinking |
+    |---|---|---|---|
+    | W2 | 0.53 / 0.03 | 0.52 / 0.01 | 0.376 / – |
+    | merge α = 0.5 | 0.34 / 0.49 | 0.50 / 0.12 | 0.473 / 0.488 |
+    | merge α = 0.7 | 0.03 / 0.98 | 0.43 / 0.37 | 0.500 / 0.540 |
+    | 4b | 0.03 / 0.97 | 0.41 / 0.38 | 0.514 / 0.514 |
+
+    - Merging trades the collapse against W3's gains: α = 0.5 half-recovers the default mode but loses 0.04 on
+      eu_doc, and α = 0.7 is still collapsed. No merge passes both gates.
+    - **4b with search, thinking mode: accuracy 0.50, wrong 0.14, fabricated inventions 0.04** (W2 with search:
+      0.52 / 0.32 / 0.31). This is the most honest configuration so far: the same accuracy with half the wrong
+      answers and almost no inventions. Default mode with search still abstains (accuracy 0.15, searches 64 %).
+    - Conclusion: the default-mode collapse comes from the W3 RL reward and needs fixing in RL (ternary reward with
+      known-prompt guards, search available in both modes; E8). Waiting for approval (~400 local-h).
+
 ### 10.6 Hallucination (11-02)
 
 Plan, measurements and experiments are in `OELLM_HALLUCINATION_PLAN.md`.

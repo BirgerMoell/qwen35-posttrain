@@ -195,6 +195,11 @@ than replacing it:
   - The model searches almost always and uses the results.
   - When the search does not help, it still guesses more often than it abstains (hallucination rate 0.66).
   - So E8 (search RL with the ternary reward, plus known and fabricated prompts) is the most promising next run.
+- **11-03 merges and 4b + search.** (1 − α)·W2 + α·4b: α = 0.5 gives default head 0.34 / abstain 0.49 with
+  eu_doc −0.04; α = 0.7 stays collapsed. 4b + search in thinking mode: accuracy 0.50, wrong 0.14, hallucination
+  rate 0.28, fabricated inventions 0.04, the best honesty result so far. Next: E8 (search RL with guarded ternary
+  reward), pending approval.
+
 - **11-03 E4 (Stage 4b on W3): the repair failed.** Default mode stays collapsed (standard acc 0.012, abstain
   0.987; head 0.03 / 0.97); thinking mode is roughly unchanged (head acc 0.41, abstain 0.38). DPO margin 0.19.
   Unlike W2, W3's abstention is too deep for one gentle DPO epoch. The fix belongs at the source (the RL reward
