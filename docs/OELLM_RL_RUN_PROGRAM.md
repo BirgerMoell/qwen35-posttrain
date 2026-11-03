@@ -610,6 +610,29 @@ Activating every verifier exposed two launch failures, both fixed:
     - eu_doc, code and reasoning within 0.02 of W3;
     - tools and EUROPA no worse than W2.
 
+  - **4b results (11-03): gate failed on the abstention repair; safety and identity improved.** Data: 2,110
+    repair pairs, 689 identity, 46 safety (from 257 judged prompts), 4,000 general. DPO final reward accuracy 0.73,
+    margin 0.19.
+
+    | | W2 | W3 | 4b |
+    |---|---|---|---|
+    | eu_qa default: head acc / abstain | 0.53 / 0.03 | 0.005 / 0.995 | **0.03 / 0.97** |
+    | eu_qa thinking: head acc / abstain | 0.52 / 0.01 | 0.38 / 0.42 | 0.41 / 0.38 |
+    | eu_doc (default) | 0.376 | 0.516 | 0.514 |
+    | quick reasoning thinking / default | 0.630 / 0.575 | 0.632 / 0.595 | 0.614 / 0.591 |
+    | HumanEval+ thinking | 0.299 | 0.360 | 0.360 |
+    | tools decision / names | 0.886 / 0.789 | 0.850 / 0.776 | 0.864 / 0.784 |
+    | EUROPA Eval macro | 71.7 | – | 71.2 |
+    | EUROPA Alignment macro / refusal calibration / failed items | 67.7 / 34.8 / 151 | – | **72.0 / 43.9 / 115** |
+
+    - The DPO learned its pairs, but a 0.19 margin cannot move W3's default mode: its UNKNOWN mode is far deeper
+      than W2's answer mode, which the same recipe moved easily (E4-pilot). DPO at this strength is not a repair
+      for an RL-induced collapse.
+    - Next (cheap, ~30 local-h): linear merges (1 − α)·W2 + α·4b at α = 0.5 (merge 63369335, eu 63369336) and
+      α = 0.7 (63369337, eu 63369338). They test whether W2's healthy default mode comes back while 4b's safety,
+      doc and code gains survive. The full suite runs on the winner only.
+    - Search QA on 4b crashed on a stray think tag in a tool-call turn. The harness now strips it; rerun 63369113.
+
 ### 10.6 Hallucination (11-02)
 
 Plan, measurements and experiments are in `OELLM_HALLUCINATION_PLAN.md`.

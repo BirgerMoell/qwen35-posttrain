@@ -67,8 +67,10 @@ def run_mode(llm, tok, rows, mode: str, a) -> list[dict]:
             if calls and round_ < a.max_calls and out.outputs[0].finish_reason == "stop":
                 calls = calls[: a.calls_per_turn]
                 content = CALL_BLOCK.sub("", text).strip()
-                if thinking and "</think>" in content:
-                    content = content.split("</think>", 1)[1].strip()
+                if "</think>" in content:
+                    content = content.rsplit("</think>", 1)[1].strip()
+                # an unclosed or stray think tag (either mode) would make the template reject the history
+                content = content.replace("<think>", "").replace("</think>", "").strip()
                 convs[i].append({"role": "assistant", "content": content,
                                  "tool_calls": [{"type": "function", "function": {"name": c["name"], "arguments": c["arguments"]}}
                                                 for c in calls]})

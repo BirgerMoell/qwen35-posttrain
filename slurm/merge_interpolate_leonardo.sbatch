@@ -28,6 +28,9 @@ from safetensors.torch import save_file
 base, tuned, alpha, dst = Path(sys.argv[1]), Path(sys.argv[2]), float(sys.argv[3]), Path(sys.argv[4])
 assert 0.0 <= alpha <= 1.0
 def index(path):
+    if not (path / "model.safetensors.index.json").exists():  # single-file checkpoint (RL step dirs)
+        with safe_open(str(path / "model.safetensors"), framework="pt", device="cpu") as f:
+            return {key: "model.safetensors" for key in f.keys()}
     return json.loads((path / "model.safetensors.index.json").read_text())["weight_map"]
 base_map, tuned_map = index(base), index(tuned)
 if set(base_map) != set(tuned_map):

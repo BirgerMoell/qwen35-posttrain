@@ -195,6 +195,11 @@ than replacing it:
   - The model searches almost always and uses the results.
   - When the search does not help, it still guesses more often than it abstains (hallucination rate 0.66).
   - So E8 (search RL with the ternary reward, plus known and fabricated prompts) is the most promising next run.
+- **11-03 E4 (Stage 4b on W3): the repair failed.** Default mode stays collapsed (standard acc 0.012, abstain
+  0.987; head 0.03 / 0.97); thinking mode is roughly unchanged (head acc 0.41, abstain 0.38). DPO margin 0.19.
+  Unlike W2, W3's abstention is too deep for one gentle DPO epoch. The fix belongs at the source (the RL reward
+  needs known-prompt guards) or in a W2 merge (queued, see the run program).
+
 - **11-02 E4-pilot (W2 + 1-epoch abstention DPO, default-mode pairs, LR 1e-6; 2,600 abstention pairs with 1/3
   known + 3,000 general):**
 
