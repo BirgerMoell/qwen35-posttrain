@@ -648,7 +648,13 @@ Activating every verifier exposed two launch failures, both fixed:
       0.52 / 0.32 / 0.31). This is the most honest configuration so far: the same accuracy with half the wrong
       answers and almost no inventions. Default mode with search still abstains (accuracy 0.15, searches 64 %).
     - Conclusion: the default-mode collapse comes from the W3 RL reward and needs fixing in RL (ternary reward with
-      known-prompt guards, search available in both modes; E8). Waiting for approval (~400 local-h).
+      known-prompt guards, search available; E8). Approved 11-03 (~400 local-h).
+  - **E8 built (11-03).** Parent: the α = 0.5 merge (quick reasoning 0.640 / 0.588, tools 0.889, HumanEval+
+    0.384 / 0.366). Pool (oellm-rlvr `scripts/build_e8_pool.py`, 2,560 prompts, 736 with the search tool): 640
+    default-mode search QA (W2 strata 160 known / 160 mid / 320 unknown), 96 made-up entities with search, 448
+    closed-book QA (288 known, the guard), 32 made-up closed-book, 1,344 replay. Search runs inside the rollout loop
+    (one server per node, observation format tested token for token against template v2.1); QA is graded on the
+    final turn only. Search rows are default mode only. Canary 63410422 (1 node, 2 updates), then the full run.
 
 ### 10.6 Hallucination (11-02)
 
@@ -664,3 +670,69 @@ Plan, measurements and experiments are in `OELLM_HALLUCINATION_PLAN.md`.
   over-abstention.
 - Stage 4b adds on-policy abstention pairs (sampled on W3) to the identity and safety pairs.
 - The hallucination gate (plan §5) joins the standard gates.
+
+### 10.7 Multi-teacher on-policy distillation (MOPD) as the integration step (proposed 11-03)
+
+Source: Ma et al., *MOPD: Multi-Teacher On-Policy Distillation for Capability Integration in LLM Post-Training*,
+arXiv 2606.30406 (June 2026).
+
+**The method:**
+1. Train one RL specialist per domain from the same SFT checkpoint, in parallel.
+2. Train a single student from that checkpoint on its own rollouts. Each prompt is routed to its domain's specialist,
+   which scores every token. The loss is the per-token reverse KL.
+3. The policy-gradient form is GRPO with one change: the per-token advantage is
+   `clip(log π_teacher(y_t) − log π_student(y_t), ±5)`.
+
+**Reported results (Qwen3-30B-A3B; math, instruction following, SWE):**
+- Normalised score, where 1.0 = the specialists: MOPD 0.94, mixed-domain RL 0.88, task arithmetic 0.86, cascade RL
+  0.78, linear weight averaging 0.33.
+- MOPD reaches the teacher plateau after ~25–30K samples per domain; mixed RL needs 150–180K.
+- Same-origin teachers are essential. Initial per-token KL is ~0.04 for same-origin teachers vs ~0.19 for an outside
+  teacher (Qwen3-235B). The outside teacher made math worse, and its top-k variant collapsed at step 18.
+- A second round (retrain specialists from the student, distil again) adds a further +0.05.
+
+**Why it fits this program:**
+- Our two integration tools are mixed RL windows and linear merges, the two baselines MOPD beats. We see the same
+  failure modes:
+  - W3 gained eu_doc and code but lost default-mode QA, and tools fell from 0.886 to 0.850.
+  - The α = 0.5 W2 × 4b merge half-recovers QA but loses 0.04 on eu_doc.
+- Our specialists are same-origin: one lineage, tokenizer and template.
+  - W2: tools 0.886, healthy default-mode answering.
+  - W3: eu_doc 0.516, code.
+  - 4b: EUROPA Alignment 72.0, refusal calibration 43.9, identity.
+  - E8: search and calibration, if it passes its gate.
+- oellm-rlvr already has the machinery (`backend.kind: verl_opd`, `docs/on-policy-distillation.md`):
+  - several teachers, routed by the row's `data_source`;
+  - the policy-gradient `k1` loss with a clamp, i.e. MOPD's main form;
+  - hybrid distillation + verifiable reward for single-turn rows.
+
+**Constraints:**
+1. **Distillation copies the teacher token by token, including its failures.** W2 answers 67 % of unknown facts
+   wrongly, and W3 abstains on almost all of them. Neither may teach factual QA. eu_qa rows keep the verifiable
+   +1 / 0 / −1 reward (hybrid mode), or use E8 as the teacher once it passes the hallucination gate.
+2. **Multi-turn tool OPD is not implemented in the adapter.** Search stays in RL (E8); single-turn tool rows (A4b)
+   can be distilled.
+3. **verl is not installed on Leonardo.** The adapter has only passed the 2B contract smoke. Our `forward_kl_topk`
+   is not the paper's bias-corrected reverse-KL top-k; the paper found the two forms close (0.94 vs 0.91), so the
+   policy-gradient form is the default.
+4. **The evidence is one preprint (v1) on one model family.** Our own pilot decides.
+
+**Plan, after E8 (each step gated; approval before step 2):**
+
+| Step | What | Cost |
+|---|---|---|
+| 1 | Install verl at the pinned commit on Leonardo; pass the CUDA 2B contract smoke | ~10 local-h |
+| 2 | 9B pilot (details below) | ~150 local-h |
+| 3 | If the pilot beats the α = 0.5 merge, a full integration window; E8 or its successor joins as the search/QA teacher | ~300–400 local-h |
+
+The step-2 pilot:
+- **Student:** the α = 0.5 merge.
+- **Teachers:** W2 for tools, W3 for eu_doc and code, 4b for safety and identity prompts. They are frozen, and 2–3
+  teachers share one A100 each for prefill.
+- **Factual QA:** eu_qa and made-up entities keep the ternary reward instead of a teacher.
+- **Batch:** N = 1 per prompt, advantage clip 5, ~15K samples.
+
+**Pilot gate:** every integrated domain reaches ≥ 90 % of its teacher's gain over the student (the paper's
+normalised score per domain), and the release checklist's NO-GO items pass. The paper's repeated rounds map onto
+our window cadence: each round retrains specialists from the newest student, then distils again.
+
