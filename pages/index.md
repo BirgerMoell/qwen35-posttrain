@@ -12,6 +12,7 @@ pipeline can be reproduced.
 | [RL run program](OELLM_RL_RUN_PROGRAM.md) | Stage 5 run by run: questions, run cards, results, stop rules, merging policy |
 | [Stage 5 data and rewards](OELLM_STAGE5_RL_PLAN.md) | RL data pools with licenses, rewards, difficulty windows, environment tiers |
 | [RL data mixture](OELLM_RL_DATA_MIXTURE.md) | what each RL window trained on: slices, shares, verifiers, learning signal, and where every dataset is on Hugging Face |
+| [Release checklist](OELLM_RELEASE_CHECKLIST.md) | the pre-release checklist: every capability and safety check, how to run it, why it matters, and when it passes |
 
 Code: [`qwen35-posttrain`](https://github.com/BirgerMoell/qwen35-posttrain) (SFT/DPO data builders, trainers, Slurm
 launchers, evaluation scripts) and [`oellm-rlvr`](https://github.com/BirgerMoell/oellm-rlvr) (RL control plane).
