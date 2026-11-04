@@ -13,6 +13,7 @@ pipeline can be reproduced.
 | [Stage 5 data and rewards](OELLM_STAGE5_RL_PLAN.md) | RL data pools with licenses, rewards, difficulty windows, environment tiers |
 | [RL data mixture](OELLM_RL_DATA_MIXTURE.md) | what each RL window trained on: slices, shares, verifiers, learning signal, and where every dataset is on Hugging Face |
 | [Release checklist](OELLM_RELEASE_CHECKLIST.md) | the pre-release checklist: every capability and safety check, how to run it, why it matters, and when it passes |
+| [RL environments](OELLM_RL_ENVIRONMENTS.md) | what our RL environments are, the quality bar every environment must pass (incl. shortcut probes), and which environments to build next |
 
 Code: [`qwen35-posttrain`](https://github.com/BirgerMoell/qwen35-posttrain) (SFT/DPO data builders, trainers, Slurm
 launchers, evaluation scripts) and [`oellm-rlvr`](https://github.com/BirgerMoell/oellm-rlvr) (RL control plane).

@@ -10,6 +10,7 @@ on:
       - "docs/OELLM_STAGE5_RL_PLAN.md"
       - "docs/OELLM_RL_DATA_MIXTURE.md"
       - "docs/OELLM_RELEASE_CHECKLIST.md"
+      - "docs/OELLM_RL_ENVIRONMENTS.md"
       - "pages/**"
       - ".github/workflows/pages.yml"
       - "scripts/check_site_identifiers.sh"
@@ -34,7 +35,7 @@ jobs:
           mkdir -p site
           cp pages/* site/
           cp docs/OELLM_POST_TRAINING_ROADMAP.md docs/OELLM_POST_TRAINING_PLAYBOOK.md \
-             docs/OELLM_RL_RUN_PROGRAM.md docs/OELLM_STAGE5_RL_PLAN.md docs/OELLM_RL_DATA_MIXTURE.md docs/OELLM_RELEASE_CHECKLIST.md site/
+             docs/OELLM_RL_RUN_PROGRAM.md docs/OELLM_STAGE5_RL_PLAN.md docs/OELLM_RL_DATA_MIXTURE.md docs/OELLM_RELEASE_CHECKLIST.md docs/OELLM_RL_ENVIRONMENTS.md site/
           bash scripts/check_site_identifiers.sh site/*.md
           bash scripts/check_site_identifiers.sh
       - uses: actions/configure-pages@v5
