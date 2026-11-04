@@ -1,6 +1,6 @@
 # european-rl: design for a European RL environment suite
 
-Status 2026-11-04, design proposal. This document plans **european-rl**: verifiable RL environments for office,
+Status 2026-11-04: repository created, M0 in progress ([github.com/BirgerMoell/european-rl](https://github.com/BirgerMoell/european-rl)). Decisions (11-04): a new public repo; all 36 OpenEuroLLM languages; LLM review first, marked as such. This document plans **european-rl**: verifiable RL environments for office,
 document and agentic work in the European languages, grown out of
 [svenska-rl](https://github.com/BirgerMoell/svenska-rl). It sits under the quality bar in
 [RL environments](OELLM_RL_ENVIRONMENTS.md) (roadmap item E-3) and feeds the expert runs of the RL program
@@ -229,7 +229,11 @@ generators are generalised, not discarded.
 Data and environments are public (Apache-2.0 code, synthetic data, no personal data). Models trained on them stay
 private until release review.
 
-## 10. Decisions needed
+## 10. Decisions (11-04)
+
+Decided: a new public repository with the `eurl` core; coverage target all 36 languages; LLM review first, recorded per language as `llm`, native review later.
+
+### Originally open
 
 1. **Repository:** a new public GitHub repo `european-rl` with the `eurl` core, with svenska-rl depending on it.
    Or rename and extend svenska-rl.
