@@ -116,7 +116,7 @@ before training.
 |---|---|---|---|---|
 | E-1 | **Retro-qualify existing environments** (Q1–Q4 probes for eu_qa, eu_doc, tool_call, ifeval, math_direct) | prevent the next W3 | CPU, tests in oellm-rlvr | ~0 local-h |
 | E-2 | **Multi-turn tools with injected errors**: mock services (calendar, ledger, mail, search) with timeouts, malformed results and business errors; end-state check; Kontoret as the world | EUROPA tool recovery 0.49 (target 0.8); held-out multi-step 0.76 | tool-episode environment in the §5 shape, profile, canary | ~50 local-h to qualify, then an expert run |
-| E-3 | **svenska-rl → multilingual office**: the 8 Kontoret environments in oellm-rlvr pools, then localised to more languages (VAT, holidays, formats per country) | eu_doc invoice/meeting variants at 0.07–0.36 | adapter from the `svrl` export; localisation | CPU + profile |
+| E-3 | **svenska-rl → european-rl** ([design](OELLM_EUROPEAN_RL.md)): the 8 Kontoret environments in oellm-rlvr pools, then localised to more languages (VAT, holidays, formats per country) | eu_doc invoice/meeting variants at 0.07–0.36 | adapter from the `svrl` export; localisation | CPU + profile |
 | E-4 | **Search in thinking mode** | E8 trains default mode only | mode-aware observation postfix in the parser patch, token test | small |
 | E-5 | **Long-context documents** (16K–256K): eu_doc generators over long, noisy files, with the needle at controlled depth | 256K base; post-training at ≤ 10K | generator + NIAH-style probes | profile + expert run |
 | E-6 | **Multilingual verifiable instructions** (IFEval-style constraints per language) | strict formats; answer language | translate constraints, language-aware checkers | CPU + profile |
