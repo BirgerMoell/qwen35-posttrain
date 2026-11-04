@@ -63,8 +63,8 @@ def score(a) -> None:
             acc[0] += diff
             acc[1] += 1
             acc[2] += abs(diff) > 2
-    path_out = Path(a.out) / "kl.json"
-    data = json.loads(path_out.read_text()) if path_out.exists() else {}
+    path_out = Path(a.out) / f"kl-{name}.json"   # one file per teacher: teachers can be scored in parallel jobs
+    data = {}
     data[name] = {f"{d}/{m}": {"kl": round(s / n, 4), "tokens": n, "far_tokens": round(far / n, 4)}
                   for (d, m), (s, n, far) in sorted(per_domain.items()) if n}
     path_out.write_text(json.dumps(data, indent=1) + "\n")
@@ -72,7 +72,9 @@ def score(a) -> None:
 
 
 def report(a) -> None:
-    data = json.loads((Path(a.out) / "kl.json").read_text())
+    data = {}
+    for path in sorted(Path(a.out).glob("kl*.json")):
+        data.update(json.loads(path.read_text()))
     keys = sorted({k for v in data.values() for k in v})
     print("domain/mode".ljust(26) + "".join(n[:16].rjust(17) for n in data))
     for k in keys:
