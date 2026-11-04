@@ -80,10 +80,13 @@ def gen(a) -> None:
         for i in range(len(rows)):
             if not done[i]:
                 results[i] = envs[i][0].step({"final": ""})
+        trace_env = [e for e, _ in envs]
+        rows_index = {id(r): i for i, r in enumerate(rows)}
         with open(out / f"{mode}.jsonl", "w", encoding="utf-8") as f:
             for r, res, n in zip(rows, results, steps):
                 f.write(json.dumps({**r, "mode": mode, "reward": res["reward"], "tool_steps": n,
-                                    "info": {k: v for k, v in res["info"].items() if k != "meta"}},
+                                    "info": {k: v for k, v in res["info"].items() if k != "meta"},
+                                    "trace": [t.get("action") for t in getattr(trace_env[rows_index[id(r)]], "trace", [])][:40]},
                                    ensure_ascii=False, default=str) + "\n")
         print(f"[gen] {mode}: {len(rows)} episodes", flush=True)
 
