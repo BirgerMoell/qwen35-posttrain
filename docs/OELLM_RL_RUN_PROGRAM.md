@@ -662,6 +662,34 @@ Activating every verifier exposed two launch failures, both fixed:
     - Rows without the tool never called it; tool_call (0.66), math, code, doc and IF rewards look normal.
     - Malformed tool-call JSON from the model is logged by vLLM's Hermes parser and treated as no call.
   - **E8 full run queued 11-04: 63493790** (2 nodes, 160 updates, walltime 12 h, ~300–400 local-h).
+  - **E8 trained (11-04, 2 h 13 min, 160 updates).** Training rewards, first 40 updates vs last 40:
+
+    | Slice | First 40 | Last 40 |
+    |---|---|---|
+    | eu_qa with search | −0.00 | **+0.23** |
+    | search rate on search rows | 58 % | 99 % |
+    | eu_qa closed-book (incl. known guard, made-up entities) | 0.10 | 0.20 |
+    | eu_doc | 0.50 | 0.54 |
+    | code | 0.47 | 0.54 |
+    | math | 0.64 | 0.67 |
+    | multilingual math | 0.51 | 0.56 |
+    | tool_call | 0.46 | 0.47 |
+    | ifeval_direct | 0.57 | 0.54 |
+
+    Export `oellm-9b-256k-stage5-e8-rl-step160`. Evals 63500803–63500840: hallu-v1, EU, quick, tools, EvalPlus,
+    EUROPA, search QA, european-rl.
+  - **european-rl L1 baselines (finance_amount_due, 300 tasks, 6 languages):**
+
+    | | default | thinking |
+    |---|---|---|
+    | merge α=0.5 | 0.08 | 0.09 |
+    | W2 | 0.06 | 0.10 |
+    | W3 | 0.11 | 0.11 |
+
+    - The errors are real arithmetic slips (e.g. 581.88 × 25.5 % written as 148.25), not parsing.
+    - Levels 1–3 sit at 8–25 %, inside the learnable band; levels 4–5 are near 0.
+    - Thinking mode leaves 22–43 % without an answer line within 6K tokens.
+    - A first expert run should start at levels 1–3.
 
 ### 10.6 Hallucination (11-02)
 
