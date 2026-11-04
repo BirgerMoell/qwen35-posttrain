@@ -771,3 +771,33 @@ The step-2 pilot:
 normalised score per domain), and the release checklist's NO-GO items pass. The paper's repeated rounds map onto
 our window cadence: each round retrains specialists from the newest student, then distils again.
 
+
+## 11. Next phase (planned 11-04)
+
+**Where we stand:**
+- **E8** fixed the default-mode collapse:
+  - eu_qa head 0.54 / 0.10;
+  - search QA: wrong 0.09, fabricated inventions 0.02;
+  - tools 0.906, the best so far.
+- **Still short for release:**
+  - thinking-mode head abstain is 0.20 (gate ≤ 0.10);
+  - EUROPA Eval is 68.5 vs 72.2 for the parent;
+  - default-mode hallucination rate is 0.61 (proposed target 0.60).
+- **E8's role:** a strong expert (honesty, search, tools), not yet a release candidate.
+- **european-rl:** 36 languages, 3 environments, contract passed; the first baselines show arithmetic is weak (6–11 %).
+
+| Phase | What | Cost (local-h) | Gate / decision |
+|---|---|---|---|
+| A. Close E8 | Collect quick reasoning and EUROPA Alignment; full release-checklist scoring; per-language and per-band error analysis | 0 (running) | E8 confirmed as the honesty/search/tools expert |
+| B. MOPD integration pilot (§10.7) | B1: install verl on Leonardo, 2B contract smoke. B2: measure teacher–student per-token KL per domain (same-origin check). B3: 9B pilot, details below | ~10 + ~10 + ~150 | **approval for B3**; pilot beats both parents on the checklist |
+| C. european-rl into training | C1: L1 baselines for formal_email (typed, ready) and meeting_reschedule (needs a multi-turn eval harness). C2: tool-episode environments served to RL like `wiki_search`. C3: first **EU office expert** run: finance levels 1–3, formal_email, meeting_reschedule | ~15 + 0 + ~300 | **approval for C3**; L3 (held-out +5 points, positive lower bound) on each environment, no checklist regression |
+| D. Quality of the European data | Native review for the highest-traffic languages (partners); a person verifies the VAT snapshot; new holiday rule kinds (Sunday skip, observed shift, every-N-years); 2026 snapshot (BG euro, LT, RO, NL, BE changes) | 0 compute | review status per language moves from `llm` to `native:` |
+| E. More environments | E-1 shortcut probes for the existing oellm-rlvr pools; office world: payment registration, invoice approval, GDPR access/erasure with a simulated customer; search in thinking mode (E-4); long dossiers (E-5) | CPU + small canaries | each passes contract v0.3 before use |
+| F. Release track | When an integrated candidate passes every NO-GO item: oellm-eval retention (~180), red-team session, model card, licence and EU AI Act paperwork | ~250 | **public release needs explicit approval** |
+
+**The phase-B3 pilot:**
+- **Student:** E8 (strongest overall).
+- **Teachers, same lineage:** 4b for safety and identity prompts (Alignment 72.0); W3 for documents and thinking-mode code; the 50/50 merge for EUROPA-style general capability.
+- **Factual QA and search** keep the +1 / 0 / −1 reward, which also targets thinking-mode over-abstention.
+
+**Order:** A → B1/B2 and C1 in parallel (cheap) → B3 → C3 from B3's student if B3 passes, otherwise from E8 → F. D and E run alongside, without compute.
