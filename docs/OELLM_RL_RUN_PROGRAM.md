@@ -654,7 +654,14 @@ Activating every verifier exposed two launch failures, both fixed:
     default-mode search QA (W2 strata 160 known / 160 mid / 320 unknown), 96 made-up entities with search, 448
     closed-book QA (288 known, the guard), 32 made-up closed-book, 1,344 replay. Search runs inside the rollout loop
     (one server per node, observation format tested token for token against template v2.1); QA is graded on the
-    final turn only. Search rows are default mode only. Canary 63410422 (1 node, 2 updates), then the full run.
+    final turn only. Search rows are default mode only.
+  - **E8 canary passed (63410422, 1 node, 2 updates, 17 min).** All 10 languages loaded in the search server.
+    - 46 of 80 search-row rollouts called `wiki_search` and got Wikipedia excerpts back; their rewards span
+      +1 / 0 / −1 (27 / 29 / 24), so there is learning signal.
+    - Made-up entities with search: 3 of 8 still answered (−1).
+    - Rows without the tool never called it; tool_call (0.66), math, code, doc and IF rewards look normal.
+    - Malformed tool-call JSON from the model is logged by vLLM's Hermes parser and treated as no call.
+  - **E8 full run queued 11-04: 63493790** (2 nodes, 160 updates, walltime 12 h, ~300–400 local-h).
 
 ### 10.6 Hallucination (11-02)
 
