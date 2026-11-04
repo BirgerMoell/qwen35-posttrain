@@ -859,3 +859,18 @@ our window cadence: each round retrains specialists from the newest student, the
 - No regression on the release checklist's NO-GO items against the parent, in particular:
   - eu_qa honesty (head band, hallucination rate, fabricated entities);
   - tools, code, reasoning, EUROPA.
+
+### 11.3 E8 verdict (11-04)
+
+E8 has the best reasoning so far: quick reasoning thinking 0.649 / default 0.586. It lost ground on both EUROPA
+suites against its parent:
+
+| | Parent (merge) | E8 |
+|---|---|---|
+| EUROPA Eval macro | 72.2 | 68.5 (minimum domain 27.8) |
+| EUROPA Alignment macro | 69.1 | 65.1 |
+| Refusal calibration | 36.0 | 36.3 |
+| Failed critical items | 138 | 140 |
+
+E8 is the **honesty / search / tools / reasoning expert**, not a release candidate. The MOPD pilot (phase B) is
+the step meant to recover EUROPA capability and safety, from the merge and 4b as teachers, while keeping E8's gains.
