@@ -21,7 +21,7 @@ PY=$OELLM_SCRATCH/oellm-rl/tmax-reproduction/.venv/bin/python
 out=$root/eval/mopd-kl/${NAME:-e8}
 mkdir -p "$out"
 run() { singularity exec --nv -B /leonardo_work,/leonardo_scratch "$C" env HF_HUB_OFFLINE=1 "$PY" "$@"; }
-run - "$OELLM_SCRATCH" "$out/prompts.jsonl" "${N:-48}" <<'PY'
+[[ -s $out/prompts.jsonl ]] || run - "$OELLM_SCRATCH" "$out/prompts.jsonl" "${N:-48}" <<'PY'
 import json, random, sys
 import pyarrow.parquet as pq
 scratch, dst, n = sys.argv[1], sys.argv[2], int(sys.argv[3])
@@ -51,6 +51,6 @@ with open(dst, "w", encoding="utf-8") as f:
     f.writelines(json.dumps(r, ensure_ascii=False) + "\n" for r in out)
 print("prompts", len(out), {d: sum(r["domain"] == d for r in out) for d in sorted({r["domain"] for r in out})})
 PY
-run "$root/mopd_kl_probe.py" gen --student "$STUDENT" --prompts "$out/prompts.jsonl" --out "$out"
+[[ -s $out/student.jsonl ]] || run "$root/mopd_kl_probe.py" gen --student "$STUDENT" --prompts "$out/prompts.jsonl" --out "$out"
 for t in $TEACHERS; do run "$root/mopd_kl_probe.py" score --teacher "$t" --out "$out"; done
 run "$root/mopd_kl_probe.py" report --out "$out"

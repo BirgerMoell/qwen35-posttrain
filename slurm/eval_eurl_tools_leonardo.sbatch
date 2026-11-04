@@ -10,8 +10,8 @@
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 
-# L1 baselines for european-rl typed environments (scripts/eval_eurl_tools.py), default and thinking mode, one GPU.
-#   MODEL=<dir> NAME=<name> DATA=<exported rows.jsonl> [MODES="default thinking"] sbatch slurm/eval_eurl_leonardo.sbatch
+# L1 baselines for european-rl tool episodes (scripts/eval_eurl_tools.py), default and thinking mode, one GPU.
+#   MODEL=<dir> NAME=<name> DATA=<exported rows.jsonl> [MODES="default thinking"] sbatch slurm/eval_eurl_tools_leonardo.sbatch
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"
 root=$OELLM_WORK/sft-migration-preflight

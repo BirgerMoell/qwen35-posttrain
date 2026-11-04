@@ -45,8 +45,9 @@ def score(a) -> None:
     from vllm.inputs import TokensPrompt
     name, path = a.teacher.split("=", 1)
     rows = [json.loads(l) for l in (Path(a.out) / "student.jsonl").read_text().split("\n") if l.strip()]
-    llm = LLM(path, dtype="bfloat16", max_model_len=a.max_model_len, gpu_memory_utilization=0.88, seed=0,
-              enforce_eager=True)
+    # prompt_logprobs materialises full-vocabulary (262K) log-softmax rows per scored token: keep batches small
+    llm = LLM(path, dtype="bfloat16", max_model_len=a.max_model_len, gpu_memory_utilization=0.6, seed=0,
+              enforce_eager=True, max_num_batched_tokens=a.max_model_len, max_num_seqs=4)
     params = SamplingParams(max_tokens=1, prompt_logprobs=0, temperature=1.0)
     inputs = [TokensPrompt(prompt_token_ids=r["prompt_ids"] + r["ids"]) for r in rows]
     per_domain = defaultdict(lambda: [0.0, 0, 0.0])   # sum log-ratio, tokens, sum |log-ratio| > 2 count
