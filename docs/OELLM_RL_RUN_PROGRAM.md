@@ -801,3 +801,61 @@ our window cadence: each round retrains specialists from the newest student, the
 - **Factual QA and search** keep the +1 / 0 / −1 reward, which also targets thinking-mode over-abstention.
 
 **Order:** A → B1/B2 and C1 in parallel (cheap) → B3 → C3 from B3's student if B3 passes, otherwise from E8 → F. D and E run alongside, without compute.
+
+### 11.1 Decisions (11-04)
+
+- The MOPD pilot (phase B) is approved.
+- The EU office expert run (phase C3) is to be planned.
+- European text continues without native review (`_review: llm`).
+- No release date is set.
+- Arithmetic is added as an environment (european-rl `business_arithmetic`): the finance baselines failed mostly
+  through exact decimal arithmetic (581.88 × 25.5 % → 148.25), which the existing math pools do not train.
+
+### 11.2 Plan: E9, the EU office expert (phase C3)
+
+**Purpose.** Train the office skills the European environments measure:
+- exact business arithmetic in local formats;
+- invoices under national VAT rules;
+- formal correspondence under language-specific conventions;
+- cross-country scheduling with tools (once served to RL);
+- without losing E8's honesty, search and tool skills.
+
+**Parent.** The MOPD pilot student if the pilot passes its gate (§10.7), otherwise E8.
+
+**Pool (2,560 prompts, 160 updates × 16, like the W windows):**
+
+| Slice | Prompts | Source | Reward |
+|---|---|---|---|
+| business_arithmetic | 640 | all levels and task types | `eurl_typed` (exact minor unit) |
+| finance_amount_due | 512 | levels 1–3 (+ 64 level 4) | `eurl_typed` |
+| formal_email | 384 | 2–4 constraints | `eurl_typed` (strict) |
+| meeting_reschedule | 256 | only if the tool-episode service (C2) is ready; otherwise the 256 go to arithmetic and finance | end state |
+| eu_qa honesty replay | 256 | E8 pool, search and closed-book (known guard) | +1 / 0 / −1 |
+| math, IF, code, tools replay | 512 | unused rows | as in W3/E8 |
+
+**Coverage.**
+- **Languages:** spread over all 36 languages, weighted 2:1 towards the 24 EU official languages. Each language
+  has at least 40 european-rl prompts.
+- **Modes:** 60 % default, 40 % thinking. Thinking answers must close within the 7K window; the baselines left
+  20–40 % without an answer at 6K.
+
+**Difficulty.**
+- Pass-rate profile on the parent (k = 8, `oellm-rlvr pass-rate-sample/score/select`): keep prompts with in-group
+  variance (0 < passes < 8).
+- Levels are rebalanced towards the window that still has signal, as the Nemotron curriculum does.
+
+**Preconditions.**
+1. L1 baselines on E8 and the merge for formal_email and business_arithmetic (running, 63509254/6). The rest of
+   business_arithmetic follows after its 30-language translation.
+2. The `eurl_typed` verifier (oellm-rlvr, done).
+3. The pass-rate profile (~20 local-h).
+4. For meeting_reschedule, a multi-turn eval harness and the RL tool service (C2).
+
+**Cost.** ~300 local-h (W3/E8 scale) + ~20 profile + ~60 evals.
+
+**Gate.**
+- L3 on each european-rl environment: a held-out eval split, +5 points, positive lower bound of the paired 95 %
+  bootstrap interval.
+- No regression on the release checklist's NO-GO items against the parent, in particular:
+  - eu_qa honesty (head band, hallucination rate, fabricated entities);
+  - tools, code, reasoning, EUROPA.
