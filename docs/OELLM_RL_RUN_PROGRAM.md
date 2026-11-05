@@ -874,3 +874,68 @@ suites against its parent:
 
 E8 is the **honesty / search / tools / reasoning expert**, not a release candidate. The MOPD pilot (phase B) is
 the step meant to recover EUROPA capability and safety, from the merge and 4b as teachers, while keeping E8's gains.
+
+## 12. Agentic RL with internet access on Leonardo (planned 11-05)
+
+Goal: train the 9B on agentic tasks that use tools and the web (search, fetch and read pages, act in tool worlds,
+run commands), within our current stack (open-instruct/TMAX tool loop, oellm-rlvr, european-rl) on Leonardo. OpenShell
+is not needed: it needs Docker/Podman/VMs and a newer kernel, and its purpose (policy for deployed agents) is not the
+rollout problem. SkyRL + Harbor (used by a colleague for terminal agents) is the reference design; Harbor tasks need
+Docker or a cloud sandbox, so we reuse its task format, not its runtime.
+
+### 12.1 What Leonardo allows (measured 11-05)
+
+| Test | Result |
+|---|---|
+| Internet from GPU compute nodes (boost partition) | **none** (network unreachable) |
+| Internet from the serial partition (runs on login nodes) | yes (pypi, wikipedia, huggingface) |
+| GPU node → HTTP service in a serial-partition job | **works**: a test gateway fetched a live Wikipedia page for a GPU node |
+| Serial partition limits | 4 h per job, login nodes only (flaky at times) |
+| Singularity `--containall --no-home --writable-tmpfs --net --network none` | works unprivileged: no network, no host home, throwaway writes |
+| Docker / Podman / unprivileged user namespaces | not available |
+
+### 12.2 Design: a web gateway with record-and-replay
+
+GPU nodes reach the web only through **our gateway**, an HTTP service with three endpoints (`search`, `fetch`, `extract`):
+
+1. **Live mode** runs in a serial-partition job (re-launched every 4 h, two instances on two login nodes for failover).
+   It enforces a domain allowlist, rate limits, a robots.txt check, a size cap, and strips scripts; it never sends
+   credentials. Every response is written to a content-addressed cache on scratch.
+2. **Replay mode** runs next to the trainer on each GPU node (like `search_api` today) and serves only the cache.
+   Training uses replay: rewards stay reproducible, the run does not depend on login-node uptime, and nothing can
+   leak outward during training.
+3. **Fill the cache before training:** a data-generation pass (solver or teacher trajectories plus a few student
+   samples, in live mode) visits the pages the tasks need. Misses during RL return a normal "page not available"
+   observation, and their rate is logged; above 5 % the pool is refilled before the next run.
+
+Before using the live mode at scale we ask CINECA whether a serial-partition relay is acceptable use; until then
+live mode is for cache filling at low rates only.
+
+### 12.3 Task families (all verified by code, no LLM judge)
+
+| Family | Tools | Verifier | Source |
+|---|---|---|---|
+| W-1 Deep search (multi-hop, 36 languages) | search, fetch | exact answer, guarded ternary as in E8 | build from Wikipedia link graphs; live pages cached |
+| W-2 Web fact extraction | fetch, extract | typed values (dates, amounts, IDs) against the cached page | official EU/national pages (allowlist) |
+| W-3 Browse-and-act | fetch + eurl office tools | end state (e.g. look up a holiday or VAT rate online, then schedule or invoice) | european-rl worlds + cache |
+| T-1 Terminal tasks | `run` in a per-episode Singularity sandbox, no network | check script on the end state (Harbor/Terminal-Bench task format: instruction, files, tests) | generate ours in local languages; port Harbor tasks that need no Docker build |
+| A-1 Office agents | eurl tools via `eurl.serve` | end state | european-rl (meeting, guardrails, tool recovery, customer desk) |
+
+Safety is part of the reward, not an afterthought: injected instructions in fetched pages (W-3, A-1 guardrails),
+allowlist violations count as failures, and a do-nothing / always-refuse / obey-the-injection probe must score
+≤ 0.3, as in contract v0.3.
+
+### 12.4 Steps and costs
+
+| Step | Work | Compute |
+|---|---|---|
+| G0 | Gateway (live + replay, allowlist, cache), tests | none |
+| G1 | C2 adapter: open-instruct environment client for `eurl.serve`, the gateway and the sandbox pool (turn and token budgets, output truncation, end-state reward) | none |
+| G2 | W-1 / W-2 pools; cache fill in live mode | serial partition only (no GPU) |
+| G3 | T-1 sandbox pool on CPU nodes; isolation tests; 50 generated tasks | ~5 local-h |
+| G4 | Baselines (pass-rate profile) on E8 / pilot model for W-1..A-1 | ~20 local-h |
+| G5 | Warm-start SFT from solver trajectories where pass rate < 10 % | < 20 GPU-h (estimate first) |
+| E10 | Agentic RL on the mixed pool, 2 nodes, parent = MOPD pilot model if it passes, else E8 | ~300 local-h (estimate before launch) |
+
+Success for E10: EUROPA agentic control back to ≥ 0.80 (E8: 0.594), tool recovery ≥ 0.6 (0.49), search QA accuracy
+not below E8, cache-miss rate < 5 %, and no regression on the release checklist NO-GO items.
