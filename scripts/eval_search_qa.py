@@ -9,6 +9,9 @@ Reported per condition and mode: the three rates, hallucination rate, how often 
 for questions with and without a search. Without search the same questions are in eval_eu_tasks.py (report.json
 of the hallu-v1 run), so the two runs compare directly.
   python eval_search_qa.py --model M --data hallu-v1/eval.jsonl --out OUT --endpoint http://127.0.0.1:18090/search
+Deep search (two-hop questions, scripts/build_deep_search.py in oellm-rlvr) with the browsing tools:
+  python eval_search_qa.py --model M --data deep-search/eval.jsonl --out OUT --tools wiki_search open_page find_in_page \
+    --modes default --max-calls 8
 """
 from __future__ import annotations
 
@@ -22,25 +25,32 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from oellm_rlvr import eu_tasks as E
-from oellm_rlvr.wiki_search import LANGUAGES, TOOL_DESCRIPTION, TOOL_PARAMETERS, parse_tool_calls
+from oellm_rlvr.wiki_search import LANGUAGES, TOOLS, endpoint_for, parse_tool_calls
 
-TOOL = {"type": "function", "function": {"name": "wiki_search", "description": TOOL_DESCRIPTION,
-                                          "parameters": TOOL_PARAMETERS}}
 CALL_BLOCK = re.compile(r"<tool_call>.*?</tool_call>", re.DOTALL)
 
 
-def search(endpoint: str, args: dict) -> str:
-    query = str(args.get("query") or "").strip()
-    if not query:
-        return "Empty query."
-    language = args.get("language") if args.get("language") in LANGUAGES else "en"
-    body = json.dumps({"query": query, "language": language, "k": 5}).encode()
-    req = urllib.request.Request(endpoint, data=body, headers={"Content-Type": "application/json"})
+def tool_schema(name: str) -> dict:
+    description, parameters = TOOLS[name][:2]
+    return {"type": "function", "function": {"name": name, "description": description, "parameters": parameters}}
+
+
+def call_tool(endpoint: str, name: str, args: dict) -> str:
+    """One tool call against the search server, the same payload as the RL tools (oellm_rlvr.wiki_search.TOOLS)."""
+    required, payload = TOOLS[name][2], TOOLS[name][4]
+    value = str(args.get(required) or "").strip()
+    if not value:
+        return f"Missing {required}."
+    args = {**args, required: value}
+    if args.get("language") not in LANGUAGES:
+        args["language"] = "en"
+    body = json.dumps(payload(args, 5)).encode()
+    req = urllib.request.Request(endpoint_for(name, endpoint), data=body, headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read())["text"]
     except Exception as e:  # reported to the model like a tool error
-        return f"Search failed: {e}"
+        return f"Tool failed: {e}"
 
 
 def run_mode(llm, tok, rows, mode: str, a) -> list[dict]:
@@ -56,14 +66,14 @@ def run_mode(llm, tok, rows, mode: str, a) -> list[dict]:
     for round_ in range(a.max_calls + 1):
         if not active:
             break
-        prompts = [tok.apply_chat_template(convs[i], tools=[TOOL], tokenize=False, add_generation_prompt=True,
+        prompts = [tok.apply_chat_template(convs[i], tools=[tool_schema(t) for t in a.tools], tokenize=False, add_generation_prompt=True,
                                            enable_thinking=thinking) for i in active]
         outs = llm.generate(prompts, params)
         still = []
         jobs = []
         for i, out in zip(active, outs):
             text = out.outputs[0].text
-            calls = [c for c in parse_tool_calls(text) if c["name"] == "wiki_search"]
+            calls = [c for c in parse_tool_calls(text) if c["name"] in a.tools]
             if calls and round_ < a.max_calls and out.outputs[0].finish_reason == "stop":
                 calls = calls[: a.calls_per_turn]
                 content = CALL_BLOCK.sub("", text).strip()
@@ -75,7 +85,7 @@ def run_mode(llm, tok, rows, mode: str, a) -> list[dict]:
                                  "tool_calls": [{"type": "function", "function": {"name": c["name"], "arguments": c["arguments"]}}
                                                 for c in calls]})
                 for c in calls:
-                    jobs.append((i, c, pool.submit(search, a.endpoint, c["arguments"])))
+                    jobs.append((i, c, pool.submit(call_tool, a.endpoint, c["name"], c["arguments"])))
                 still.append(i)
             else:
                 final[i] = text
@@ -83,13 +93,14 @@ def run_mode(llm, tok, rows, mode: str, a) -> list[dict]:
         for i, c, fut in jobs:
             result = fut.result()
             convs[i].append({"role": "tool", "content": result})
-            trace[i].append({"call": c["arguments"], "result": result[:600]})
+            trace[i].append({"call": c["arguments"], "tool": c["name"], "result": result[:600]})
         active = still
     results = []
     for r, f, t in zip(rows, final, trace):
         calls = [s["call"] for s in t if "call" in s]
         results.append({**{k: r[k] for k in ("id", "condition", "band", "subset", "language", "label")},
-                        "mode": mode, "final": f or "", "calls": calls, "trace": t})
+                        "evidence": r.get("evidence"), "mode": mode, "final": f or "", "calls": calls,
+                        "tools_used": sorted({s["tool"] for s in t if "tool" in s}), "trace": t})
     return results
 
 
@@ -99,19 +110,23 @@ def score(results: list[dict]) -> dict:
         g = E.grade_qa(r["final"], {**r["label"], "mode": r["mode"]})
         g = "wrong" if g == "no_answer" else g
         searched = "searched" if r["calls"] else "no_search"
-        for key in (f"{r['mode']}/{r['condition']}/ALL", f"{r['mode']}/{r['condition']}/band:{r['band']}",
-                    f"{r['mode']}/{r['condition']}/lang:{r['language']}", f"{r['mode']}/{r['condition']}/{searched}"):
+        keys = [f"{r['mode']}/{r['condition']}/ALL", f"{r['mode']}/{r['condition']}/band:{r['band']}",
+                f"{r['mode']}/{r['condition']}/lang:{r['language']}", f"{r['mode']}/{r['condition']}/{searched}"]
+        if r.get("evidence"):  # deep_search: answer in the bridge's search snippet, or only in its article body
+            keys += [f"{r['mode']}/{r['condition']}/evidence:{r['evidence']}", f"{r['mode']}/{r['condition']}/subset:{r['subset']}"]
+        for key in keys:
             c = rep[key]
             c[g] += 1
             c["n"] += 1
             c["searched"] += bool(r["calls"])
             c["calls"] += len(r["calls"])
+            c["opened"] += "open_page" in r.get("tools_used", []) or "find_in_page" in r.get("tools_used", [])
     out = {}
     for key, c in sorted(rep.items()):
         n = c["n"]
         out[key] = {"n": n, "accuracy": c["correct"] / n, "abstain": c["abstain"] / n, "wrong": c["wrong"] / n,
                     "hallucination_rate": c["wrong"] / max(1, n - c["correct"]), "search_rate": c["searched"] / n,
-                    "mean_calls": c["calls"] / n, "index": 100 * (c["correct"] - c["wrong"]) / n}
+                    "mean_calls": c["calls"] / n, "read_rate": c["opened"] / n, "index": 100 * (c["correct"] - c["wrong"]) / n}
     return out
 
 
@@ -123,7 +138,9 @@ def main() -> None:
     ap.add_argument("--endpoint", default="http://127.0.0.1:18090/search")
     ap.add_argument("--conditions", nargs="+", default=["standard", "fabricated"])
     ap.add_argument("--modes", nargs="+", default=["default", "thinking"])
-    ap.add_argument("--max-calls", type=int, default=3, help="search rounds before the answer is forced")
+    ap.add_argument("--max-calls", type=int, default=3, help="tool rounds before the answer is forced")
+    ap.add_argument("--tools", nargs="+", default=["wiki_search"], choices=sorted(TOOLS),
+                    help="wiki_search alone (E7/E8 eval) or with open_page find_in_page (deep_search)")
     ap.add_argument("--calls-per-turn", type=int, default=2)
     ap.add_argument("--default-tokens", type=int, default=1024)
     ap.add_argument("--thinking-tokens", type=int, default=6144)
@@ -133,7 +150,7 @@ def main() -> None:
     from vllm import LLM
 
     rows = [r for r in map(json.loads, Path(a.data).read_text().splitlines())
-            if r["suite"] == "qa" and r.get("condition", "standard") in a.conditions]
+            if r["suite"] in ("qa", "deep_search") and r.get("condition", "standard") in a.conditions]
     for r in rows:
         r.setdefault("condition", "standard")
     tok = AutoTokenizer.from_pretrained(a.model)
@@ -151,11 +168,11 @@ def main() -> None:
         print(f"[gen] {mode}: {len(res)} questions", flush=True)
     report = score(allres)
     (out / "report.json").write_text(json.dumps(report, indent=1) + "\n")
-    print(f"{'key':<40}{'n':>5}{'acc':>7}{'abst':>7}{'wrong':>7}{'halluc':>8}{'search':>8}{'calls':>7}")
+    print(f"{'key':<40}{'n':>5}{'acc':>7}{'abst':>7}{'wrong':>7}{'halluc':>8}{'search':>8}{'calls':>7}{'read':>6}")
     for key, m in report.items():
         if "/lang:" not in key:
             print(f"{key:<40}{m['n']:>5}{m['accuracy']:>7.3f}{m['abstain']:>7.3f}{m['wrong']:>7.3f}"
-                  f"{m['hallucination_rate']:>8.3f}{m['search_rate']:>8.3f}{m['mean_calls']:>7.2f}")
+                  f"{m['hallucination_rate']:>8.3f}{m['search_rate']:>8.3f}{m['mean_calls']:>7.2f}{m['read_rate']:>6.2f}")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,8 @@
 #SBATCH --error=logs/%j.err
 # Search-augmented factual QA (scripts/eval_search_qa.py): the offline Wikipedia search server (oellm-rlvr
 # scripts/wiki_search.py, its own venv, host process on this node) + vLLM policy with the wiki_search tool.
-#   MODEL=<dir> NAME=<name> [DATA=hallu-v1/eval.jsonl] [MODES="default thinking"] sbatch slurm/eval_search_qa_leonardo.sbatch
+#   MODEL=<dir> NAME=<name> [DATA=hallu-v1/eval.jsonl] [MODES="default thinking"] [EXTRA="--tools ... --max-calls 8"] \
+#     sbatch slurm/eval_search_qa_leonardo.sbatch
 set -euo pipefail
 [[ -n ${OELLM_WORK:-} ]] || source "${OELLM_ENV:-$HOME/.oellm/leonardo.env}"
 root=$OELLM_WORK/sft-migration-preflight
@@ -38,4 +39,4 @@ for q in '{"query": "Selma Lagerlöf född", "language": "sv"}' '{"query": "Ingm
 done
 singularity exec --nv -B /leonardo_work,/leonardo_scratch "$C" env HF_HUB_OFFLINE=1 VLLM_NO_USAGE_STATS=1 \
   PYTHONPATH=$CODE/src "$PY" "$root/eval_search_qa.py" --model "$MODEL" --data "${DATA:-$root/data/hallu-v1/eval.jsonl}" \
-  --out "$out" --modes ${MODES:-default thinking}
+  --out "$out" --modes ${MODES:-default thinking} ${EXTRA:-}
